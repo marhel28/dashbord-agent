@@ -189,21 +189,29 @@ const handleLogout = () => {
   font-size: 0.8125rem;
   font-weight: 600;
   transition: all 0.2s ease;
-  color: #64748B;
+  color: var(--wp-text-secondary);
   text-decoration: none;
 }
 .nav-link:hover {
-  background: #F1F5F9;
-  color: #1E293B;
+  background: var(--wp-bg);
+  color: var(--wp-text);
 }
 .nav-link.nav-active {
   background: rgba(212, 168, 67, 0.10);
   color: #B8922E;
   font-weight: 700;
 }
+.dark-mode .nav-link.nav-active {
+  background: rgba(232, 196, 106, 0.15);
+  color: var(--wp-gold);
+}
 .nav-link.nav-active svg,
 .nav-link.nav-active .icon {
   color: #D4A843;
+}
+.dark-mode .nav-link.nav-active svg,
+.dark-mode .nav-link.nav-active .icon {
+  color: var(--wp-gold);
 }
 
 /* Mobile Nav Styles */
@@ -213,7 +221,7 @@ const handleLogout = () => {
   align-items: center;
   justify-content: center;
   flex: 1;
-  color: #64748B;
+  color: var(--wp-text-secondary);
   transition: all 0.15s ease;
   text-decoration: none;
   height: 100%;
@@ -221,8 +229,15 @@ const handleLogout = () => {
 .mobile-nav-link.mobile-nav-active {
   color: #B8922E;
 }
+.dark-mode .mobile-nav-link.mobile-nav-active {
+  color: var(--wp-gold);
+}
 .mobile-nav-link.mobile-nav-active svg,
 .mobile-nav-link.mobile-nav-active .icon {
   color: #D4A843;
+}
+.dark-mode .mobile-nav-link.mobile-nav-active svg,
+.dark-mode .mobile-nav-link.mobile-nav-active .icon {
+  color: var(--wp-gold);
 }
 </style>

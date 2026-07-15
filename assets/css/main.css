@@ -41,6 +41,69 @@
   --wp-z-toast:     400;
 }
 
+/* ── Dark Mode Token Overrides ── */
+.dark-mode {
+  --wp-surface:     #1E293B;
+  --wp-bg:          #0F172A;
+  --wp-text:        #F8FAFC;
+  --wp-text-secondary: #94A3B8;
+  --wp-border:      #334155;
+  --wp-gold:        #E8C46A;
+  --wp-gold-light:  #FDE047;
+  --wp-gold-dark:   #D4A843;
+  --wp-navy:        #FFFFFF; /* Invert navy representation to white for high contrast titles */
+  
+  color-scheme: dark;
+}
+
+/* Global utility colors overrides based on theme modes */
+.dark-mode body {
+  background-color: var(--wp-bg);
+  color: var(--wp-text);
+}
+.dark-mode .bg-white {
+  background-color: var(--wp-surface) !important;
+}
+.dark-mode .text-slate-900 {
+  color: var(--wp-text) !important;
+}
+.dark-mode .text-slate-800 {
+  color: var(--wp-text) !important;
+}
+.dark-mode .text-slate-700 {
+  color: var(--wp-text-secondary) !important;
+}
+.dark-mode .text-slate-600 {
+  color: var(--wp-text-secondary) !important;
+}
+.dark-mode .text-slate-500 {
+  color: var(--wp-text-secondary) !important;
+}
+.dark-mode .border-slate-100 {
+  border-color: var(--wp-border) !important;
+}
+.dark-mode .border-slate-200 {
+  border-color: var(--wp-border) !important;
+}
+.dark-mode .border-gray-200 {
+  border-color: var(--wp-border) !important;
+}
+.dark-mode .divide-y > * + * {
+  border-color: var(--wp-border) !important;
+}
+.dark-mode .bg-slate-50 {
+  background-color: #0F172A !important;
+}
+.dark-mode .bg-slate-100 {
+  background-color: #0F172A !important;
+}
+.dark-mode .hover\:bg-slate-50:hover {
+  background-color: #0F172A !important;
+}
+.dark-mode .hover\:bg-slate-100:hover {
+  background-color: #334155 !important;
+}
+
 /* Force override of excessive Tailwind rounded corners to keep it professional and crisp */
 .rounded-3xl, .rounded-2xl, .rounded-xl {
   border-radius: 6px !important; /* rounded-md */
