@@ -42,7 +42,7 @@
 }
 
 /* ── Dark Mode Token Overrides ── */
-.dark-mode {
+.dark-mode, .dark {
   --wp-surface:     #1E293B;
   --wp-bg:          #0F172A;
   --wp-text:        #F8FAFC;
@@ -57,51 +57,90 @@
 }
 
 /* Global utility colors overrides based on theme modes */
-.dark-mode body {
+.dark-mode body, .dark body {
   background-color: var(--wp-bg);
   color: var(--wp-text);
 }
-.dark-mode .bg-white {
+.dark-mode .bg-white, .dark .bg-white {
   background-color: var(--wp-surface) !important;
 }
-.dark-mode .text-slate-900 {
+.dark-mode .text-slate-900, .dark .text-slate-900 {
   color: var(--wp-text) !important;
 }
-.dark-mode .text-slate-800 {
+.dark-mode .text-slate-800, .dark .text-slate-800 {
   color: var(--wp-text) !important;
 }
-.dark-mode .text-slate-700 {
+.dark-mode .text-slate-700, .dark .text-slate-700 {
   color: var(--wp-text-secondary) !important;
 }
-.dark-mode .text-slate-600 {
+.dark-mode .text-slate-600, .dark .text-slate-600 {
   color: var(--wp-text-secondary) !important;
 }
-.dark-mode .text-slate-500 {
+.dark-mode .text-slate-500, .dark .text-slate-500 {
   color: var(--wp-text-secondary) !important;
 }
-.dark-mode .border-slate-100 {
+.dark-mode .border-slate-100, .dark .border-slate-100 {
   border-color: var(--wp-border) !important;
 }
-.dark-mode .border-slate-200 {
+.dark-mode .border-slate-200, .dark .border-slate-200 {
   border-color: var(--wp-border) !important;
 }
-.dark-mode .border-gray-200 {
+.dark-mode .border-gray-200, .dark .border-gray-200 {
   border-color: var(--wp-border) !important;
 }
-.dark-mode .divide-y > * + * {
+.dark-mode .divide-y > * + *, .dark .divide-y > * + * {
   border-color: var(--wp-border) !important;
 }
-.dark-mode .bg-slate-50 {
+.dark-mode .bg-slate-50, .dark .bg-slate-50 {
   background-color: #0F172A !important;
 }
-.dark-mode .bg-slate-100 {
+.dark-mode .bg-slate-100, .dark .bg-slate-100 {
   background-color: #0F172A !important;
 }
-.dark-mode .hover\:bg-slate-50:hover {
+.dark-mode .hover\:bg-slate-50:hover, .dark .hover\:bg-slate-50:hover {
   background-color: #0F172A !important;
 }
-.dark-mode .hover\:bg-slate-100:hover {
+.dark-mode .hover\:bg-slate-100:hover, .dark .hover\:bg-slate-100:hover {
   background-color: #334155 !important;
+}
+.dark-mode .bg-white\/80, .dark .bg-white\/80 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+}
+
+/* ── Absolute Catch-All Dark Mode Adaptation ── */
+.dark-mode *, .dark * {
+  /* Force system variables transition and usage for all nested elements */
+  border-color: var(--wp-border);
+}
+.dark-mode input, .dark input, .dark-mode select, .dark select, .dark-mode textarea, .dark textarea {
+  background-color: var(--wp-surface) !important;
+  color: var(--wp-text) !important;
+  border-color: var(--wp-border) !important;
+}
+.dark-mode select option, .dark select option {
+  background-color: var(--wp-surface) !important;
+  color: var(--wp-text) !important;
+}
+.dark-mode button:not([class*="bg-[#26A5E4]"]):not([class*="bg-emerald-600"]):not([class*="bg-rose-600"]),
+.dark button:not([class*="bg-[#26A5E4]"]):not([class*="bg-emerald-600"]):not([class*="bg-rose-600"]) {
+  /* Dynamic light buttons adapt to dark background */
+  border-color: var(--wp-border) !important;
+}
+.dark-mode table, .dark table,
+.dark-mode thead, .dark thead,
+.dark-mode tbody, .dark tbody,
+.dark-mode tr, .dark tr,
+.dark-mode th, .dark th,
+.dark-mode td, .dark td {
+  background-color: var(--wp-surface) !important;
+  color: var(--wp-text) !important;
+  border-color: var(--wp-border) !important;
+}
+.dark-mode .modal-content, .dark .modal-content,
+.dark-mode .modal-card, .dark .modal-card,
+.dark-mode .dialog-box, .dark .dialog-box {
+  background-color: var(--wp-surface) !important;
+  color: var(--wp-text) !important;
 }
 
 /* Force override of excessive Tailwind rounded corners to keep it professional and crisp */

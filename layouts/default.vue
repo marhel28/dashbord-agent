@@ -116,19 +116,34 @@
       </main>
     </div>
 
-    <!-- ── Floating Telegram Action Button ── -->
-    <a
-      href="https://t.me/UmkmCopilotBot"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="fixed right-6 bottom-20 lg:bottom-6 z-[999] flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group"
-      style="border-radius: 9999px; box-shadow: 0 4px 16px rgba(38, 165, 228, 0.4);"
-      title="Buka Telegram Bot"
+    <!-- ── Draggable Floating Telegram Action Button ── -->
+    <div
+      ref="telegramButton"
+      @mousedown="startDrag"
+      @touchstart="startDrag"
+      class="fixed z-[999] flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group cursor-move select-none"
+      :style="{
+        borderRadius: '9999px',
+        boxShadow: '0 4px 16px rgba(38, 165, 228, 0.4)',
+        left: position.x !== null ? position.x + 'px' : 'auto',
+        top: position.y !== null ? position.y + 'px' : 'auto',
+        right: position.x === null ? '24px' : 'auto',
+        bottom: position.y === null ? '80px' : 'auto'
+      }"
+      title="Geser untuk memindahkan, klik untuk membuka Telegram Bot"
     >
-      <svg class="w-7 h-7 fill-current transition-transform group-hover:rotate-6" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.89 1.2-5.33 3.52-.5.35-.96.52-1.37.51-.45-.01-1.32-.26-1.97-.47-.8-.26-1.43-.4-1.38-.85.03-.24.36-.48.99-.74 3.89-1.69 6.48-2.8 7.78-3.33 3.69-1.52 4.46-1.78 4.96-1.79.11 0 .36.03.52.16.13.1.17.25.19.35.02.13.02.26 0 .39z"/>
-      </svg>
-    </a>
+      <a
+        href="https://t.me/UmkmCopilotBot"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="w-full h-full flex items-center justify-center text-white"
+        @click="handleTelegramClick"
+      >
+        <svg class="w-7 h-7 fill-current transition-transform group-hover:rotate-6" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.89 1.2-5.33 3.52-.5.35-.96.52-1.37.51-.45-.01-1.32-.26-1.97-.47-.8-.26-1.43-.4-1.38-.85.03-.24.36-.48.99-.74 3.89-1.69 6.48-2.8 7.78-3.33 3.69-1.52 4.46-1.78 4.96-1.79.11 0 .36.03.52.16.13.1.17.25.19.35.02.13.02.26 0 .39z"/>
+        </svg>
+      </a>
+    </div>
 
     <!-- ── Bottom Navigation Bar (Mobile Devices only) ── -->
     <nav class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[var(--wp-border)] flex items-center justify-around px-2 z-[var(--wp-z-sticky)]">
@@ -157,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, reactive, ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
 
 const { user, isAuthenticated, checkAuth, logout: doLogout } = useAuth()
@@ -166,6 +181,75 @@ const colorMode = useColorMode()
 const logoSrc = computed(() => {
   return colorMode.value === 'dark' ? '/logo_darkmode.png' : '/logo_lightmode.png'
 })
+
+// Draggable Telegram Floating Button logic
+const position = reactive({
+  x: null as number | null,
+  y: null as number | null
+})
+const telegramButton = ref<HTMLElement | null>(null)
+let isDragging = false
+let dragStartTime = 0
+let startOffset = { x: 0, y: 0 }
+
+const startDrag = (event: MouseEvent | TouchEvent) => {
+  isDragging = true
+  dragStartTime = Date.now()
+  
+  const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX
+  const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY
+  
+  const rect = telegramButton.value?.getBoundingClientRect()
+  if (rect) {
+    startOffset.x = clientX - rect.left
+    startOffset.y = clientY - rect.top
+  }
+
+  document.addEventListener('mousemove', onDrag)
+  document.addEventListener('touchmove', onDrag, { passive: false })
+  document.addEventListener('mouseup', stopDrag)
+  document.addEventListener('touchend', stopDrag)
+}
+
+const onDrag = (event: MouseEvent | TouchEvent) => {
+  if (!isDragging) return
+  
+  // Prevent scrolling on mobile during drag gesture
+  if (event.cancelable) event.preventDefault()
+  
+  const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX
+  const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY
+  
+  // Constrain inside viewport boundaries
+  const buttonWidth = 56 // w-14
+  const buttonHeight = 56 // h-14
+  let x = clientX - startOffset.x
+  let y = clientY - startOffset.y
+  
+  x = Math.max(10, Math.min(window.innerWidth - buttonWidth - 10, x))
+  y = Math.max(10, Math.min(window.innerHeight - buttonHeight - 10, y))
+  
+  position.x = x
+  position.y = y
+}
+
+const stopDrag = () => {
+  isDragging = false
+  document.removeEventListener('mousemove', onDrag)
+  document.removeEventListener('touchmove', onDrag)
+  document.removeEventListener('mouseup', stopDrag)
+  document.removeEventListener('touchend', stopDrag)
+}
+
+// Differentiate drag vs click action
+const handleTelegramClick = (event: MouseEvent) => {
+  const dragDuration = Date.now() - dragStartTime
+  if (dragDuration > 200) {
+    // It was a drag gesture, prevent link navigation
+    event.preventDefault()
+    event.stopPropagation()
+  }
+}
 
 onMounted(() => {
   checkAuth()
