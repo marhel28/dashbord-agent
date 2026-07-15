@@ -40,12 +40,10 @@ const handleLogin = async () => {
     <div class="auth-card animate-fade-in-up">
       <!-- Brand -->
       <div class="brand-block">
-        <div class="brand-icon">
-          <Icon name="heroicons:shopping-bag-solid" class="icon-brand" />
-        </div>
+        <img src="~/assets/logo.png" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
         <div class="brand-text">
-          <span class="brand-name">Warung Pintar</span>
-          <span class="brand-sub">Platform UMKM Digital</span>
+          <span class="brand-name">Nahkoeda</span>
+          <span class="brand-sub">Agentic AI Bot untuk Membantu Warung</span>
         </div>
       </div>
 

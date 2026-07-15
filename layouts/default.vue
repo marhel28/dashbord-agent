@@ -3,10 +3,11 @@
     <!-- ── Mobile Header Bar ── -->
     <header class="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-[var(--wp-border)] shrink-0 sticky top-0 z-[var(--wp-z-sticky)]">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded flex items-center justify-center" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          <Icon name="heroicons:shopping-bag" class="w-4.5 h-4.5 text-white" />
+        <img src="~/assets/logo.png" class="w-8 h-8 object-contain" alt="Nahkoeda Logo" />
+        <div>
+          <span class="font-black text-sm tracking-tight block leading-none" style="color: var(--wp-navy);">Nahkoeda</span>
+          <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Agentic AI Bot</span>
         </div>
-        <span class="font-extrabold text-sm tracking-tight" style="color: var(--wp-navy);">Warung Pintar</span>
       </div>
       
       <!-- Logout / Mini User profile button for mobile header -->
@@ -26,12 +27,10 @@
 
       <div class="p-6 pl-7">
         <div class="flex items-center gap-3 mb-2">
-          <div class="w-9 h-9 rounded flex items-center justify-center" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-            <Icon name="heroicons:shopping-bag" class="w-5 h-5 text-white" />
-          </div>
+          <img src="~/assets/logo.png" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
           <div>
-            <h2 class="font-extrabold text-lg tracking-tight" style="color: var(--wp-navy);">Warung Pintar</h2>
-            <p class="text-[9px] font-bold uppercase tracking-[0.15em]" style="color: var(--wp-text-secondary);">Enterprise Admin</p>
+            <h2 class="font-black text-lg tracking-tight leading-none" style="color: var(--wp-navy);">Nahkoeda</h2>
+            <p class="text-[7px] font-extrabold uppercase tracking-wider mt-1 text-slate-400">Agentic AI Bot untuk Membantu Warung</p>
           </div>
         </div>
 
