@@ -12,10 +12,15 @@
       
       <!-- Logout / Mini User profile button for mobile header -->
       <div class="flex items-center gap-3">
-        <span v-if="user" class="text-[10px] font-bold px-2.5 py-1" style="background: rgba(212,168,67,0.08); color: var(--wp-navy);">
-          {{ user.name }}
-        </span>
-        <button @click="handleLogout" class="p-1.5 border hover:bg-slate-50 transition" style="border-color: var(--wp-border); border-radius: 4px;" title="Logout">
+        <NuxtLink to="/profile" v-if="user" class="flex items-center gap-2 hover:opacity-80 transition" title="Profil Saya">
+          <div v-if="user.photo_profile" class="w-7 h-7 rounded-full overflow-hidden border border-[var(--wp-border)]">
+             <img :src="user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
+          </div>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded" style="background: rgba(212,168,67,0.08); color: var(--wp-navy);">
+            {{ user.name }}
+          </span>
+        </NuxtLink>
+        <button @click="handleLogout" class="p-1.5 border hover:bg-slate-50 dark:hover:bg-slate-800 transition" style="border-color: var(--wp-border); border-radius: 4px;" title="Logout">
           <Icon name="heroicons:arrow-left-on-rectangle" class="w-4 h-4 text-slate-500" />
         </button>
       </div>
@@ -35,15 +40,18 @@
         </div>
 
         <!-- User Info -->
-        <div v-if="user" class="mt-5 p-3 flex items-center gap-3" style="background: rgba(212,168,67,0.06); border: 1px solid rgba(212,168,67,0.15); border-radius: 4px;">
-          <div class="w-10 h-10 flex items-center justify-center text-xs font-bold uppercase" style="background: var(--wp-navy); color: var(--wp-gold); border-radius: 4px;">
+        <NuxtLink to="/profile" v-if="user" class="mt-5 p-3 flex items-center gap-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer" style="background: rgba(212,168,67,0.06); border: 1px solid rgba(212,168,67,0.15); border-radius: 4px;" title="Lihat Profil">
+          <div v-if="user.photo_profile" class="w-10 h-10 rounded overflow-hidden shrink-0">
+             <img :src="user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
+          </div>
+          <div v-else class="w-10 h-10 flex shrink-0 items-center justify-center text-xs font-bold uppercase" style="background: var(--wp-navy); color: var(--wp-gold); border-radius: 4px;">
             {{ user.name?.charAt(0) || 'U' }}
           </div>
           <div class="overflow-hidden">
             <p class="text-xs font-bold truncate" style="color: var(--wp-text);">{{ user.name }}</p>
             <p class="text-[10px] font-medium truncate" style="color: var(--wp-text-secondary);">{{ user.role === 'admin' ? 'Admin Utama' : user.store_name }}</p>
           </div>
-        </div>
+        </NuxtLink>
 
         <nav class="mt-8 space-y-1">
           <NuxtLink to="/" exact-active-class="nav-active" class="nav-link">
@@ -109,9 +117,14 @@
           <button class="p-2 transition" style="color: var(--wp-text-secondary);">
             <Icon name="heroicons:question-mark-circle" class="w-5 h-5" />
           </button>
-          <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shadow-sm select-none" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;">
-            AD
-          </div>
+          <NuxtLink to="/profile" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shadow-sm select-none transition-transform hover:scale-105 border-2 border-transparent hover:border-[var(--wp-gold)]" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;" title="Profil Saya">
+            <template v-if="user?.photo_profile">
+              <img :src="user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
+            </template>
+            <template v-else>
+              {{ user?.name?.charAt(0) || 'U' }}
+            </template>
+          </NuxtLink>
         </div>
       </header>
 
