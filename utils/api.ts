@@ -1,5 +1,5 @@
-// ── API Client ── communicates with FastAPI backend at http://localhost:8000
-const BASE_URL = 'http://localhost:8000'
+// ── API Client ── communicates with FastAPI backend at https://cctv-api.desa-sidomukti.com
+const BASE_URL = 'https://cctv-api.desa-sidomukti.com'
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>
