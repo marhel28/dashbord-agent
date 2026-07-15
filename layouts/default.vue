@@ -66,6 +66,10 @@
             <Icon name="heroicons:chart-bar" class="w-5 h-5" />
             <span>Sales Reports</span>
           </NuxtLink>
+          <NuxtLink to="/konektor" exact-active-class="nav-active" class="nav-link">
+            <Icon name="heroicons:share" class="w-5 h-5" />
+            <span>Konektor</span>
+          </NuxtLink>
         </nav>
       </div>
 
@@ -166,6 +170,10 @@
       <NuxtLink to="/sales-report" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:chart-bar" class="w-5 h-5" />
         <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Reports</span>
+      </NuxtLink>
+      <NuxtLink to="/konektor" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:share" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Flow</span>
       </NuxtLink>
     </nav>
   </div>
