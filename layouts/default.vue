@@ -1,0 +1,224 @@
+<template>
+  <div class="min-h-screen font-sans flex flex-col lg:flex-row text-slate-900" style="background-color: var(--wp-bg, #F4F6F9);">
+    <!-- ── Mobile Header Bar ── -->
+    <header class="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-[var(--wp-border)] shrink-0 sticky top-0 z-[var(--wp-z-sticky)]">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded flex items-center justify-center" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
+          <Icon name="heroicons:shopping-bag" class="w-4.5 h-4.5 text-white" />
+        </div>
+        <span class="font-extrabold text-sm tracking-tight" style="color: var(--wp-navy);">Warung Pintar</span>
+      </div>
+      
+      <!-- Logout / Mini User profile button for mobile header -->
+      <div class="flex items-center gap-3">
+        <span v-if="user" class="text-[10px] font-bold px-2.5 py-1" style="background: rgba(212,168,67,0.08); color: var(--wp-navy);">
+          {{ user.name }}
+        </span>
+        <button @click="handleLogout" class="p-1.5 border hover:bg-slate-50 transition" style="border-color: var(--wp-border); border-radius: 4px;" title="Logout">
+          <Icon name="heroicons:arrow-left-on-rectangle" class="w-4 h-4 text-slate-500" />
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Sidebar (Large Devices) ── -->
+    <aside class="w-64 bg-white border-r border-[var(--wp-border)] p-0 flex flex-col justify-between hidden lg:flex shrink-0 relative">
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--wp-gold)] via-[var(--wp-gold-light)] to-[var(--wp-gold-dark)] opacity-80"></div>
+
+      <div class="p-6 pl-7">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded flex items-center justify-center" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
+            <Icon name="heroicons:shopping-bag" class="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 class="font-extrabold text-lg tracking-tight" style="color: var(--wp-navy);">Warung Pintar</h2>
+            <p class="text-[9px] font-bold uppercase tracking-[0.15em]" style="color: var(--wp-text-secondary);">Enterprise Admin</p>
+          </div>
+        </div>
+
+        <!-- User Info -->
+        <div v-if="user" class="mt-5 p-3 flex items-center gap-3" style="background: rgba(212,168,67,0.06); border: 1px solid rgba(212,168,67,0.15); border-radius: 4px;">
+          <div class="w-10 h-10 flex items-center justify-center text-xs font-bold uppercase" style="background: var(--wp-navy); color: var(--wp-gold); border-radius: 4px;">
+            {{ user.name?.charAt(0) || 'U' }}
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-xs font-bold truncate" style="color: var(--wp-text);">{{ user.name }}</p>
+            <p class="text-[10px] font-medium truncate" style="color: var(--wp-text-secondary);">{{ user.role === 'admin' ? 'Admin Utama' : user.store_name }}</p>
+          </div>
+        </div>
+
+        <nav class="mt-8 space-y-1">
+          <NuxtLink to="/" exact-active-class="nav-active" class="nav-link">
+            <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
+            <span>Dashboard</span>
+          </NuxtLink>
+          <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
+            <Icon name="heroicons:sparkles" class="w-5 h-5" />
+            <span>AI Agents</span>
+          </NuxtLink>
+          <NuxtLink to="/tambah-skill" exact-active-class="nav-active" class="nav-link">
+            <Icon name="heroicons:plus-circle" class="w-5 h-5" />
+            <span>Tambah Skill</span>
+          </NuxtLink>
+          <NuxtLink to="/inventory" exact-active-class="nav-active" class="nav-link">
+            <Icon name="heroicons:archive-box" class="w-5 h-5" />
+            <span>Inventory</span>
+          </NuxtLink>
+          <NuxtLink to="/sales-report" exact-active-class="nav-active" class="nav-link">
+            <Icon name="heroicons:chart-bar" class="w-5 h-5" />
+            <span>Sales Reports</span>
+          </NuxtLink>
+        </nav>
+      </div>
+
+      <div class="p-6 pl-7 space-y-4 border-t border-[var(--wp-border)]">
+        <button class="w-full py-3 text-xs font-bold shadow-sm transition flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white; border-radius: 4px;">
+          <Icon name="heroicons:plus" class="w-4 h-4" />
+          <span>Upgrade Plan</span>
+        </button>
+        <div class="space-y-1">
+          <NuxtLink to="#" class="flex items-center gap-3 px-4 py-2.5 rounded text-xs font-semibold transition" style="color: var(--wp-text-secondary);">
+            <Icon name="heroicons:cog-6-tooth" class="w-4 h-4" />
+            <span>Settings</span>
+          </NuxtLink>
+          <button @click="handleLogout" class="w-full flex items-center gap-3 px-4 py-2.5 rounded text-xs font-semibold transition text-left" style="color: var(--wp-text-secondary);">
+            <Icon name="heroicons:arrow-left-on-rectangle" class="w-4 h-4" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main Area ── -->
+    <div class="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
+      <header class="h-16 bg-white/80 backdrop-blur-md border-b border-[var(--wp-border)] px-8 items-center justify-between shrink-0 sticky top-0 z-[var(--wp-z-sticky)] hidden lg:flex">
+        <div class="relative w-full max-w-sm">
+          <Icon name="heroicons:magnifying-glass" class="absolute left-3.5 top-2.5 w-4 h-4" style="color: var(--wp-text-secondary);" />
+          <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 rounded text-xs transition border outline-none" style="background-color: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-[11px] font-bold px-3.5 py-1.5 tracking-wide select-none" style="background: var(--wp-navy); color: white;">
+            AI Agents
+          </span>
+          <button class="relative p-2 transition" style="color: var(--wp-text-secondary);">
+            <Icon name="heroicons:bell" class="w-5 h-5" />
+            <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style="background: var(--wp-gold);"></span>
+          </button>
+          <button class="p-2 transition" style="color: var(--wp-text-secondary);">
+            <Icon name="heroicons:question-mark-circle" class="w-5 h-5" />
+          </button>
+          <div class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shadow-sm select-none" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;">
+            AD
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-4 sm:p-8">
+        <slot />
+      </main>
+    </div>
+
+    <!-- ── Floating Telegram Action Button ── -->
+    <a
+      href="https://t.me/UmkmCopilotBot"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="fixed right-6 bottom-20 lg:bottom-6 z-[999] flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group"
+      style="border-radius: 9999px; box-shadow: 0 4px 16px rgba(38, 165, 228, 0.4);"
+      title="Buka Telegram Bot"
+    >
+      <svg class="w-7 h-7 fill-current transition-transform group-hover:rotate-6" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.89 1.2-5.33 3.52-.5.35-.96.52-1.37.51-.45-.01-1.32-.26-1.97-.47-.8-.26-1.43-.4-1.38-.85.03-.24.36-.48.99-.74 3.89-1.69 6.48-2.8 7.78-3.33 3.69-1.52 4.46-1.78 4.96-1.79.11 0 .36.03.52.16.13.1.17.25.19.35.02.13.02.26 0 .39z"/>
+      </svg>
+    </a>
+
+    <!-- ── Bottom Navigation Bar (Mobile Devices only) ── -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[var(--wp-border)] flex items-center justify-around px-2 z-[var(--wp-z-sticky)]">
+      <NuxtLink to="/" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Home</span>
+      </NuxtLink>
+      <NuxtLink to="/agents" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:sparkles" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Agents</span>
+      </NuxtLink>
+      <NuxtLink to="/tambah-skill" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:plus-circle" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">+ Skill</span>
+      </NuxtLink>
+      <NuxtLink to="/inventory" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:archive-box" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Stocks</span>
+      </NuxtLink>
+      <NuxtLink to="/sales-report" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:chart-bar" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Reports</span>
+      </NuxtLink>
+    </nav>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { useAuth } from '../composables/useAuth'
+
+const { user, isAuthenticated, checkAuth, logout: doLogout } = useAuth()
+
+onMounted(() => {
+  checkAuth()
+  if (!isAuthenticated.value) {
+    navigateTo('/login')
+  }
+})
+
+const handleLogout = () => {
+  doLogout()
+}
+</script>
+
+<style>
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  color: #64748B;
+  text-decoration: none;
+}
+.nav-link:hover {
+  background: #F1F5F9;
+  color: #1E293B;
+}
+.nav-link.nav-active {
+  background: rgba(212, 168, 67, 0.10);
+  color: #B8922E;
+  font-weight: 700;
+}
+.nav-link.nav-active svg,
+.nav-link.nav-active .icon {
+  color: #D4A843;
+}
+
+/* Mobile Nav Styles */
+.mobile-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: #64748B;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  height: 100%;
+}
+.mobile-nav-link.mobile-nav-active {
+  color: #B8922E;
+}
+.mobile-nav-link.mobile-nav-active svg,
+.mobile-nav-link.mobile-nav-active .icon {
+  color: #D4A843;
+}
+</style>

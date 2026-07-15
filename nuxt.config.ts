@@ -1,0 +1,25 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  compatibilityDate: '2024-11-01',
+  devtools: { enabled: true },
+
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@nuxt/icon',
+    '@nuxt/fonts'
+  ],
+
+  css: ['~/assets/css/main.css'],
+
+  colorMode: {
+    preference: 'light',
+    fallback: 'light'
+  },
+
+  fonts: {
+    families: [
+      { name: 'Fira Sans', weights: [300, 400, 500, 600, 700, 800] },
+      { name: 'Fira Code', weights: [400, 500, 600, 700] }
+    ]
+  }
+})
