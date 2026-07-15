@@ -14,7 +14,7 @@ const { login } = useAuth()
 const colorMode = useColorMode()
 
 const logoSrc = computed(() => {
-  return colorMode.value === 'dark' ? '/_nuxt/assets/logo_darkmode.png' : '/_nuxt/assets/logo_lightmode.png'
+  return colorMode.value === 'dark' ? '/logo_darkmode.png' : '/logo_lightmode.png'
 })
 
 const handleLogin = async () => {
