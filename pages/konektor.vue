@@ -136,6 +136,7 @@ const nodes = ref([
     id: 'user_client',
     label: 'User Interface / Client',
     position: { x: 50, y: 220 },
+    sourcePosition: 'right',
     data: {
       category: 'Client Layer',
       color: COLORS.client,
@@ -148,7 +149,9 @@ const nodes = ref([
   {
     id: 'cloudflare_tunnel',
     label: 'Cloudflare Gateway',
-    position: { x: 260, y: 220 },
+    position: { x: 280, y: 220 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'Security & Router',
       color: COLORS.gateway,
@@ -161,7 +164,9 @@ const nodes = ref([
   {
     id: 'fastapi_backend',
     label: 'FastAPI Backend Core',
-    position: { x: 470, y: 220 },
+    position: { x: 510, y: 220 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'API Engine',
       color: COLORS.backend,
@@ -174,7 +179,9 @@ const nodes = ref([
   {
     id: 'orchestrator_core',
     label: 'Orchestrator v6 (5-Tier)',
-    position: { x: 690, y: 220 },
+    position: { x: 740, y: 220 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'Cognitive Engine',
       color: COLORS.orchestrator,
@@ -187,7 +194,9 @@ const nodes = ref([
   {
     id: 'fast_router',
     label: 'FastRouter Engine',
-    position: { x: 910, y: 80 },
+    position: { x: 970, y: 100 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'Routing',
       color: COLORS.router,
@@ -200,7 +209,9 @@ const nodes = ref([
   {
     id: 'llm_planner',
     label: 'AI Planner (LLM Cascade)',
-    position: { x: 910, y: 360 },
+    position: { x: 970, y: 340 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'Planning',
       color: COLORS.router,
@@ -213,7 +224,9 @@ const nodes = ref([
   {
     id: 'finance_agent',
     label: 'Finance Agent v5',
-    position: { x: 1140, y: 40 },
+    position: { x: 1220, y: 40 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'AI Agent',
       color: COLORS.agent,
@@ -226,7 +239,9 @@ const nodes = ref([
   {
     id: 'stock_agent',
     label: 'Stock Agent v5',
-    position: { x: 1140, y: 160 },
+    position: { x: 1220, y: 160 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'AI Agent',
       color: COLORS.agent,
@@ -239,7 +254,9 @@ const nodes = ref([
   {
     id: 'marketing_agent',
     label: 'Marketing Agent v5',
-    position: { x: 1140, y: 280 },
+    position: { x: 1220, y: 280 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'AI Agent',
       color: COLORS.agent,
@@ -252,7 +269,9 @@ const nodes = ref([
   {
     id: 'research_agent',
     label: 'Research Agent v5',
-    position: { x: 1140, y: 400 },
+    position: { x: 1220, y: 400 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'AI Agent',
       color: COLORS.agent,
@@ -265,7 +284,9 @@ const nodes = ref([
   {
     id: 'action_executor',
     label: 'ToolManager & Executor',
-    position: { x: 1400, y: 120 },
+    position: { x: 1470, y: 100 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'Execution Engine',
       color: COLORS.executor,
@@ -278,7 +299,9 @@ const nodes = ref([
   {
     id: 'final_composer',
     label: 'Composer & CEO Validation',
-    position: { x: 1400, y: 280 },
+    position: { x: 1470, y: 280 },
+    sourcePosition: 'right',
+    targetPosition: 'left',
     data: {
       category: 'Validation',
       color: COLORS.executor,
@@ -291,7 +314,8 @@ const nodes = ref([
   {
     id: 'reflection_agent',
     label: 'Reflection Agent (Lessons)',
-    position: { x: 1640, y: 280 },
+    position: { x: 1720, y: 280 },
+    targetPosition: 'left',
     data: {
       category: 'Self Correction',
       color: COLORS.executor,
@@ -304,7 +328,8 @@ const nodes = ref([
   {
     id: 'infrastructure_db',
     label: 'Infrastructure Stack',
-    position: { x: 1640, y: 80 },
+    position: { x: 1720, y: 100 },
+    targetPosition: 'left',
     data: {
       category: 'Infrastructure',
       color: COLORS.infrastructure,
@@ -318,36 +343,36 @@ const nodes = ref([
 
 // Edges connecting nodes to represent the operational flow
 const edges = ref([
-  { id: 'e_client_gateway', source: 'user_client', target: 'cloudflare_tunnel', animated: true },
-  { id: 'e_gateway_backend', source: 'cloudflare_tunnel', target: 'fastapi_backend', animated: true },
-  { id: 'e_backend_orch', source: 'fastapi_backend', target: 'orchestrator_core', animated: true },
+  { id: 'e_client_gateway', source: 'user_client', target: 'cloudflare_tunnel', type: 'smoothstep', animated: true },
+  { id: 'e_gateway_backend', source: 'cloudflare_tunnel', target: 'fastapi_backend', type: 'smoothstep', animated: true },
+  { id: 'e_backend_orch', source: 'fastapi_backend', target: 'orchestrator_core', type: 'smoothstep', animated: true },
   
   // 5-Tier Routing paths
-  { id: 'e_orch_fastrouter', source: 'orchestrator_core', target: 'fast_router', label: 'L1: Fast Intent', style: { stroke: COLORS.router } },
-  { id: 'e_orch_planner', source: 'orchestrator_core', target: 'llm_planner', label: 'L3: Planner', style: { stroke: COLORS.router } },
+  { id: 'e_orch_fastrouter', source: 'orchestrator_core', target: 'fast_router', label: 'L1: Fast Intent', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
+  { id: 'e_orch_planner', source: 'orchestrator_core', target: 'llm_planner', label: 'L3: Planner', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
   
   // Fast Router agent invocation
-  { id: 'e_fast_finance', source: 'fast_router', target: 'finance_agent', style: { stroke: COLORS.router } },
-  { id: 'e_fast_stock', source: 'fast_router', target: 'stock_agent', style: { stroke: COLORS.router } },
+  { id: 'e_fast_finance', source: 'fast_router', target: 'finance_agent', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
+  { id: 'e_fast_stock', source: 'fast_router', target: 'stock_agent', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
   
   // Planner agent invocation
-  { id: 'e_plan_finance', source: 'llm_planner', target: 'finance_agent', style: { stroke: COLORS.router } },
-  { id: 'e_plan_stock', source: 'llm_planner', target: 'stock_agent', style: { stroke: COLORS.router } },
-  { id: 'e_plan_marketing', source: 'llm_planner', target: 'marketing_agent', style: { stroke: COLORS.router } },
-  { id: 'e_plan_research', source: 'llm_planner', target: 'research_agent', style: { stroke: COLORS.router } },
+  { id: 'e_plan_finance', source: 'llm_planner', target: 'finance_agent', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
+  { id: 'e_plan_stock', source: 'llm_planner', target: 'stock_agent', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
+  { id: 'e_plan_marketing', source: 'llm_planner', target: 'marketing_agent', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
+  { id: 'e_plan_research', source: 'llm_planner', target: 'research_agent', type: 'smoothstep', animated: true, style: { stroke: COLORS.router } },
   
   // Agents execution tools
-  { id: 'e_finance_exec', source: 'finance_agent', target: 'action_executor', animated: true, style: { stroke: COLORS.executor } },
-  { id: 'e_stock_exec', source: 'stock_agent', target: 'action_executor', animated: true, style: { stroke: COLORS.executor } },
-  { id: 'e_marketing_exec', source: 'marketing_agent', target: 'action_executor', animated: true, style: { stroke: COLORS.executor } },
-  { id: 'e_research_exec', source: 'research_agent', target: 'action_executor', animated: true, style: { stroke: COLORS.executor } },
+  { id: 'e_finance_exec', source: 'finance_agent', target: 'action_executor', type: 'smoothstep', animated: true, style: { stroke: COLORS.executor } },
+  { id: 'e_stock_exec', source: 'stock_agent', target: 'action_executor', type: 'smoothstep', animated: true, style: { stroke: COLORS.executor } },
+  { id: 'e_marketing_exec', source: 'marketing_agent', target: 'action_executor', type: 'smoothstep', animated: true, style: { stroke: COLORS.executor } },
+  { id: 'e_research_exec', source: 'research_agent', target: 'action_executor', type: 'smoothstep', animated: true, style: { stroke: COLORS.executor } },
   
   // Executor DB interaction and Composer
-  { id: 'e_exec_db', source: 'action_executor', target: 'infrastructure_db', style: { stroke: COLORS.infrastructure } },
-  { id: 'e_exec_compose', source: 'action_executor', target: 'final_composer', style: { stroke: COLORS.executor } },
+  { id: 'e_exec_db', source: 'action_executor', target: 'infrastructure_db', type: 'smoothstep', animated: true, style: { stroke: COLORS.infrastructure } },
+  { id: 'e_exec_compose', source: 'action_executor', target: 'final_composer', type: 'smoothstep', animated: true, style: { stroke: COLORS.executor } },
   
   // Composer correction loop
-  { id: 'e_compose_reflection', source: 'final_composer', target: 'reflection_agent', animated: true, style: { stroke: COLORS.executor } }
+  { id: 'e_compose_reflection', source: 'final_composer', target: 'reflection_agent', type: 'smoothstep', animated: true, style: { stroke: COLORS.executor } }
 ])
 
 const selectedNode = ref<any>(null)
