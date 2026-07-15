@@ -22,5 +22,8 @@
     "nuxt": "^3.12.4",
     "vue": "^3.4.31",
     "vue-echarts": "^8.0.1"
+  },
+  "devDependencies": {
+    "@nuxtjs/color-mode": "^4.0.1"
   }
 }
