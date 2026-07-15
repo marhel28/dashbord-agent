@@ -113,13 +113,37 @@
   border-color: var(--wp-border);
 }
 .dark-mode input, .dark input, .dark-mode select, .dark select, .dark-mode textarea, .dark textarea {
+  background: var(--wp-surface) !important;
   background-color: var(--wp-surface) !important;
   color: var(--wp-text) !important;
   border-color: var(--wp-border) !important;
 }
 .dark-mode select option, .dark select option {
+  background: var(--wp-surface) !important;
   background-color: var(--wp-surface) !important;
   color: var(--wp-text) !important;
+}
+
+/* Ensure text inside elements with inline white backgrounds in dark mode is dark-gray (#334155) */
+.dark-mode [style*="background: #FFFFFF"], .dark [style*="background: #FFFFFF"],
+.dark-mode [style*="background:#FFFFFF"], .dark [style*="background:#FFFFFF"],
+.dark-mode [style*="background: white"], .dark [style*="background: white"],
+.dark-mode [style*="background:white"], .dark [style*="background:white"],
+.dark-mode [style*="background-color: #FFFFFF"], .dark [style*="background-color: #FFFFFF"],
+.dark-mode [style*="background-color:#FFFFFF"], .dark [style*="background-color:#FFFFFF"],
+.dark-mode [style*="background-color: white"], .dark [style*="background-color: white"],
+.dark-mode [style*="background-color:white"], .dark [style*="background-color:white"] {
+  color: #334155 !important;
+}
+.dark-mode [style*="background: #FFFFFF"] *, .dark [style*="background: #FFFFFF"] *,
+.dark-mode [style*="background:#FFFFFF"] *, .dark [style*="background:#FFFFFF"] *,
+.dark-mode [style*="background: white"] *, .dark [style*="background: white"] *,
+.dark-mode [style*="background:white"] *, .dark [style*="background:white"] *,
+.dark-mode [style*="background-color: #FFFFFF"] *, .dark [style*="background-color: #FFFFFF"] *,
+.dark-mode [style*="background-color:#FFFFFF"] *, .dark [style*="background-color:#FFFFFF"] *,
+.dark-mode [style*="background-color: white"] *, .dark [style*="background-color: white"] *,
+.dark-mode [style*="background-color:white"] *, .dark [style*="background-color:white"] * {
+  color: #334155 !important;
 }
 .dark-mode button:not([class*="bg-[#26A5E4]"]):not([class*="bg-emerald-600"]):not([class*="bg-rose-600"]),
 .dark button:not([class*="bg-[#26A5E4]"]):not([class*="bg-emerald-600"]):not([class*="bg-rose-600"]) {
