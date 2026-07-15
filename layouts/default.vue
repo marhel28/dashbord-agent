@@ -3,7 +3,7 @@
     <!-- ── Mobile Header Bar ── -->
     <header class="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-[var(--wp-border)] shrink-0 sticky top-0 z-[var(--wp-z-sticky)]">
       <div class="flex items-center gap-2">
-        <img src="~/assets/logo.png" class="w-8 h-8 object-contain" alt="Nahkoeda Logo" />
+        <img :src="logoSrc" class="w-8 h-8 object-contain" alt="Nahkoeda Logo" />
         <div>
           <span class="font-black text-sm tracking-tight block leading-none" style="color: var(--wp-navy);">Nahkoeda</span>
           <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Agentic AI Bot</span>
@@ -27,7 +27,7 @@
 
       <div class="p-6 pl-7">
         <div class="flex items-center gap-3 mb-2">
-          <img src="~/assets/logo.png" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
+          <img :src="logoSrc" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
           <div>
             <h2 class="font-black text-lg tracking-tight leading-none" style="color: var(--wp-navy);">Nahkoeda</h2>
             <p class="text-[7px] font-extrabold uppercase tracking-wider mt-1 text-slate-400">Agentic AI Bot untuk Membantu Warung</p>
@@ -75,7 +75,7 @@
           <span>Upgrade Plan</span>
         </button>
         <div class="space-y-1">
-          <NuxtLink to="#" class="flex items-center gap-3 px-4 py-2.5 rounded text-xs font-semibold transition" style="color: var(--wp-text-secondary);">
+          <NuxtLink to="/settings" exact-active-class="nav-active" class="nav-link">
             <Icon name="heroicons:cog-6-tooth" class="w-4 h-4" />
             <span>Settings</span>
           </NuxtLink>
@@ -157,10 +157,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useAuth } from '../composables/useAuth'
 
 const { user, isAuthenticated, checkAuth, logout: doLogout } = useAuth()
+const colorMode = useColorMode()
+
+const logoSrc = computed(() => {
+  return colorMode.value === 'dark' ? '/_nuxt/assets/logo_darkmode.png' : '/_nuxt/assets/logo_lightmode.png'
+})
 
 onMounted(() => {
   checkAuth()

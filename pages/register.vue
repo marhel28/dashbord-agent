@@ -40,6 +40,11 @@ const step2Valid = computed(() =>
 )
 
 const { register: doRegister, verifyEmail } = useAuth()
+const colorMode = useColorMode()
+
+const logoSrc = computed(() => {
+  return colorMode.value === 'dark' ? '/_nuxt/assets/logo_darkmode.png' : '/_nuxt/assets/logo_lightmode.png'
+})
 
 const detectLocation = () => {
   if (!navigator.geolocation) {
@@ -105,7 +110,7 @@ const handleRegister = async () => {
     <div class="auth-card animate-fade-in-up">
       <!-- Brand -->
       <div class="brand-block">
-        <img src="~/assets/logo.png" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
+        <img :src="logoSrc" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
         <div class="brand-text">
           <span class="brand-name">Nahkoeda</span>
           <span class="brand-sub">Agentic AI Bot untuk Membantu Warung</span>

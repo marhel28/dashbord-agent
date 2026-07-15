@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuth } from '../composables/useAuth'
 
 definePageMeta({ layout: 'auth' })
@@ -11,6 +11,11 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 const { login } = useAuth()
+const colorMode = useColorMode()
+
+const logoSrc = computed(() => {
+  return colorMode.value === 'dark' ? '/_nuxt/assets/logo_darkmode.png' : '/_nuxt/assets/logo_lightmode.png'
+})
 
 const handleLogin = async () => {
   if (loading.value) return
@@ -40,7 +45,7 @@ const handleLogin = async () => {
     <div class="auth-card animate-fade-in-up">
       <!-- Brand -->
       <div class="brand-block">
-        <img src="~/assets/logo.png" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
+        <img :src="logoSrc" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
         <div class="brand-text">
           <span class="brand-name">Nahkoeda</span>
           <span class="brand-sub">Agentic AI Bot untuk Membantu Warung</span>
