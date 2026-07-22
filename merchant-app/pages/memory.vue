@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6 animate-fade-in">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
       <div class="border-b pb-4" style="border-color: var(--wp-navy);">
@@ -92,7 +92,7 @@ const fetchAllMemories = async () => {
     
     await Promise.all(agents.map(async (agent: any) => {
       try {
-        const mems = await api.get(/agentic/agents/\/memory, { params: { limit: '20' } })
+        const mems = await api.get(`/agentic/agents/${agent.id}/memory`, { params: { limit: '20' } })
         if (mems && mems.memories) {
           const color = agentMeta[agent.id]?.color || '#0F1A2E'
           const name = agentMeta[agent.id]?.name || agent.name || agent.id
@@ -122,7 +122,7 @@ const fetchAllMemories = async () => {
 const deleteMemory = async (m: any) => {
   if (!confirm('Hapus memori ini dari ingatan AI?')) return
   try {
-    await api.delete(/agentic/agents/\/memory/\)
+    await api.delete(`/agentic/agents/${m.agentId}/memory/${m.id}`)
     allMemories.value = allMemories.value.filter(mem => mem.id !== m.id)
   } catch (e) {
     alert('Gagal menghapus memori.')
