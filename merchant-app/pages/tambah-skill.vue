@@ -5,7 +5,7 @@
       <span class="px-2 py-1 text-[10px] font-bold rounded uppercase tracking-wider inline-flex items-center gap-1.5"
         style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
         <Icon name="heroicons:sparkles" class="w-3.5 h-3.5" />
-        AI AGENT CONFIGURATION
+        KONFIGURASI AGEN AI
       </span>
       <h1 class="text-3xl font-extrabold tracking-tight mt-2" style="color: var(--wp-navy);">Kelola Skill Agent</h1>
       <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">
@@ -129,15 +129,15 @@
 
           <!-- Agent -->
           <div class="space-y-1.5">
-            <label class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--wp-text-secondary);">Agent Target</label>
+            <label class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--wp-text-secondary);">Target Agen</label>
             <select v-model="form.agent"
               class="w-full px-4 py-3 rounded-xl text-sm outline-none transition border"
               style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);">
-              <option value="all">Semua Agent</option>
-              <option value="finance">Finance Agent</option>
-              <option value="stock">Stock Agent</option>
-              <option value="marketing">Marketing Agent</option>
-              <option value="research">Research Agent</option>
+              <option value="all">Semua Agen</option>
+              <option value="finance">Agen Finance</option>
+              <option value="stock">Agen Stock</option>
+              <option value="marketing">Agen Marketing</option>
+              <option value="research">Agen Research</option>
             </select>
           </div>
 
@@ -153,7 +153,7 @@
           <!-- Langkah-langkah -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <label class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--wp-text-secondary);">Langkah-langkah (Steps)</label>
+              <label class="text-[10px] font-bold uppercase tracking-widest" style="color: var(--wp-text-secondary);">Langkah-langkah</label>
               <button @click="addStep" class="text-[10px] font-bold flex items-center gap-1 transition hover:underline" style="color: var(--wp-gold);">
                 <Icon name="heroicons:plus-circle" class="w-3.5 h-3.5" />
                 Tambah Langkah
@@ -165,7 +165,7 @@
                 <span class="text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-1"
                   style="background: var(--wp-navy); color: var(--wp-gold);">{{ i + 1 }}</span>
                 <div class="flex-1 space-y-2">
-                  <input v-model="step.tool" placeholder="Tool (e.g., stock.get_stocks)" class="w-full px-3 py-2 rounded-lg text-xs outline-none border"
+                  <input v-model="step.tool" placeholder="Alat (misal: stock.get_stocks)" class="w-full px-3 py-2 rounded-lg text-xs outline-none border"
                     style="background: white; border-color: var(--wp-border); color: var(--wp-text);" />
                   <textarea v-model="step.description" rows="2" placeholder="Deskripsi langkah ini..."
                     class="w-full px-3 py-2 rounded-lg text-xs outline-none border resize-none"
@@ -177,7 +177,7 @@
               </div>
             </div>
             <p v-if="form.steps.length === 0" class="text-[10px] italic" style="color: var(--wp-text-secondary);">
-              Belum ada langkah. Klik "Tambah Langkah" untuk menambahkan tool yang akan dijalankan.
+              Belum ada langkah. Klik "Tambah Langkah" untuk menambahkan alat yang akan dijalankan.
             </p>
           </div>
 
@@ -188,7 +188,7 @@
               style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;">
               <Icon v-if="!saving" name="heroicons:bookmark" class="w-4 h-4" />
               <div v-else class="w-4 h-4 rounded-full border-2 animate-spin" style="border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
-              {{ saving ? 'MENYIMPAN...' : (isEditing ? 'UPDATE SKILL' : 'SIMPAN SKILL') }}
+              {{ saving ? 'MENYIMPAN...' : (isEditing ? 'PERBARUI SKILL' : 'SIMPAN SKILL') }}
             </button>
             <button @click="resetForm"
               class="px-6 py-3 border rounded-xl text-xs font-bold transition"
@@ -210,7 +210,7 @@
           <div class="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition cursor-pointer hover:border-[var(--wp-gold-light)]"
             style="border-color: var(--wp-border); background: var(--wp-bg);">
             <Icon name="heroicons:cloud-arrow-up" class="w-10 h-10 mb-3" style="color: #94A3B8;" />
-            <span class="text-xs font-bold" style="color: var(--wp-text);">Drag & Drop File</span>
+            <span class="text-xs font-bold" style="color: var(--wp-text);">Tarik & Lepas File</span>
             <span class="text-[10px] mt-1" style="color: var(--wp-text-secondary);">atau klik untuk pilih file</span>
             <div class="flex gap-2 mt-4">
               <span v-for="ext in ['.PDF', '.CSV', '.TXT', '.DOCX']" :key="ext"

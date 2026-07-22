@@ -3,8 +3,8 @@
     <!-- ═══════════ HEADER + PERIOD TOGGLE ═══════════ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Dashboard Overview</h1>
-        <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">Monitor daily operations, sales performance & inventory health.</p>
+        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Ringkasan Beranda</h1>
+        <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">Pantau operasional harian, performa penjualan & kesehatan stok.</p>
       </div>
       <div class="inline-flex p-1 rounded-xl border" style="background: var(--wp-bg); border-color: var(--wp-border);">
         <button
@@ -23,7 +23,7 @@
     <div v-if="pageLoading" class="flex items-center justify-center py-20">
       <div class="text-center space-y-3">
         <div class="w-10 h-10 mx-auto rounded-full border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold);"></div>
-        <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Loading dashboard…</p>
+        <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Memuat beranda…</p>
       </div>
     </div>
 
@@ -33,11 +33,11 @@
         <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style="background: #FEF2F2;">
           <Icon name="heroicons:exclamation-triangle" class="w-8 h-8" style="color: #DC2626;" />
         </div>
-        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Failed to load dashboard</h3>
+        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Gagal memuat beranda</h3>
         <p class="text-sm" style="color: var(--wp-text-secondary);">{{ pageError }}</p>
         <button @click="loadAll" class="px-6 py-2.5 text-white text-xs font-bold rounded-xl shadow-sm transition"
           style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          Retry
+          Coba Lagi
         </button>
       </div>
     </div>
@@ -63,7 +63,7 @@
             :style="{ color: card.change >= 0 ? 'var(--wp-success)' : 'var(--wp-error)' }">
             <Icon :name="card.change >= 0 ? 'heroicons:arrow-trending-up' : 'heroicons:arrow-trending-down'" class="w-3.5 h-3.5" />
             {{ card.change >= 0 ? '+' : '' }}{{ card.change }}%
-            <span class="font-medium ml-0.5" style="color: var(--wp-text-secondary);">vs prev</span>
+            <span class="font-medium ml-0.5" style="color: var(--wp-text-secondary);">vs sblm</span>
           </p>
         </div>
       </div>
@@ -72,26 +72,26 @@
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <!-- Sales Trend Chart -->
         <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Sales Trends</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Revenue overview</p>
+          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Tren Penjualan</h2>
+          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Ringkasan pendapatan</p>
           <VChart v-if="trendOption" :option="trendOption" autoresize class="h-56" />
           <div v-else class="h-56 flex items-center justify-center" style="color: var(--wp-text-secondary);">
-            <p class="text-xs">No sales data for this period yet.</p>
+            <p class="text-xs">Belum ada data penjualan untuk periode ini.</p>
           </div>
         </div>
 
         <!-- Inventory Overview -->
         <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md flex flex-col" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Inventory Overview</h2>
-          <p class="text-xs mb-2" style="color: var(--wp-text-secondary);">By category</p>
+          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Ringkasan Stok</h2>
+          <p class="text-xs mb-2" style="color: var(--wp-text-secondary);">Berdasarkan kategori</p>
           <div v-if="categoryDonutOption" class="flex-1">
             <VChart :option="categoryDonutOption" autoresize class="h-44" />
           </div>
           <div v-else class="flex-1 flex items-center justify-center" style="color: var(--wp-text-secondary);">
-            <p class="text-xs">No products in inventory yet.</p>
+            <p class="text-xs">Belum ada produk di inventaris.</p>
           </div>
           <NuxtLink to="/inventory" class="text-[10px] font-bold flex items-center gap-1 mt-2 transition hover:underline" style="color: var(--wp-gold);">
-            Manage Inventory <span>→</span>
+            Kelola Stok <span>→</span>
           </NuxtLink>
         </div>
       </div>
@@ -100,19 +100,19 @@
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <!-- Quick Actions -->
         <div class="space-y-4">
-          <h3 class="text-base font-bold" style="color: var(--wp-text);">Quick Actions</h3>
+          <h3 class="text-base font-bold" style="color: var(--wp-text);">Aksi Cepat</h3>
           <NuxtLink to="/agents" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
             <div class="flex items-start gap-4">
               <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
                 <Icon name="heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
               </div>
               <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">AI Agents</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Chat with AI specialists — finance, stock, marketing & research.</p>
+                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Asisten AI</h4>
+                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Chat dengan asisten AI — keuangan, stok, pemasaran & riset.</p>
               </div>
             </div>
             <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">START →</span>
+              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">MULAI →</span>
             </div>
           </NuxtLink>
           <NuxtLink to="/tambah-skill" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
@@ -122,11 +122,11 @@
               </div>
               <div>
                 <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Tambah Skill</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Add new operational capabilities to existing staff.</p>
+                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Tambahkan kemampuan operasional baru ke staf Anda.</p>
               </div>
             </div>
             <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">MANAGE →</span>
+              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">KELOLA →</span>
             </div>
           </NuxtLink>
           <NuxtLink to="/sales-report" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
@@ -135,12 +135,12 @@
                 <Icon name="heroicons:chart-bar" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
               </div>
               <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Sales Report</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">View detailed analytics, trends & export reports.</p>
+                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Laporan Penjualan</h4>
+                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Lihat analitik detail, tren & ekspor laporan.</p>
               </div>
             </div>
             <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">ANALYZE →</span>
+              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">ANALISA →</span>
             </div>
           </NuxtLink>
         </div>
@@ -149,19 +149,19 @@
         <div class="xl:col-span-2 bg-white rounded-2xl border p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
           <div class="flex items-center justify-between pb-4 border-b" style="border-color: var(--wp-border);">
             <div>
-              <h2 class="text-base font-bold" style="color: var(--wp-text);">Inventory Management</h2>
-              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ stocks.length }} products tracked</p>
+              <h2 class="text-base font-bold" style="color: var(--wp-text);">Manajemen Stok</h2>
+              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ stocks.length }} produk dilacak</p>
             </div>
             <NuxtLink to="/inventory" class="text-xs font-bold flex items-center gap-1 transition hover:underline" style="color: var(--wp-gold);">
-              View All <span class="text-[10px]">→</span>
+              Lihat Semua <span class="text-[10px]">→</span>
             </NuxtLink>
           </div>
 
           <!-- Empty inventory -->
           <div v-if="stocks.length === 0" class="py-12 text-center">
             <Icon name="heroicons:archive-box" class="w-10 h-10 mx-auto mb-3" style="color: var(--wp-border);" />
-            <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">No products in inventory</p>
-            <NuxtLink to="/inventory" class="inline-block mt-3 text-xs font-bold" style="color: var(--wp-gold);">Add your first product →</NuxtLink>
+            <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Tidak ada produk di inventaris</p>
+            <NuxtLink to="/inventory" class="inline-block mt-3 text-xs font-bold" style="color: var(--wp-gold);">Tambahkan produk pertama anda →</NuxtLink>
           </div>
 
           <!-- Table -->
@@ -169,11 +169,11 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-                  <th class="py-4 pr-4">Product Name</th>
-                  <th class="py-4 pr-4">Category</th>
-                  <th class="py-4 pr-4">Stock Level</th>
+                  <th class="py-4 pr-4">Nama Produk</th>
+                  <th class="py-4 pr-4">Kategori</th>
+                  <th class="py-4 pr-4">Level Stok</th>
                   <th class="py-4 pr-4 text-center">Status</th>
-                  <th class="py-4 text-right">Price</th>
+                  <th class="py-4 text-right">Harga</th>
                 </tr>
               </thead>
               <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
@@ -252,10 +252,10 @@ const pageLoading = computed(() => analyticsLoading.value || stocksLoading.value
 const pageError = computed(() => analyticsError.value || stocksError.value)
 
 const periods = [
-  { label: 'Today', value: 'today' as const },
-  { label: 'This Week', value: 'week' as const },
-  { label: 'Month', value: 'month' as const },
-  { label: 'Year', value: 'year' as const },
+  { label: 'Hari Ini', value: 'today' as const },
+  { label: 'Minggu Ini', value: 'week' as const },
+  { label: 'Bulan Ini', value: 'month' as const },
+  { label: 'Tahun Ini', value: 'year' as const },
 ]
 
 // ── Fetch stocks ──
@@ -282,28 +282,28 @@ const kpiCards = computed(() => {
   const activeProducts = stocks.value.filter(s => s.is_active).length
   return [
     {
-      label: 'Total Revenue',
+      label: 'Total Pendapatan',
       value: k ? formatRupiah(k.total_revenue) : '—',
       change: k?.revenue_change_pct ?? 0,
       icon: 'heroicons:banknotes',
       accent: 'linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light))',
     },
     {
-      label: 'Gross Profit',
+      label: 'Laba Kotor',
       value: k ? formatRupiah(k.total_profit) : '—',
       change: k?.profit_change_pct ?? 0,
       icon: 'heroicons:arrow-trending-up',
       accent: 'linear-gradient(90deg, var(--wp-success), #34D399)',
     },
     {
-      label: 'Transactions',
+      label: 'Transaksi',
       value: k ? k.total_transactions.toLocaleString('id-ID') : '0',
       change: k?.transactions_change_pct ?? 0,
       icon: 'heroicons:document-text',
       accent: 'linear-gradient(90deg, var(--wp-navy), #3B5998)',
     },
     {
-      label: 'Active Products',
+      label: 'Produk Aktif',
       value: `${activeProducts}`,
       change: 0,
       icon: 'heroicons:archive-box',
@@ -328,7 +328,7 @@ const trendOption = computed(() => {
       formatter: (params: any) => {
         const p = params[0]
         const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
-        return `<b style="color:#0F1A2E">${p.axisValue}</b><br/><span style="color:#64748B">Revenue:</span> <b>${val}</b>`
+        return `<b style="color:#0F1A2E">${p.axisValue}</b><br/><span style="color:#64748B">Pendapatan:</span> <b>${val}</b>`
       },
     },
     grid: { left: 0, right: 8, top: 8, bottom: 20 },
@@ -369,7 +369,7 @@ const categoryDonutOption = computed(() => {
   // Aggregate stock count by category
   const catMap: Record<string, number> = {}
   for (const s of active) {
-    const cat = s.category || 'Uncategorized'
+    const cat = s.category || 'Tanpa Kategori'
     catMap[cat] = (catMap[cat] || 0) + s.stock_quantity
   }
   const entries = Object.entries(catMap)
@@ -380,7 +380,7 @@ const categoryDonutOption = computed(() => {
   const top4 = entries.slice(0, 4)
   const other = entries.slice(4).reduce((s, e) => s + e.value, 0)
   const data = top4.map((e, i) => ({ value: e.value, name: e.name, itemStyle: { color: catPalette[i] } }))
-  if (other > 0) data.push({ value: other, name: 'Other', itemStyle: { color: '#CBD5E1' } })
+  if (other > 0) data.push({ value: other, name: 'Lainnya', itemStyle: { color: '#CBD5E1' } })
 
   return {
     tooltip: {
@@ -423,9 +423,9 @@ const stockPercentage = (item: StockItem) => {
 }
 
 const stockStatus = (item: StockItem) => {
-  if (item.stock_quantity === 0) return { label: 'Out of Stock', color: '#DC2626' }
-  if (item.stock_quantity <= item.min_stock) return { label: 'Low Stock', color: '#D97706' }
-  return { label: 'In Stock', color: '#059669' }
+  if (item.stock_quantity === 0) return { label: 'Stok Habis', color: '#DC2626' }
+  if (item.stock_quantity <= item.min_stock) return { label: 'Stok Menipis', color: '#D97706' }
+  return { label: 'Tersedia', color: '#059669' }
 }
 
 const stockBarColor = (item: StockItem) => {

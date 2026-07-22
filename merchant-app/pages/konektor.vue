@@ -27,7 +27,7 @@
           <div class="flex items-center justify-center w-full h-full">
             <div class="text-center space-y-3">
               <div class="w-10 h-10 mx-auto border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold); border-radius: 0px;"></div>
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Loading flow map…</p>
+              <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Memuat peta alur…</p>
             </div>
           </div>
         </template>

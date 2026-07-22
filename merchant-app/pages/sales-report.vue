@@ -3,9 +3,9 @@
     <!-- ═══════════ HEADER + PERIOD TOGGLE ═══════════ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Sales Analytics</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Analisis Penjualan</h1>
         <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">
-          Detailed sales performance with revenue, profit & trend analysis.
+          Performa penjualan detail dengan analisis pendapatan, profit & tren.
         </p>
       </div>
       <div class="inline-flex p-1 rounded-xl border" style="background: var(--wp-bg); border-color: var(--wp-border);">
@@ -25,7 +25,7 @@
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center space-y-3">
         <div class="w-10 h-10 mx-auto rounded-full border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold);"></div>
-        <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Loading analytics data…</p>
+        <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Memuat data analisis…</p>
       </div>
     </div>
 
@@ -35,11 +35,11 @@
         <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style="background: #FEF2F2;">
           <Icon name="heroicons:exclamation-triangle" class="w-8 h-8" style="color: #DC2626;" />
         </div>
-        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Failed to load data</h3>
+        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Gagal memuat data</h3>
         <p class="text-sm" style="color: var(--wp-text-secondary);">{{ error }}</p>
         <button @click="fetchAnalytics()" class="px-6 py-2.5 text-white text-xs font-bold rounded-xl shadow-sm transition"
           style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          Retry
+          Coba Lagi
         </button>
       </div>
     </div>
@@ -50,9 +50,9 @@
         <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style="background: rgba(212,168,67,0.08);">
           <Icon name="heroicons:chart-bar" class="w-8 h-8" style="color: var(--wp-gold);" />
         </div>
-        <h3 class="text-lg font-bold" style="color: var(--wp-text);">No sales data yet</h3>
+        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Belum ada data penjualan</h3>
         <p class="text-sm" style="color: var(--wp-text-secondary);">
-          Start recording transactions to see your sales analytics dashboard come to life.
+          Mulai catat transaksi untuk melihat dashboard analisis penjualan Anda.
         </p>
       </div>
     </div>
@@ -77,7 +77,7 @@
             :style="{ color: card.change >= 0 ? 'var(--wp-success)' : 'var(--wp-error)' }">
             <Icon :name="card.change >= 0 ? 'heroicons:arrow-trending-up' : 'heroicons:arrow-trending-down'" class="w-3.5 h-3.5" />
             {{ card.change >= 0 ? '+' : '' }}{{ card.change }}%
-            <span class="font-medium ml-0.5" style="color: var(--wp-text-secondary);">vs prev</span>
+            <span class="font-medium ml-0.5" style="color: var(--wp-text-secondary);">vs sblm</span>
           </p>
         </div>
       </div>
@@ -87,24 +87,24 @@
         <!-- Revenue & Profit Trend -->
         <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
           <div class="flex items-center justify-between mb-1">
-            <h2 class="text-base font-bold" style="color: var(--wp-text);">Revenue & Profit Trend</h2>
+            <h2 class="text-base font-bold" style="color: var(--wp-text);">Tren Pendapatan & Profit</h2>
             <div class="flex items-center gap-4 text-[10px] font-bold tracking-wider" style="color: var(--wp-text-secondary);">
               <span class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full" style="background: var(--wp-gold);"></span>Revenue
+                <span class="w-2.5 h-2.5 rounded-full" style="background: var(--wp-gold);"></span>Pendapatan
               </span>
               <span class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full" style="background: var(--wp-success);"></span>Profit
               </span>
             </div>
           </div>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Daily breakdown with zoom control</p>
+          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Rincian harian dengan kontrol zoom</p>
           <VChart :option="trendOption" autoresize class="h-72" />
         </div>
 
         <!-- Sales by Category -->
         <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Sales by Category</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Revenue distribution across product types</p>
+          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Penjualan per Kategori</h2>
+          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Distribusi pendapatan di berbagai jenis produk</p>
           <VChart :option="categoryOption" autoresize class="h-64" />
         </div>
       </div>
@@ -113,15 +113,15 @@
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <!-- Payment Method Distribution -->
         <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Payment Methods</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Transaction count & total per method</p>
+          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Metode Pembayaran</h2>
+          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Jumlah transaksi & total per metode</p>
           <VChart :option="paymentOption" autoresize class="h-64" />
         </div>
 
         <!-- Top Selling Products -->
         <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Top Selling Products</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Ranked by revenue contribution</p>
+          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Produk Terlaris</h2>
+          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Berdasarkan kontribusi pendapatan</p>
           <VChart :option="topProductsOption" autoresize class="h-64" />
         </div>
       </div>
@@ -129,21 +129,21 @@
       <!-- ── Row 3: Recent Transactions Table ── -->
       <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-bold" style="color: var(--wp-text);">Recent Transactions</h2>
+          <h2 class="text-base font-bold" style="color: var(--wp-text);">Transaksi Terbaru</h2>
           <span class="text-[10px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(5,150,105,0.1); color: var(--wp-success);">
-            {{ data.recent_sales.length }} records
+            {{ data.recent_sales.length }} data
           </span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-                <th class="py-3 pr-4">Invoice</th>
-                <th class="py-3 pr-4">Customer</th>
+                <th class="py-3 pr-4">Faktur</th>
+                <th class="py-3 pr-4">Pelanggan</th>
                 <th class="py-3 pr-4 text-right">Total</th>
-                <th class="py-3 pr-4">Payment</th>
+                <th class="py-3 pr-4">Pembayaran</th>
                 <th class="py-3 pr-4 text-center">Status</th>
-                <th class="py-3 text-right">Date</th>
+                <th class="py-3 text-right">Tanggal</th>
               </tr>
             </thead>
             <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
@@ -205,10 +205,10 @@ const {
 } = useAnalytics()
 
 const periods = [
-  { label: 'Today', value: 'today' as const },
-  { label: 'This Week', value: 'week' as const },
-  { label: 'Month', value: 'month' as const },
-  { label: 'Year', value: 'year' as const },
+  { label: 'Hari Ini', value: 'today' as const },
+  { label: 'Minggu Ini', value: 'week' as const },
+  { label: 'Bulan Ini', value: 'month' as const },
+  { label: 'Tahun Ini', value: 'year' as const },
 ]
 
 // ── KPI Cards ──
@@ -217,28 +217,28 @@ const kpiCards = computed(() => {
   const k = data.value.kpi
   return [
     {
-      label: 'Total Revenue',
+      label: 'Total Pendapatan',
       value: formatRupiah(k.total_revenue),
       change: k.revenue_change_pct,
       icon: 'heroicons:banknotes',
       accent: 'linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light))',
     },
     {
-      label: 'Gross Profit',
+      label: 'Laba Kotor',
       value: formatRupiah(k.total_profit),
       change: k.profit_change_pct,
       icon: 'heroicons:arrow-trending-up',
       accent: 'linear-gradient(90deg, var(--wp-success), #34D399)',
     },
     {
-      label: 'Transactions',
+      label: 'Transaksi',
       value: k.total_transactions.toLocaleString('id-ID'),
       change: k.transactions_change_pct,
       icon: 'heroicons:document-text',
       accent: 'linear-gradient(90deg, var(--wp-navy), #3B5998)',
     },
     {
-      label: 'Avg Order Value',
+      label: 'Rata-rata Pesanan',
       value: formatRupiah(k.avg_order_value),
       change: k.aov_change_pct,
       icon: 'heroicons:shopping-cart',
@@ -276,9 +276,10 @@ const trendOption = computed(() => {
         let html = `<div style="font-weight:700;margin-bottom:4px;color:#0F1A2E">${d.axisValue}</div>`
         params.forEach((p: any) => {
           const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
+          let label = p.seriesName === 'Revenue' ? 'Pendapatan' : 'Profit'
           html += `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
-            <span style="color:#64748B">${p.seriesName}:</span>
+            <span style="color:#64748B">${label}:</span>
             <span style="font-weight:700;color:#1E293B">${val}</span>
           </div>`
         })
@@ -362,8 +363,8 @@ const categoryOption = computed(() => {
       formatter: (p: any) => {
         const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
         return `<div style="font-weight:700;color:#0F1A2E">${p.name}</div>
-          <div style="margin-top:2px"><span style="color:#64748B">Revenue:</span> <b>${val}</b></div>
-          <div style="color:#64748B">Share: <b>${p.percent}%</b></div>`
+          <div style="margin-top:2px"><span style="color:#64748B">Pendapatan:</span> <b>${val}</b></div>
+          <div style="color:#64748B">Porsi: <b>${p.percent}%</b></div>`
       },
     },
     legend: {
@@ -381,7 +382,7 @@ const categoryOption = computed(() => {
     },
     series: [
       {
-        name: 'Category',
+        name: 'Kategori',
         type: 'pie',
         radius: ['55%', '82%'],
         center: ['62%', '50%'],
@@ -425,7 +426,7 @@ const paymentOption = computed(() => {
         const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
         return `<div style="font-weight:700;color:#0F1A2E">${p.name}</div>
           <div style="margin-top:2px;color:#64748B">Total: <b style="color:#1E293B">${val}</b></div>
-          <div style="color:#64748B">Transactions: <b style="color:#1E293B">${pmts[p.dataIndex]?.count || 0}</b></div>`
+          <div style="color:#64748B">Transaksi: <b style="color:#1E293B">${pmts[p.dataIndex]?.count || 0}</b></div>`
       },
     },
     grid: { left: 12, right: 24, top: 8, bottom: 24 },
@@ -486,8 +487,8 @@ const topProductsOption = computed(() => {
         const rev = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.revenue)
         const prof = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.profit)
         return `<div style="font-weight:700;color:#0F1A2E;margin-bottom:4px">${p.product_name}</div>
-          <div style="color:#64748B;font-size:10px">${p.category} · Sold: <b>${p.quantity_sold}</b></div>
-          <div style="margin-top:4px;color:#64748B">Revenue: <b style="color:#1E293B">${rev}</b></div>
+          <div style="color:#64748B;font-size:10px">${p.category} · Terjual: <b>${p.quantity_sold}</b></div>
+          <div style="margin-top:4px;color:#64748B">Pendapatan: <b style="color:#1E293B">${rev}</b></div>
           <div style="color:#64748B">Profit: <b style="color:#059669">${prof}</b></div>`
       },
     },

@@ -127,7 +127,7 @@ const handleLogin = async () => {
         >
           <span v-if="loading" class="spinner" aria-hidden="true"></span>
           <Icon v-else name="heroicons:arrow-right-on-rectangle" class="icon-submit" aria-hidden="true" />
-          <span>{{ loading ? 'Memverifikasi...' : 'Masuk ke Dashboard' }}</span>
+          <span>{{ loading ? 'Memverifikasi...' : 'Masuk ke Beranda' }}</span>
         </button>
       </form>
 

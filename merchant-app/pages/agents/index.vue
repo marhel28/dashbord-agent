@@ -3,9 +3,9 @@
     <!-- ═══════════ HEADER ═══════════ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">AI Agents</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Agen AI</h1>
         <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">
-          {{ agents.length }} specialist agents — each with their own memory of your business.
+          {{ agents.length }} agen spesialis — masing-masing memiliki ingatan tentang bisnis Anda.
         </p>
       </div>
       <NuxtLink
@@ -14,7 +14,7 @@
         style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));"
       >
         <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4" />
-        <span>Open Chat</span>
+        <span>Buka Obrolan</span>
       </NuxtLink>
     </div>
 
@@ -41,7 +41,7 @@
 
         <!-- Capabilities -->
         <div class="space-y-1.5 mb-4">
-          <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Capabilities</p>
+          <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Kemampuan</p>
           <div class="flex flex-wrap gap-1.5">
             <span
               v-for="cap in agent.capabilities" :key="cap"
@@ -54,16 +54,16 @@
         <!-- Memory -->
         <div class="mb-5 flex-1">
           <div class="flex items-center justify-between mb-2">
-            <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Memory</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Memori</p>
             <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
               :style="{ background: agent.bg, color: agent.color }"
-            >{{ agent.memory_count ?? '…' }} entries</span>
+            >{{ agent.memory_count ?? '…' }} entri</span>
           </div>
 
           <!-- Loading -->
           <div v-if="agent._loadingMemories" class="flex items-center gap-1.5 py-2">
             <div class="w-3 h-3 rounded-full border-2 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold);"></div>
-            <span class="text-[9px]" style="color: var(--wp-text-secondary);">Loading…</span>
+            <span class="text-[9px]" style="color: var(--wp-text-secondary);">Memuat…</span>
           </div>
 
           <!-- Memory snippets with importance badges -->
@@ -81,7 +81,7 @@
               <button
                 @click.stop="deleteMemory(agent, m)"
                 class="absolute top-1 right-1 p-1 rounded opacity-0 group-hover/mem:opacity-100 transition hover:bg-red-50"
-                title="Delete memory"
+                title="Hapus memori"
               >
                 <Icon name="heroicons:trash" class="w-3 h-3" style="color: #DC2626;" />
               </button>
@@ -90,7 +90,7 @@
 
           <!-- No memories -->
           <div v-else-if="agent._memories && agent._memories.length === 0" class="py-2">
-            <p class="text-[9px] italic" style="color: var(--wp-text-secondary);">No memories yet — start chatting!</p>
+            <p class="text-[9px] italic" style="color: var(--wp-text-secondary);">Belum ada memori — mulai obrolan!</p>
           </div>
 
           <div class="flex items-center gap-2 mt-1.5">
@@ -99,7 +99,7 @@
               class="text-[9px] font-bold transition hover:underline"
               :style="{ color: agent.color }"
             >
-              {{ agent._memories ? 'Refresh' : 'Show memories' }}
+              {{ agent._memories ? 'Segarkan' : 'Tampilkan memori' }}
             </button>
             <button
               v-if="agent._memories && agent._memories.length > 0"
@@ -107,7 +107,7 @@
               class="text-[9px] font-bold transition hover:underline"
               :style="{ color: agent.color }"
             >
-              View all
+              Lihat semua
             </button>
           </div>
         </div>
@@ -118,14 +118,14 @@
           class="w-full py-2.5 text-xs font-bold rounded-xl text-center transition border block"
           :style="{ borderColor: agent.color, color: agent.color }"
         >
-          Chat with {{ agent.name.split(' ')[0] }}
+          Chat dengan {{ agent.name.split(' ')[0] }}
         </NuxtLink>
       </div>
     </div>
 
     <!-- ═══════════ HOW IT WORKS ═══════════ -->
     <div class="bg-white border rounded-2xl p-6 shadow-sm" style="border-color: var(--wp-border);">
-      <h2 class="text-base font-bold mb-4" style="color: var(--wp-text);">How It Works</h2>
+      <h2 class="text-base font-bold mb-4" style="color: var(--wp-text);">Cara Kerja</h2>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div v-for="(step, i) in steps" :key="i" class="flex gap-3">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5" style="background: var(--wp-navy); color: var(--wp-gold);">{{ i + 1 }}</div>
@@ -149,8 +149,8 @@
           <!-- Modal header -->
           <div class="flex items-center justify-between px-6 py-4 border-b rounded-t-2xl" style="border-color: var(--wp-border);">
             <div>
-              <h2 class="text-base font-extrabold" style="color: var(--wp-navy);">{{ modalAgent.name }} — Memories</h2>
-              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ modalAgent.memory_count ?? 0 }} total entries</p>
+              <h2 class="text-base font-extrabold" style="color: var(--wp-navy);">{{ modalAgent.name }} — Memori</h2>
+              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ modalAgent.memory_count ?? 0 }} total entri</p>
             </div>
             <button @click="modalAgent = null" class="p-2 rounded-xl transition hover:bg-slate-100">
               <Icon name="heroicons:x-mark" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
@@ -162,20 +162,20 @@
             <input
               v-model="memoryFilter"
               type="text"
-              placeholder="Filter memories…"
+              placeholder="Filter memori…"
               class="flex-1 px-3 py-2 rounded-lg text-xs outline-none border"
               style="background: white; border-color: var(--wp-border); color: var(--wp-text);"
             />
             <select v-model="memorySort" class="px-3 py-2 rounded-lg text-xs border outline-none" style="background: white; border-color: var(--wp-border); color: var(--wp-text);">
-              <option value="created_at">Newest</option>
-              <option value="importance">Highest importance</option>
-              <option value="access_count">Most accessed</option>
+              <option value="created_at">Terbaru</option>
+              <option value="importance">Kepentingan tertinggi</option>
+              <option value="access_count">Paling sering diakses</option>
             </select>
             <button
               @click="refreshModalMemories()"
               class="px-3 py-2 text-xs font-bold rounded-lg border transition hover:bg-slate-100"
               style="border-color: var(--wp-border); color: var(--wp-text-secondary);"
-            >Refresh</button>
+            >Segarkan</button>
           </div>
 
           <!-- Memory list -->
@@ -192,19 +192,19 @@
                     ⭐ {{ m.importance }}/5
                   </span>
                   <span class="text-[8px]" style="color: var(--wp-text-secondary);">{{ relativeTime(m.created_at) }}</span>
-                  <span v-if="m.access_count > 0" class="text-[8px]" style="color: var(--wp-text-secondary);">· read {{ m.access_count }}×</span>
+                  <span v-if="m.access_count > 0" class="text-[8px]" style="color: var(--wp-text-secondary);">· dibaca {{ m.access_count }}×</span>
                   <span v-if="m.evaluation_quality" class="text-[8px] px-1.5 py-0.5 rounded-full font-bold"
                     :style="m.evaluation_quality === 'baik' ? { background: '#F0FDF4', color: '#059669' } : m.evaluation_quality === 'kurang' ? { background: '#FEF2F2', color: '#DC2626' } : { background: '#F1F5F9', color: '#64748B' }"
                   >{{ m.evaluation_quality }}</span>
                   <span v-if="m.consolidated_from > 0" class="text-[7px] px-1.5 py-0.5 rounded-full font-bold" style="background: rgba(139,92,246,0.08); color: #8B5CF6;">
-                    💡 consolidated {{ m.consolidated_from }}×
+                    💡 dikonsolidasi {{ m.consolidated_from }}×
                   </span>
                 </div>
                 <button
                   @click="deleteMemoryFromModal(m)"
                   class="opacity-0 group-hover/mem:opacity-100 transition px-2 py-1 rounded-lg text-[8px] font-bold hover:bg-red-50"
                   style="color: #DC2626;"
-                >Delete</button>
+                >Hapus</button>
               </div>
 
               <!-- Tags -->
@@ -217,7 +217,7 @@
             </div>
 
             <div v-if="filteredModalMemories.length === 0" class="text-center py-8">
-              <p class="text-xs" style="color: var(--wp-text-secondary);">No memories match your filter.</p>
+              <p class="text-xs" style="color: var(--wp-text-secondary);">Tidak ada memori yang cocok dengan filter.</p>
             </div>
           </div>
         </div>
@@ -261,9 +261,9 @@ const fallbackAgents: AgentDef[] = [
 ]
 
 const steps = [
-  { title: 'You Ask', desc: 'Type a question in plain Indonesian — "berapa stok beras?" or "bagaimana omzet minggu ini?"' },
-  { title: 'AI Routes', desc: 'The orchestrator picks the best agent — Finance, Stock, Marketing, or Research — instantly.' },
-  { title: 'You Get Results', desc: 'Get answers with real data from your database, charts, and actionable insights.' },
+  { title: 'Anda Bertanya', desc: 'Ketik pertanyaan dalam bahasa Indonesia — "berapa stok beras?" atau "bagaimana omzet minggu ini?"' },
+  { title: 'Rute AI', desc: 'Orkestrator memilih agen terbaik — Finance, Stock, Marketing, atau Research — seketika.' },
+  { title: 'Anda Mendapat Hasil', desc: 'Dapatkan jawaban dengan data nyata dari database, grafik, dan insight Anda.' },
 ]
 
 // ── Helpers ──
@@ -354,7 +354,7 @@ const filteredModalMemories = computed(() => {
 
 // ── Delete ──
 const deleteMemory = async (agent: AgentDef, memory: MemoryEntry) => {
-  if (!confirm(`Delete this memory?`)) return
+  if (!confirm(`Hapus memori ini?`)) return
   try {
     await api.delete(`/agentic/agents/${agent.id}/memory/${memory.id}`)
     if (agent._memories) {

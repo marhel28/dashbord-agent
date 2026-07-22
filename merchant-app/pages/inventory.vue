@@ -3,9 +3,9 @@
     <!-- ═══════════ HEADER ═══════════ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up border-b pb-4" style="border-color: var(--wp-navy);">
       <div>
-        <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Inventory Management</h1>
+        <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Manajemen Stok</h1>
         <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
-          Total: {{ stocks.length }} active products · Track stock levels, prices & categories.
+          Total: {{ stocks.length }} produk aktif · Lacak level stok, harga & kategori.
         </p>
       </div>
       <div class="flex items-center gap-3">
@@ -15,7 +15,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search products…"
+            placeholder="Cari produk…"
             class="w-64 pl-9 pr-4 py-2 text-xs transition border outline-none font-medium"
             style="background: #FFFFFF; border-color: var(--wp-navy); color: var(--wp-text); border-radius: 0px;"
             @input="onSearchInput"
@@ -37,7 +37,7 @@
             >
               <div class="min-w-0 flex-1">
                 <p class="text-xs font-bold truncate" style="color: var(--wp-text);">{{ s.product_name }}</p>
-                <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ s.category || 'Uncategorized' }} · {{ s.stock_quantity }} in stock</p>
+                <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ s.category || 'Tanpa Kategori' }} · {{ s.stock_quantity }} tersedia</p>
               </div>
               <span class="text-[10px] font-mono font-bold ml-3 shrink-0" style="color: var(--wp-navy);">{{ formatRupiah(s.price) }}</span>
             </button>
@@ -53,7 +53,7 @@
           style="background: var(--wp-navy); border-radius: 0px;"
         >
           <Icon name="heroicons:plus" class="w-4 h-4" />
-          <span>Add Product</span>
+          <span>Tambah Produk</span>
         </button>
       </div>
     </div>
@@ -62,7 +62,7 @@
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center space-y-3">
         <div class="w-10 h-10 mx-auto border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold); border-radius: 0px;"></div>
-        <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--wp-text-secondary);">Loading inventory…</p>
+        <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--wp-text-secondary);">Memuat stok…</p>
       </div>
     </div>
 
@@ -72,11 +72,11 @@
         <div class="w-12 h-12 mx-auto flex items-center justify-center" style="background: #FEF2F2;">
           <Icon name="heroicons:exclamation-triangle" class="w-6 h-6" style="color: #DC2626;" />
         </div>
-        <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--wp-text);">Failed to load inventory</h3>
+        <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--wp-text);">Gagal memuat stok</h3>
         <p class="text-xs font-medium" style="color: var(--wp-text-secondary);">{{ error }}</p>
         <button @click="fetchStocks" class="px-6 py-2.5 text-white text-xs font-bold uppercase tracking-wider transition"
           style="background: #DC2626; border-radius: 0px;">
-          Retry
+          Coba Lagi
         </button>
       </div>
     </div>
@@ -87,13 +87,13 @@
         <div class="w-16 h-16 mx-auto flex items-center justify-center" style="background: rgba(15,26,46,0.05);">
           <Icon name="heroicons:archive-box" class="w-8 h-8" style="color: var(--wp-navy);" />
         </div>
-        <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--wp-text);">No products yet</h3>
+        <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--wp-text);">Belum ada produk</h3>
         <p class="text-xs" style="color: var(--wp-text-secondary);">
-          Start building your inventory by adding your first product to the database.
+          Mulai bangun stok dengan menambahkan produk pertama Anda ke database.
         </p>
         <button @click="openCreateModal" class="px-6 py-2.5 text-white text-xs font-bold uppercase tracking-wider transition"
           style="background: var(--wp-navy); border-radius: 0px;">
-          Add Your First Product
+          Tambah Produk Pertama Anda
         </button>
       </div>
     </div>
@@ -111,7 +111,7 @@
     <div v-if="stocks.length > 0" class="bg-white border p-6 shadow-sm" style="border-color: var(--wp-border); border-radius: 0px;">
       <!-- Filters -->
       <div class="flex flex-wrap items-center gap-3 pb-4 border-b" style="border-color: var(--wp-border);">
-        <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Filter Category:</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Filter Kategori:</span>
         <button
           v-for="f in categoryFilters" :key="f.value"
           @click="activeCategoryFilter = f.value"
@@ -127,15 +127,15 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-              <th class="py-4 pr-3 w-14">Photo</th>
-              <th class="py-4 pr-4">Product</th>
+              <th class="py-4 pr-3 w-14">Foto</th>
+              <th class="py-4 pr-4">Produk</th>
               <th class="py-4 pr-4">SKU</th>
-              <th class="py-4 pr-4">Category</th>
-              <th class="py-4 pr-4 text-right">Stock</th>
-              <th class="py-4 pr-4 text-right">Price</th>
-              <th class="py-4 pr-4 text-right">Cost</th>
+              <th class="py-4 pr-4">Kategori</th>
+              <th class="py-4 pr-4 text-right">Stok</th>
+              <th class="py-4 pr-4 text-right">Harga</th>
+              <th class="py-4 pr-4 text-right">Modal</th>
               <th class="py-4 pr-4 text-center">Status</th>
-              <th class="py-4 text-right">Actions</th>
+              <th class="py-4 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
@@ -156,12 +156,12 @@
               </td>
               <td class="py-4 pr-4">
                 <p class="font-bold" style="color: var(--wp-text);">{{ item.product_name }}</p>
-                <p class="text-[10px] mt-0.5 truncate max-w-[180px]" style="color: var(--wp-text-secondary);">{{ item.description || 'No description' }}</p>
+                <p class="text-[10px] mt-0.5 truncate max-w-[180px]" style="color: var(--wp-text-secondary);">{{ item.description || 'Tidak ada deskripsi' }}</p>
               </td>
               <td class="py-4 pr-4 font-mono text-[11px]" style="color: var(--wp-text-secondary);">{{ item.sku || '—' }}</td>
               <td class="py-4 pr-4">
                 <span class="px-2 py-0.5 text-[9px] font-bold border uppercase tracking-wider" style="background: rgba(15,26,46,0.04); color: var(--wp-navy); border-color: var(--wp-border); border-radius: 0px;">
-                  {{ item.category || 'Uncategorized' }}
+                  {{ item.category || 'Tanpa Kategori' }}
                 </span>
               </td>
               <td class="py-4 pr-4 text-right">
@@ -203,7 +203,7 @@
       <!-- Footer -->
       <div class="pt-4 border-t mt-2 flex items-center justify-between" style="border-color: var(--wp-border);">
         <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-          Showing {{ filteredStocks.length }} of {{ stocks.length }} products
+          Menampilkan {{ filteredStocks.length }} dari {{ stocks.length }} produk
         </p>
       </div>
     </div>
@@ -221,10 +221,10 @@
           <div class="sticky top-0 bg-white flex items-center justify-between px-6 py-5 border-b z-10" style="border-color: var(--wp-border);">
             <div>
               <h2 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-navy);">
-                {{ isEditing ? 'Edit Product Details' : 'Create New Product' }}
+                {{ isEditing ? 'Edit Detail Produk' : 'Buat Produk Baru' }}
               </h2>
               <p class="text-[10px] font-medium mt-0.5" style="color: var(--wp-text-secondary);">
-                {{ isEditing ? 'Update stock levels, unit information and photo url.' : 'Input product specs to sync to catalog database.' }}
+                {{ isEditing ? 'Perbarui level stok, informasi unit dan url foto.' : 'Masukkan spesifikasi produk untuk disinkronkan ke database katalog.' }}
               </p>
             </div>
             <button @click="closeModal" class="p-2 border transition hover:bg-slate-100" style="border-color: var(--wp-border); border-radius: 0px;">
@@ -238,13 +238,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1.5">
                 <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-                  Product Name <span style="color: #DC2626;">*</span>
+                  Nama Produk <span style="color: #DC2626;">*</span>
                 </label>
                 <input
                   v-model="form.product_name"
                   type="text"
                   required
-                  placeholder="e.g. Indomie Goreng Spesial"
+                  placeholder="Cth: Indomie Goreng Spesial"
                   class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition border"
                   :class="formErrors.product_name ? 'border-red-300 bg-red-50/30' : ''"
                   style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
@@ -276,14 +276,14 @@
                 />
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Category</label>
+                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Kategori</label>
                 <div class="relative">
                   <select
                     v-model="form.category"
                     class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition border appearance-none"
                     style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
                   >
-                    <option value="">Select Category</option>
+                    <option value="">Pilih Kategori</option>
                     <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
                   </select>
                   <Icon name="heroicons:chevron-down" class="absolute right-3 top-3 w-4 h-4 pointer-events-none" style="color: var(--wp-text-secondary);" />
@@ -293,7 +293,7 @@
 
             <!-- Row 3: Photo Upload -->
             <div class="space-y-1.5">
-              <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Product Photo</label>
+              <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Foto Produk</label>
               <div class="flex items-start gap-4">
                 <!-- Preview -->
                 <div class="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden shrink-0 relative"
@@ -322,11 +322,11 @@
 
             <!-- Row 4: Description -->
             <div class="space-y-1.5">
-              <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Description</label>
+              <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Deskripsi</label>
               <textarea
                 v-model="form.description"
                 rows="2"
-                placeholder="Brief description of the product…"
+                placeholder="Deskripsi singkat mengenai produk…"
                 class="w-full px-4 py-2.5 text-sm outline-none transition border resize-none font-medium"
                 style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text); border-radius: 0px;"
               ></textarea>
@@ -336,7 +336,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1.5">
                 <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-                  Selling Price <span style="color: #DC2626;">*</span>
+                  Harga Jual <span style="color: #DC2626;">*</span>
                 </label>
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-xs font-semibold" style="color: var(--wp-text-secondary);">Rp</span>
@@ -375,7 +375,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="space-y-1.5">
                 <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-                  Stock Qty <span style="color: #DC2626;">*</span>
+                  Kuantitas Stok <span style="color: #DC2626;">*</span>
                 </label>
                 <input
                   v-model.number="form.stock_quantity"
@@ -390,7 +390,7 @@
                 <p v-if="formErrors.stock_quantity" class="text-[10px] font-medium" style="color: #DC2626;">{{ formErrors.stock_quantity }}</p>
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Min Stock Alert</label>
+                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Batas Stok Minimum</label>
                 <input
                   v-model.number="form.min_stock"
                   type="number"
@@ -401,7 +401,7 @@
                 />
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Unit</label>
+                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Satuan</label>
                 <select
                   v-model="form.unit"
                   class="w-full px-4 py-2.5 text-sm outline-none transition border appearance-none font-bold uppercase tracking-wider"
@@ -423,7 +423,7 @@
             <div class="flex justify-between items-center pt-5 border-t" style="border-color: var(--wp-border);">
               <label v-if="isEditing" class="flex items-center gap-2 cursor-pointer select-none">
                 <input v-model="form.is_active" type="checkbox" class="w-4 h-4 accent-[var(--wp-gold)]" style="border-radius: 0px;" />
-                <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Active Product</span>
+                <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Produk Aktif</span>
               </label>
               <div v-else></div>
               <div class="flex gap-3">
@@ -432,7 +432,7 @@
                   @click="closeModal"
                   class="px-6 py-2.5 border font-bold text-xs uppercase tracking-wider transition"
                   style="border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: 0px;"
-                >Cancel</button>
+                >Batal</button>
                 <button
                   type="submit"
                   :disabled="saving"
@@ -441,7 +441,7 @@
                 >
                   <Icon v-if="saving" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
                   <Icon v-else name="heroicons:check" class="w-4 h-4" />
-                  <span>{{ isEditing ? 'Update Product' : 'Save Product' }}</span>
+                  <span>{{ isEditing ? 'Perbarui Produk' : 'Simpan Produk' }}</span>
                 </button>
               </div>
             </div>
@@ -462,17 +462,17 @@
           <div class="w-12 h-12 mx-auto flex items-center justify-center mb-4" style="background: #FEF2F2;">
             <Icon name="heroicons:exclamation-triangle" class="w-6 h-6" style="color: #DC2626;" />
           </div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-text);">Delete Product?</h3>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-text);">Hapus Produk?</h3>
           <p class="text-xs mt-2" style="color: var(--wp-text-secondary);">
-            Are you sure you want to delete <strong style="color: var(--wp-text);">"{{ deleteTarget?.product_name }}"</strong>?
-            This action cannot be undone.
+            Apakah Anda yakin ingin menghapus <strong style="color: var(--wp-text);">"{{ deleteTarget?.product_name }}"</strong>?
+            Tindakan ini tidak dapat dibatalkan.
           </p>
           <div class="flex gap-3 mt-6">
             <button
               @click="showDeleteConfirm = false"
               class="flex-1 py-2 border font-bold text-xs uppercase tracking-wider transition"
               style="border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: 0px;"
-            >Cancel</button>
+            >Batal</button>
             <button
               @click="doDelete"
               :disabled="deleting"
@@ -480,7 +480,7 @@
               style="background: #DC2626; border-radius: 0px;"
             >
               <Icon v-if="deleting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <span>Delete</span>
+              <span>Hapus</span>
             </button>
           </div>
         </div>
@@ -577,9 +577,9 @@ const uploadError = ref<string>('')
 
 // ── Computed ──
 const categoryFilters = computed(() => {
-  const cats = new Set(stocks.value.map(s => s.category || 'Uncategorized'))
+  const cats = new Set(stocks.value.map(s => s.category || 'Tanpa Kategori'))
   return [
-    { label: 'All', value: 'all' },
+    { label: 'Semua', value: 'all' },
     ...[...cats].sort().map(c => ({ label: c, value: c })),
   ]
 })
@@ -587,7 +587,7 @@ const categoryFilters = computed(() => {
 const filteredStocks = computed(() => {
   let result = stocks.value
   if (activeCategoryFilter.value !== 'all') {
-    result = result.filter(s => (s.category || 'Uncategorized') === activeCategoryFilter.value)
+    result = result.filter(s => (s.category || 'Tanpa Kategori') === activeCategoryFilter.value)
   }
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase()
@@ -606,10 +606,10 @@ const summaryCards = computed(() => {
   const out = active.filter(s => s.stock_quantity === 0)
   const totalValue = active.reduce((sum, s) => sum + (s.price * s.stock_quantity), 0)
   return [
-    { label: 'Total Products', value: active.length, color: 'var(--wp-navy)' },
-    { label: 'Low Stock', value: low.length, color: '#D97706' },
-    { label: 'Out of Stock', value: out.length, color: '#DC2626' },
-    { label: 'Inventory Value', value: formatRupiah(totalValue), color: 'var(--wp-success)' },
+    { label: 'Total Produk', value: active.length, color: 'var(--wp-navy)' },
+    { label: 'Stok Menipis', value: low.length, color: '#D97706' },
+    { label: 'Stok Habis', value: out.length, color: '#DC2626' },
+    { label: 'Nilai Stok', value: formatRupiah(totalValue), color: 'var(--wp-success)' },
   ]
 })
 
@@ -628,10 +628,10 @@ const statusBadge = (item: StockItem) => {
 }
 
 const statusLabel = (item: StockItem) => {
-  if (!item.is_active) return 'Inactive'
-  if (item.stock_quantity === 0) return 'Out of Stock'
-  if (item.stock_quantity <= item.min_stock) return 'Low Stock'
-  return 'In Stock'
+  if (!item.is_active) return 'Tidak Aktif'
+  if (item.stock_quantity === 0) return 'Stok Habis'
+  if (item.stock_quantity <= item.min_stock) return 'Stok Menipis'
+  return 'Tersedia'
 }
 
 // ── API ──
@@ -642,7 +642,7 @@ const fetchStocks = async () => {
     const result = await api.get('/stocks/')
     stocks.value = (result || []) as StockItem[]
   } catch (err: any) {
-    error.value = err.message || 'Failed to fetch inventory'
+    error.value = err.message || 'Gagal memuat stok'
   } finally {
     loading.value = false
   }
@@ -727,9 +727,9 @@ const handleImageUpload = async (e: Event) => {
 
 const validateForm = (): boolean => {
   const errs: Record<string, string> = {}
-  if (!form.value.product_name.trim()) errs.product_name = 'Product name is required'
-  if (form.value.price === '' || Number(form.value.price) < 0) errs.price = 'Valid price is required'
-  if (form.value.stock_quantity === '' || Number(form.value.stock_quantity) < 0) errs.stock_quantity = 'Valid stock quantity is required'
+  if (!form.value.product_name.trim()) errs.product_name = 'Nama produk wajib diisi'
+  if (form.value.price === '' || Number(form.value.price) < 0) errs.price = 'Harga valid wajib diisi'
+  if (form.value.stock_quantity === '' || Number(form.value.stock_quantity) < 0) errs.stock_quantity = 'Kuantitas stok valid wajib diisi'
   formErrors.value = errs
   return Object.keys(errs).length === 0
 }
@@ -761,7 +761,7 @@ const saveProduct = async () => {
     closeModal()
     await fetchStocks()
   } catch (err: any) {
-    formErrors.value = { _form: err.message || 'Failed to save product' }
+    formErrors.value = { _form: err.message || 'Gagal menyimpan produk' }
   } finally {
     saving.value = false
   }

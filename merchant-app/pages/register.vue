@@ -323,11 +323,11 @@ const handleRegister = async () => {
             <div class="gps-inputs">
               <div class="field-input-wrap">
                 <input v-model.number="form.latitude" type="number" step="0.000001"
-                  placeholder="Latitude" class="field-input field-input--sm" aria-label="Latitude" />
+                  placeholder="Garis Lintang (Latitude)" class="field-input field-input--sm" aria-label="Garis Lintang" />
               </div>
               <div class="field-input-wrap">
                 <input v-model.number="form.longitude" type="number" step="0.000001"
-                  placeholder="Longitude" class="field-input field-input--sm" aria-label="Longitude" />
+                  placeholder="Garis Bujur (Longitude)" class="field-input field-input--sm" aria-label="Garis Bujur" />
               </div>
             </div>
           </div>

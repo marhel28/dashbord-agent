@@ -3,15 +3,15 @@
     <!-- ═══════════ SIDEBAR ═══════════ -->
     <div class="w-72 flex flex-col shrink-0 border-r" style="border-color: var(--wp-border);">
       <div class="p-4 flex items-center justify-between border-b" style="border-color: var(--wp-border);">
-        <h2 class="text-sm font-extrabold" style="color: var(--wp-text);">Agent Chat</h2>
-        <NuxtLink to="/agents" class="p-1.5 rounded-lg border transition hover:bg-slate-50" style="border-color: var(--wp-border); color: var(--wp-text-secondary);" title="Back to agents">
+        <h2 class="text-sm font-extrabold" style="color: var(--wp-text);">Chat Agen</h2>
+        <NuxtLink to="/agents" class="p-1.5 rounded-lg border transition hover:bg-slate-50" style="border-color: var(--wp-border); color: var(--wp-text-secondary);" title="Kembali ke daftar agen">
           <Icon name="heroicons:arrow-left" class="w-4 h-4" />
         </NuxtLink>
       </div>
 
       <!-- Agent selector -->
       <div class="p-3 border-b space-y-2" style="border-color: var(--wp-border); background: var(--wp-bg);">
-        <p class="text-[9px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Active agents</p>
+        <p class="text-[9px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Agen Aktif</p>
         <div class="flex flex-wrap gap-1.5">
           <button
             v-for="a in quickAgents" :key="a.id"
@@ -29,19 +29,19 @@
       <div class="flex-1 overflow-y-auto divide-y" style="border-color: #F8FAFC;">
         <div class="p-3 text-center">
           <p class="text-[10px] font-bold" style="color: var(--wp-text-secondary);">
-            {{ messages.length > 0 ? `${messages.length} messages` : 'New conversation' }}
+            {{ messages.length > 0 ? `${messages.length} pesan` : 'Percakapan baru' }}
           </p>
         </div>
         <div v-if="messages.length === 0" class="p-6 text-center">
           <Icon name="heroicons:sparkles" class="w-8 h-8 mx-auto mb-2" style="color: var(--wp-gold);" />
-          <p class="text-xs font-medium" style="color: var(--wp-text-secondary);">Start a conversation — the AI will route your question to the right agent.</p>
+          <p class="text-xs font-medium" style="color: var(--wp-text-secondary);">Mulai percakapan — AI akan merutekan pertanyaan Anda ke agen yang tepat.</p>
         </div>
       </div>
 
       <!-- Bottom actions -->
       <div class="p-3 border-t space-y-2" style="border-color: var(--wp-border);">
         <button @click="clearChat" class="w-full py-2 text-[10px] font-bold rounded-lg border transition hover:bg-slate-50" style="border-color: var(--wp-border); color: var(--wp-text-secondary);">
-          <Icon name="heroicons:trash" class="w-3.5 h-3.5 inline mr-1" /> Clear Chat
+          <Icon name="heroicons:trash" class="w-3.5 h-3.5 inline mr-1" /> Hapus Chat
         </button>
       </div>
     </div>
@@ -58,13 +58,13 @@
             <h3 class="text-xs font-extrabold" style="color: var(--wp-text);">AI Copilot</h3>
             <p class="text-[9px] font-semibold" style="color: var(--wp-success);">
               <span class="w-1.5 h-1.5 rounded-full inline-block mr-1" style="background: var(--wp-success);"></span>
-              {{ activeAgent === 'auto' ? 'Auto-routing' : quickAgents.find(a => a.id === activeAgent)?.label || 'Ready' }}
+              {{ activeAgent === 'auto' ? 'Auto-routing' : quickAgents.find(a => a.id === activeAgent)?.label || 'Siap' }}
             </p>
           </div>
         </div>
         <div class="flex items-center gap-3 text-[10px] font-bold" style="color: var(--wp-text-secondary);">
           <Icon name="heroicons:bolt" class="w-3.5 h-3.5" style="color: var(--wp-gold);" />
-          <span>{{ messages.length }} msgs</span>
+          <span>{{ messages.length }} pesan</span>
         </div>
       </div>
 
@@ -89,7 +89,7 @@
           <!-- Sender label -->
           <div class="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider px-1" style="color: var(--wp-text-secondary);">
             <template v-if="msg.role === 'user'">
-              <span>{{ msg.time }}</span><span>•</span><span>You</span>
+              <span>{{ msg.time }}</span><span>•</span><span>Anda</span>
             </template>
             <template v-else>
               <Icon name="heroicons:sparkles" class="w-3 h-3" style="color: var(--wp-gold);" />
@@ -115,7 +115,7 @@
         <!-- Typing indicator -->
         <div v-if="sending" class="flex items-center gap-2 pl-1 text-[10px] font-bold" style="color: var(--wp-text-secondary);">
           <Icon name="heroicons:sparkles" class="w-4 h-4 animate-pulse" style="color: var(--wp-gold);" />
-          <span>AI thinking…</span>
+          <span>AI berpikir…</span>
         </div>
       </div>
 
