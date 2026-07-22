@@ -226,12 +226,18 @@ const downloadPdf = async () => {
           const downloadUrl = `${baseURL}/finance/export-pdf/download/${taskId}`
           
           // Open the URL to trigger the browser download
-          window.open(downloadUrl, '_blank')
+          const a = document.createElement('a')
+          a.href = downloadUrl
+          a.target = '_blank'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
         }
-      } catch (e) {
+      } catch (e: any) {
         clearInterval(pollInterval)
         downloadingPdf.value = false
-        alert('Gagal mengecek status PDF.')
+        console.error("Polling error:", e)
+        alert('Gagal mengecek status PDF: ' + (e.message || e))
       }
     }, 2000)
     
