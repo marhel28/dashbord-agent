@@ -61,12 +61,12 @@
             <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
             <div v-else-if="!fastMoving.length" class="text-xs text-center text-slate-400 italic">Belum ada data penjualan.</div>
             <div v-else class="space-y-2">
-              <div v-for="(item, idx) in fastMoving" :key="idx" class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
-                <div class="flex flex-col">
-                  <span class="text-xs font-bold text-slate-700 truncate max-w-[150px]">{{ item.product_name }}</span>
+              <div v-for="(item, idx) in fastMoving" :key="idx" class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 gap-2 overflow-hidden">
+                <div class="flex flex-col min-w-0 flex-1">
+                  <span class="text-xs font-bold text-slate-700 truncate block">{{ item.product_name }}</span>
                   <span class="text-[10px] text-slate-400">Sisa Stok: {{ item.current_stock }}</span>
                 </div>
-                <div class="text-xs font-black text-green-600 bg-green-100/50 px-2 py-1 rounded">
+                <div class="text-xs font-black text-green-600 bg-green-100/50 px-2 py-1 rounded whitespace-nowrap flex-shrink-0">
                   {{ item.total_sold }} terjual
                 </div>
               </div>
@@ -100,11 +100,11 @@
             </div>
             <div v-else class="space-y-2">
               <div v-for="(ds, idx) in deadStock" :key="idx" class="flex items-center justify-between p-2 rounded-lg border border-rose-100 bg-white hover:bg-rose-50/30 transition-colors">
-                <div class="flex flex-col">
-                  <span class="text-xs font-bold text-slate-700 truncate max-w-[150px]" :title="ds.product_name">{{ ds.product_name }}</span>
-                  <span class="text-[10px] font-semibold text-rose-500 mt-0.5">Mangkrak: {{ ds.stock_quantity }} pcs</span>
+                <div class="flex flex-col min-w-0 flex-1">
+                  <span class="text-xs font-bold text-slate-700 truncate block">{{ ds.product_name }}</span>
+                  <span class="text-[10px] text-rose-500 font-medium">Mangkrak: {{ ds.stock_quantity }} pcs</span>
                 </div>
-                <div class="flex flex-col items-end">
+                <div class="flex flex-col items-end flex-shrink-0 ml-2">
                   <span class="text-[10px] text-slate-400">Modal Terkunci</span>
                   <span class="text-xs font-black text-rose-600">Rp {{ formatCurrencyCompact(ds.total_capital_stuck) }}</span>
                 </div>
