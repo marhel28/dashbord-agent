@@ -254,9 +254,20 @@
       </NuxtLink>
       <NuxtLink to="/konektor" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:share" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Alur</span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Profil</span>
       </NuxtLink>
     </nav>
+
+    <!-- ── Toast Notifications ── -->
+    <div class="fixed top-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
+      <div v-for="notif in notifications" :key="notif.id" class="bg-white border-l-4 shadow-lg rounded p-4 pr-10 relative pointer-events-auto min-w-[300px] animate-fade-in-up" :style="`border-color: var(--wp-border); border-left-color: ${notif.type === 'NEW_TRANSACTION' ? 'var(--wp-navy)' : '#10B981'};`">
+        <button @click="dismissNotification(notif.id)" class="absolute top-2 right-2 text-slate-400 hover:text-slate-600">
+          <Icon name="heroicons:x-mark" class="w-4 h-4" />
+        </button>
+        <h4 class="text-sm font-bold text-slate-800">{{ notif.title }}</h4>
+        <p class="text-xs text-slate-600 mt-1">{{ notif.message }}</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -350,11 +361,63 @@ onMounted(() => {
   checkAuth()
   if (!isAuthenticated.value) {
     navigateTo('/login')
+  } else {
+    connectWebSocket()
   }
 })
 
 const handleLogout = () => {
+  if (ws) {
+    ws.close()
+    ws = null
+  }
   doLogout()
+}
+
+// ── WebSocket & Notifications Logic ──
+const notifications = ref<Array<{id: string, title: string, message: string, type: string}>>([])
+let ws: WebSocket | null = null
+
+const dismissNotification = (id: string) => {
+  notifications.value = notifications.value.filter(n => n.id !== id)
+}
+
+const showNotification = (title: string, message: string, type: string = 'INFO') => {
+  const id = Math.random().toString(36).substring(7)
+  notifications.value.push({ id, title, message, type })
+  setTimeout(() => dismissNotification(id), 6000)
+}
+
+const connectWebSocket = () => {
+  const token = localStorage.getItem('access_token')
+  if (!token) return
+
+  // In production, you might want to use dynamic URL based on env
+  const wsUrl = `wss://cctv-api.desa-sidomukti.com/ws/notifications?token=${token}`
+  ws = new WebSocket(wsUrl)
+
+  ws.onopen = () => {
+    console.log('WebSocket connected')
+  }
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      if (data.title && data.message) {
+        showNotification(data.title, data.message, data.type)
+      }
+    } catch (e) {
+      console.error('WebSocket message parsing error:', e)
+    }
+  }
+
+  ws.onclose = () => {
+    console.log('WebSocket disconnected')
+    // Attempt reconnect after 5 seconds if still authenticated
+    if (isAuthenticated.value) {
+      setTimeout(connectWebSocket, 5000)
+    }
+  }
 }
 </script>
 
