@@ -101,7 +101,7 @@
         <!-- Quick Actions -->
         <div class="space-y-4">
           <h3 class="text-base font-bold" style="color: var(--wp-text);">Aksi Cepat</h3>
-          <NuxtLink to="/agents" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
+          <NuxtLink to="/chat" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
             <div class="flex items-start gap-4">
               <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
                 <Icon name="heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
