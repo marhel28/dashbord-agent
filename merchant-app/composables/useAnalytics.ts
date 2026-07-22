@@ -61,7 +61,9 @@ export interface AnalyticsData {
 }
 
 export const useAnalytics = () => {
-  const period = ref<'today' | 'week' | 'month' | 'year'>('month')
+  const period = ref<'today' | 'week' | 'month' | 'year' | 'custom'>('month')
+  const customStartDate = ref<string>('')
+  const customEndDate = ref<string>('')
   const data = ref<AnalyticsData | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -70,8 +72,14 @@ export const useAnalytics = () => {
     loading.value = true
     error.value = null
     try {
+      const params: any = { period: period.value }
+      if (period.value === 'custom') {
+        if (customStartDate.value) params.start_date = customStartDate.value
+        if (customEndDate.value) params.end_date = customEndDate.value
+      }
+      
       const result = await api.get('/stocks/analytics/summary', {
-        params: { period: period.value },
+        params,
       })
       data.value = result as AnalyticsData
     } catch (err: any) {
@@ -82,8 +90,12 @@ export const useAnalytics = () => {
     }
   }
 
-  const setPeriod = async (p: 'today' | 'week' | 'month' | 'year') => {
+  const setPeriod = async (p: 'today' | 'week' | 'month' | 'year' | 'custom', start?: string, end?: string) => {
     period.value = p
+    if (p === 'custom') {
+      if (start) customStartDate.value = start
+      if (end) customEndDate.value = end
+    }
     await fetchAnalytics()
   }
 
@@ -105,6 +117,8 @@ export const useAnalytics = () => {
 
   return {
     period,
+    customStartDate,
+    customEndDate,
     data,
     loading,
     error,

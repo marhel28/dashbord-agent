@@ -20,6 +20,14 @@
         >{{ p.label }}</button>
       </div>
     </div>
+    
+    <!-- Custom Date Range Picker -->
+    <div v-if="period === 'custom'" class="flex items-center gap-2 animate-fade-in-up">
+      <input type="date" v-model="localStartDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
+      <span class="text-xs text-slate-500">-</span>
+      <input type="date" v-model="localEndDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
+      <button @click="applyCustomDate" class="px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
+    </div>
 
     <!-- ═══════════ LOADING STATE ═══════════ -->
     <div v-if="loading" class="flex items-center justify-center py-20">
@@ -200,16 +208,24 @@ import { useAnalytics } from '~/composables/useAnalytics'
 use([CanvasRenderer, LineChart, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent, DataZoomComponent, TitleComponent])
 
 const {
-  period, data, loading, error,
+  period, data, loading, error, customStartDate, customEndDate,
   fetchAnalytics, setPeriod, formatRupiah, formatCompact, formatPct,
 } = useAnalytics()
+
+const localStartDate = ref('')
+const localEndDate = ref('')
 
 const periods = [
   { label: 'Hari Ini', value: 'today' as const },
   { label: 'Minggu Ini', value: 'week' as const },
   { label: 'Bulan Ini', value: 'month' as const },
   { label: 'Tahun Ini', value: 'year' as const },
+  { label: 'Kustom', value: 'custom' as const },
 ]
+
+const applyCustomDate = () => {
+  setPeriod('custom', localStartDate.value, localEndDate.value)
+}
 
 // ── KPI Cards ──
 const kpiCards = computed(() => {

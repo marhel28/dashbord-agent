@@ -5,13 +5,16 @@
       <div>
         <h1 class="text-xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Kecerdasan Bisnis</h1>
         <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
-          Insight operasional untuk 30 hari terakhir.
+          Insight operasional toko. Pilih rentang waktu analisis.
         </p>
       </div>
-      <!-- Placeholder for future AI button -->
-      <button class="px-3 py-1.5 text-[10px] font-bold rounded-lg border flex items-center gap-2 opacity-50 cursor-not-allowed bg-slate-50 text-slate-500" title="Akan Hadir">
-        <Icon name="heroicons:sparkles" class="w-3.5 h-3.5 text-slate-400" /> Analisis AI (Segera Hadir)
-      </button>
+      
+      <div class="flex items-center gap-2">
+        <input type="date" v-model="startDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
+        <span class="text-xs text-slate-500">-</span>
+        <input type="date" v-model="endDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
+        <button @click="loadData" class="px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
+      </div>
     </div>
 
     <!-- Content area: 2 columns -->
@@ -30,7 +33,7 @@
           
           <div class="flex-1 flex flex-col justify-center">
             <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
-            <div v-else-if="!peakHours.length" class="text-xs text-center text-slate-400 italic">Belum ada data transaksi 30 hari terakhir.</div>
+            <div v-else-if="!peakHours.length" class="text-xs text-center text-slate-400 italic">Belum ada data transaksi di periode ini.</div>
             <div v-else class="space-y-3">
               <div v-for="(ph, idx) in peakHours" :key="idx" class="flex items-center justify-between">
                 <div class="flex items-center gap-2 text-xs font-bold text-slate-600">
@@ -86,7 +89,7 @@
             </div>
             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Stok Mati (Dead Stock)</h2>
           </div>
-          <p class="text-[10px] text-slate-500 mb-3 relative z-10 font-medium">Barang yang tidak laku sama sekali dalam 30 hari terakhir. Pertimbangkan diskon atau buang agar modal tidak mandek.</p>
+          <p class="text-[10px] text-slate-500 mb-3 relative z-10 font-medium">Barang yang tidak laku sama sekali pada periode ini. Pertimbangkan diskon atau buang agar modal tidak mandek.</p>
 
           <div class="flex-1 overflow-y-auto pr-1 relative z-10">
             <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
@@ -148,6 +151,9 @@ const deadStock = ref<DeadStockItem[]>([])
 const fastMoving = ref<FastMovingItem[]>([])
 const peakHours = ref<PeakHourItem[]>([])
 
+const startDate = ref('')
+const endDate = ref('')
+
 const totalDeadCapital = computed(() => {
   return deadStock.value.reduce((sum, item) => sum + item.total_capital_stuck, 0)
 })
@@ -159,16 +165,21 @@ const formatCurrencyCompact = (val: number) => {
 const loadData = async () => {
   loading.value = true
   try {
+    const params: any = {}
+    if (startDate.value) params.start_date = startDate.value
+    if (endDate.value) params.end_date = endDate.value
+
     const [resDead, resFast, resPeak] = await Promise.all([
-      api.get('/analytics/dead-stock'),
-      api.get('/analytics/fast-moving'),
-      api.get('/analytics/peak-hours')
+      api.get('/analytics/dead-stock', { params }),
+      api.get('/analytics/fast-moving', { params }),
+      api.get('/analytics/peak-hours', { params })
     ])
-    deadStock.value = resDead || []
-    fastMoving.value = resFast || []
-    peakHours.value = resPeak || []
-  } catch (error) {
-    console.error("Failed to load analytics", error)
+    
+    deadStock.value = resDead as DeadStockItem[]
+    fastMoving.value = resFast as FastMovingItem[]
+    peakHours.value = resPeak as PeakHourItem[]
+  } catch (err) {
+    console.error("Gagal memuat analitik:", err)
   } finally {
     loading.value = false
   }
