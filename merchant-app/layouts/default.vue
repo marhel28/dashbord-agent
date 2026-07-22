@@ -53,47 +53,123 @@
           </div>
         </NuxtLink>
 
-        <nav class="mt-8 space-y-1">
+        <nav class="mt-6 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)] pr-2 custom-scrollbar">
           <NuxtLink to="/" exact-active-class="nav-active" class="nav-link">
             <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
             <span>Dashboard</span>
           </NuxtLink>
-          <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:sparkles" class="w-5 h-5" />
-            <span>AI Agents</span>
-          </NuxtLink>
-          <NuxtLink to="/tambah-skill" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:plus-circle" class="w-5 h-5" />
-            <span>Tambah Skill</span>
-          </NuxtLink>
-          <NuxtLink to="/inventory" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:archive-box" class="w-5 h-5" />
-            <span>Inventory</span>
-          </NuxtLink>
-          <NuxtLink to="/sales-report" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:chart-bar" class="w-5 h-5" />
-            <span>Sales Reports</span>
-          </NuxtLink>
-          <NuxtLink to="/konektor" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:share" class="w-5 h-5" />
-            <span>Konektor</span>
-          </NuxtLink>
+
+          <div class="pt-3 pb-1">
+            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">AI Copilot</p>
+            <NuxtLink to="/chat" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:chat-bubble-left-right" class="w-5 h-5" />
+              <span>Chat</span>
+            </NuxtLink>
+            <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:users" class="w-5 h-5" />
+              <span>AI Agents</span>
+            </NuxtLink>
+            <NuxtLink to="/skill-marketplace" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:building-storefront" class="w-5 h-5" />
+              <span>Skill Marketplace</span>
+            </NuxtLink>
+            <NuxtLink to="/tambah-skill" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:plus-circle" class="w-5 h-5" />
+              <span>Tambah Skill</span>
+            </NuxtLink>
+            <NuxtLink to="/knowledge-base" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:book-open" class="w-5 h-5" />
+              <span>Knowledge Base</span>
+            </NuxtLink>
+            <NuxtLink to="/memory" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:cpu-chip" class="w-5 h-5" />
+              <span>Memory</span>
+            </NuxtLink>
+          </div>
+
+          <div class="pt-3 pb-1">
+            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Bisnis & Operasional</p>
+            <NuxtLink to="/sales" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:banknotes" class="w-5 h-5" />
+              <span>Sales</span>
+            </NuxtLink>
+            <NuxtLink to="/inventory" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:archive-box" class="w-5 h-5" />
+              <span>Inventory</span>
+            </NuxtLink>
+            <NuxtLink v-if="showCrm" to="/customers" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:user-group" class="w-5 h-5" />
+              <span>Customers</span>
+            </NuxtLink>
+            <NuxtLink to="/finance" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:currency-dollar" class="w-5 h-5" />
+              <span>Finance</span>
+            </NuxtLink>
+            <NuxtLink to="/marketing" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:megaphone" class="w-5 h-5" />
+              <span>Marketing</span>
+            </NuxtLink>
+          </div>
+
+          <div class="pt-3 pb-1">
+            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Manajemen</p>
+            <NuxtLink to="/analytics" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:chart-bar" class="w-5 h-5" />
+              <span>Analytics</span>
+            </NuxtLink>
+            <NuxtLink to="/decision-support" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:light-bulb" class="w-5 h-5" />
+              <span>Decision Support</span>
+            </NuxtLink>
+            <NuxtLink to="/operations" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:cog" class="w-5 h-5" />
+              <span>Operations</span>
+            </NuxtLink>
+            <NuxtLink to="/team" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:user-plus" class="w-5 h-5" />
+              <span>Team</span>
+            </NuxtLink>
+          </div>
+
+          <div class="pt-3 pb-1">
+            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Sistem</p>
+            <NuxtLink to="/automation" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:command-line" class="w-5 h-5" />
+              <span>Automation</span>
+            </NuxtLink>
+            <NuxtLink to="/integrations" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:puzzle-piece" class="w-5 h-5" />
+              <span>Integrations</span>
+            </NuxtLink>
+            <NuxtLink to="/documents" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:document-text" class="w-5 h-5" />
+              <span>Documents</span>
+            </NuxtLink>
+            <NuxtLink to="/monitoring" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:computer-desktop" class="w-5 h-5" />
+              <span>Monitoring</span>
+            </NuxtLink>
+          </div>
         </nav>
       </div>
 
       <div class="p-6 pl-7 space-y-4 border-t border-[var(--wp-border)]">
         <button class="w-full py-3 text-xs font-bold shadow-sm transition flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white; border-radius: 4px;">
           <Icon name="heroicons:plus" class="w-4 h-4" />
-          <span>Upgrade Plan</span>
+          <span>Tingkatkan Paket</span>
         </button>
         <div class="space-y-1">
           <NuxtLink to="/settings" exact-active-class="nav-active" class="nav-link">
             <Icon name="heroicons:cog-6-tooth" class="w-4 h-4" />
             <span>Settings</span>
           </NuxtLink>
+          <NuxtLink to="/help" exact-active-class="nav-active" class="nav-link">
+            <Icon name="heroicons:question-mark-circle" class="w-4 h-4" />
+            <span>Help</span>
+          </NuxtLink>
           <button @click="handleLogout" class="w-full flex items-center gap-3 px-4 py-2.5 rounded text-xs font-semibold transition text-left" style="color: var(--wp-text-secondary);">
             <Icon name="heroicons:arrow-left-on-rectangle" class="w-4 h-4" />
-            <span>Logout</span>
+            <span>Keluar</span>
           </button>
         </div>
       </div>
@@ -104,11 +180,11 @@
       <header class="h-16 bg-white/80 backdrop-blur-md border-b border-[var(--wp-border)] px-8 items-center justify-between shrink-0 sticky top-0 z-[var(--wp-z-sticky)] hidden lg:flex">
         <div class="relative w-full max-w-sm">
           <Icon name="heroicons:magnifying-glass" class="absolute left-3.5 top-2.5 w-4 h-4" style="color: var(--wp-text-secondary);" />
-          <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 rounded text-xs transition border outline-none" style="background-color: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
+          <input type="text" placeholder="Cari..." class="w-full pl-10 pr-4 py-2 rounded text-xs transition border outline-none" style="background-color: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
         </div>
         <div class="flex items-center gap-4">
           <span class="text-[11px] font-bold px-3.5 py-1.5 tracking-wide select-none" style="background: var(--wp-navy); color: white;">
-            AI Agents
+            Asisten AI
           </span>
           <button class="relative p-2 transition" style="color: var(--wp-text-secondary);">
             <Icon name="heroicons:bell" class="w-5 h-5" />
@@ -166,11 +242,11 @@
     <nav class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[var(--wp-border)] flex items-center justify-around px-2 z-[var(--wp-z-sticky)]">
       <NuxtLink to="/" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Home</span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Beranda</span>
       </NuxtLink>
       <NuxtLink to="/agents" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:sparkles" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Agents</span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Asisten</span>
       </NuxtLink>
       <NuxtLink to="/tambah-skill" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:plus-circle" class="w-5 h-5" />
@@ -178,15 +254,15 @@
       </NuxtLink>
       <NuxtLink to="/inventory" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:archive-box" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Stocks</span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Stok</span>
       </NuxtLink>
       <NuxtLink to="/sales-report" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:chart-bar" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Reports</span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Laporan</span>
       </NuxtLink>
       <NuxtLink to="/konektor" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:share" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Flow</span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Alur</span>
       </NuxtLink>
     </nav>
   </div>
@@ -201,6 +277,12 @@ const colorMode = useColorMode()
 
 const logoSrc = computed(() => {
   return colorMode.value === 'dark' ? '/logo_darkmode.png' : '/logo_lightmode.png'
+})
+
+const showCrm = computed(() => {
+  if (!user.value) return false;
+  // Hide CRM for Warung Kecil, but show for Toko Kelontong, Distributor, Toko Online, Grosir
+  return user.value.store_type && user.value.store_type !== 'Warung Kecil';
 })
 
 // Draggable Telegram Floating Button logic
@@ -344,5 +426,20 @@ const handleLogout = () => {
 .dark-mode .mobile-nav-link.mobile-nav-active svg,
 .dark-mode .mobile-nav-link.mobile-nav-active .icon {
   color: var(--wp-gold);
+}
+
+/* Custom Scrollbar for Sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+.dark-mode .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.1);
 }
 </style>
