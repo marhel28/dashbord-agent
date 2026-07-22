@@ -1,185 +1,174 @@
-<template>
-  <div class="flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-2xl border bg-white animate-fade-in" style="border-color: var(--wp-border);">
-    <!-- ═══════════ SIDEBAR ═══════════ -->
-    <div class="w-72 flex flex-col shrink-0 border-r" style="border-color: var(--wp-border);">
-      <div class="p-4 flex items-center justify-between border-b" style="border-color: var(--wp-border);">
-        <h2 class="text-sm font-extrabold" style="color: var(--wp-text);">Chat Agen</h2>
-        <NuxtLink to="/agents" class="p-1.5 rounded-lg border transition hover:bg-slate-50" style="border-color: var(--wp-border); color: var(--wp-text-secondary);" title="Kembali ke daftar agen">
-          <Icon name="heroicons:arrow-left" class="w-4 h-4" />
-        </NuxtLink>
-      </div>
+﻿<template>
+  <div class="flex h-[calc(100vh-6rem)] w-full items-center justify-center animate-fade-in p-2 sm:p-4">
+    <!-- Chat Container -->
+    <div class="w-full max-w-4xl h-full flex flex-col bg-white rounded-3xl shadow-xl overflow-hidden relative border" style="border-color: var(--wp-border);">
+      
+      <!-- Ambient Glow (Subtle Background Effect) -->
+      <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-5"></div>
+      <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-5"></div>
 
-      <!-- Agent selector -->
-      <div class="p-3 border-b space-y-2" style="border-color: var(--wp-border); background: var(--wp-bg);">
-        <p class="text-[9px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Agen Aktif</p>
-        <div class="flex flex-wrap gap-1.5">
-          <button
-            v-for="a in quickAgents" :key="a.id"
-            @click="activeAgent = a.id"
-            :class="['px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all',
-              activeAgent === a.id ? 'text-white shadow-sm' : 'border']"
-            :style="activeAgent === a.id
-              ? { background: a.color, color: 'white' }
-              : { borderColor: a.color, color: a.color, background: a.bg }"
-          >{{ a.label }}</button>
-        </div>
-      </div>
-
-      <!-- Session list -->
-      <div class="flex-1 overflow-y-auto divide-y" style="border-color: #F8FAFC;">
-        <div class="p-3 text-center">
-          <p class="text-[10px] font-bold" style="color: var(--wp-text-secondary);">
-            {{ messages.length > 0 ? `${messages.length} pesan` : 'Percakapan baru' }}
-          </p>
-        </div>
-        <div v-if="messages.length === 0" class="p-6 text-center">
-          <Icon name="heroicons:sparkles" class="w-8 h-8 mx-auto mb-2" style="color: var(--wp-gold);" />
-          <p class="text-xs font-medium" style="color: var(--wp-text-secondary);">Mulai percakapan — AI akan merutekan pertanyaan Anda ke agen yang tepat.</p>
-        </div>
-      </div>
-
-      <!-- Bottom actions -->
-      <div class="p-3 border-t space-y-2" style="border-color: var(--wp-border);">
-        <button @click="clearChat" class="w-full py-2 text-[10px] font-bold rounded-lg border transition hover:bg-slate-50" style="border-color: var(--wp-border); color: var(--wp-text-secondary);">
-          <Icon name="heroicons:trash" class="w-3.5 h-3.5 inline mr-1" /> Hapus Chat
-        </button>
-      </div>
-    </div>
-
-    <!-- ═══════════ CHAT AREA ═══════════ -->
-    <div class="flex-1 flex flex-col min-w-0" style="background: var(--wp-bg);">
-      <!-- Chat header -->
-      <div class="h-14 bg-white border-b px-5 flex items-center justify-between shrink-0" style="border-color: var(--wp-border);">
+      <!-- Header -->
+      <div class="h-16 border-b px-6 flex items-center justify-between shrink-0 relative z-10 bg-white/80 backdrop-blur-md" style="border-color: var(--wp-border);">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--wp-navy);">
-            <Icon name="heroicons:sparkles" class="w-4 h-4" style="color: var(--wp-gold);" />
+          <!-- AI Avatar -->
+          <div class="relative flex items-center justify-center w-10 h-10 rounded-xl shadow-sm" style="background: linear-gradient(135deg, var(--wp-navy), #1e293b);">
+            <Icon name="heroicons:sparkles" class="w-5 h-5 text-amber-300" />
+            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white" style="background: var(--wp-success);"></span>
           </div>
           <div>
-            <h3 class="text-xs font-extrabold" style="color: var(--wp-text);">AI Copilot</h3>
-            <p class="text-[9px] font-semibold" style="color: var(--wp-success);">
-              <span class="w-1.5 h-1.5 rounded-full inline-block mr-1" style="background: var(--wp-success);"></span>
-              {{ activeAgent === 'auto' ? 'Auto-routing' : quickAgents.find(a => a.id === activeAgent)?.label || 'Siap' }}
-            </p>
+            <h2 class="text-sm font-black tracking-tight" style="color: var(--wp-navy);">Nahkoeda AI</h2>
+            <p class="text-[10px] font-bold" style="color: var(--wp-text-secondary);">Asisten Bisnis Pintar Anda</p>
           </div>
         </div>
-        <div class="flex items-center gap-3 text-[10px] font-bold" style="color: var(--wp-text-secondary);">
-          <Icon name="heroicons:bolt" class="w-3.5 h-3.5" style="color: var(--wp-gold);" />
-          <span>{{ messages.length }} pesan</span>
-        </div>
-      </div>
-
-      <!-- Messages -->
-      <div ref="chatContainer" class="flex-1 overflow-y-auto p-5 space-y-5">
-        <!-- Welcome -->
-        <div v-if="messages.length === 0" class="flex justify-center pt-12">
-          <div class="text-center max-w-sm">
-            <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4" style="background: rgba(212,168,67,0.08);">
-              <Icon name="heroicons:sparkles" class="w-8 h-8" style="color: var(--wp-gold);" />
-            </div>
-            <h3 class="text-sm font-extrabold" style="color: var(--wp-text);">AI Copilot siap membantu</h3>
-            <p class="text-xs mt-2" style="color: var(--wp-text-secondary);">Tanya apa saja tentang bisnis Anda — stok, keuangan, marketing, atau riset pasar.</p>
-            <div class="flex flex-wrap gap-2 justify-center mt-4">
-              <button v-for="ex in exampleQuestions" :key="ex" @click="sendMessage(ex)" class="px-3 py-1.5 border text-[10px] font-bold rounded-xl transition hover:bg-slate-50" style="border-color: var(--wp-border); color: var(--wp-text-secondary);">{{ ex }}</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Message bubbles -->
-        <div v-for="(msg, i) in messages" :key="i" :class="['flex flex-col gap-1', msg.role === 'user' ? 'items-end' : 'items-start']" :style="{ animation: 'fadeInUp 0.3s ease-out both', animationDelay: '0.05s' }">
-          <!-- Sender label -->
-          <div class="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider px-1" style="color: var(--wp-text-secondary);">
-            <template v-if="msg.role === 'user'">
-              <span>{{ msg.time }}</span><span>•</span><span>Anda</span>
-            </template>
-            <template v-else>
-              <Icon name="heroicons:sparkles" class="w-3 h-3" style="color: var(--wp-gold);" />
-              <span style="color: var(--wp-gold-dark);">AI Copilot</span>
-              <span>•</span><span>{{ msg.time }}</span>
-              <span v-if="msg.agentsUsed && msg.agentsUsed.length" class="ml-1 px-1.5 py-0.5 rounded text-[7px] font-bold" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
-                {{ msg.agentsUsed.join(', ') }}
-              </span>
-            </template>
-          </div>
-          <!-- Bubble -->
-          <div
-            :class="['max-w-[75%] rounded-2xl shadow-sm p-4 text-xs leading-relaxed whitespace-pre-wrap',
-              msg.role === 'user'
-                ? 'rounded-tr-none text-white'
-                : 'rounded-tl-none border text-[var(--wp-text)]']"
-            :style="msg.role === 'user'
-              ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;'
-              : 'background: white; border-color: var(--wp-border);'"
-          >{{ msg.content }}</div>
-        </div>
-
-        <!-- Typing indicator -->
-        <div v-if="sending" class="flex items-center gap-2 pl-1 text-[10px] font-bold" style="color: var(--wp-text-secondary);">
-          <Icon name="heroicons:sparkles" class="w-4 h-4 animate-pulse" style="color: var(--wp-gold);" />
-          <span>AI berpikir…</span>
-        </div>
-      </div>
-
-      <!-- Input -->
-      <div class="p-4 border-t shrink-0 flex items-center gap-3" style="background: white; border-color: var(--wp-border);">
-        <input
-          v-model="inputText"
-          type="text"
-          placeholder="Tanya tentang bisnis Anda…"
-          class="flex-1 px-4 py-3 rounded-xl text-xs outline-none transition border"
-          style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
-          @keydown.enter="sendMessage()"
-          :disabled="sending"
-        />
-        <button
-          @click="sendMessage()"
-          :disabled="sending || !inputText.trim()"
-          class="p-2.5 rounded-xl transition shadow-sm"
-          :style="inputText.trim() && !sending
-            ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;'
-            : 'background: var(--wp-bg); color: var(--wp-text-secondary);'"
-        >
-          <Icon name="heroicons:paper-airplane" class="w-4 h-4" />
+        <button @click="clearChat" class="px-3 py-1.5 text-[10px] font-bold rounded-lg border transition hover:bg-slate-50 flex items-center gap-1.5" style="border-color: var(--wp-border); color: var(--wp-text-secondary);" title="Mulai Percakapan Baru">
+          <Icon name="heroicons:arrow-path" class="w-3.5 h-3.5" /> Bersihkan
         </button>
       </div>
+
+      <!-- Messages Area -->
+      <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8 relative z-10 custom-scrollbar scroll-smooth">
+        
+        <!-- Empty State / Welcome -->
+        <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-full max-w-lg mx-auto text-center animate-fade-in-up">
+          <div class="w-20 h-20 mb-6 rounded-3xl flex items-center justify-center shadow-lg transform transition-transform hover:scale-105" style="background: linear-gradient(135deg, var(--wp-navy), #0f172a);">
+            <Icon name="heroicons:sparkles" class="w-10 h-10 text-amber-300" />
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-black mb-3" style="color: var(--wp-navy);">Halo! Saya Nahkoeda AI.</h1>
+          <p class="text-sm sm:text-base leading-relaxed mb-8" style="color: var(--wp-text-secondary);">
+            Saya siap membantu memantau penjualan, mengecek stok, membuat laporan, dan memberikan ide bisnis cerdas untuk Anda.
+          </p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+            <button v-for="(ex, i) in exampleQuestions" :key="i" @click="sendMessage(ex)" class="group text-left p-4 rounded-2xl border transition-all hover:shadow-md hover:-translate-y-0.5 bg-white" style="border-color: var(--wp-border);">
+              <div class="flex items-center gap-2 mb-1.5">
+                <Icon :name="ex.icon" class="w-4 h-4 transition-colors group-hover:text-amber-500" style="color: var(--wp-text-secondary);" />
+                <span class="text-xs font-bold" style="color: var(--wp-navy);">{{ ex.title }}</span>
+              </div>
+              <p class="text-[10px] leading-relaxed" style="color: var(--wp-text-secondary);">{{ ex.desc }}</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Bubbles -->
+        <div v-for="(msg, i) in messages" :key="i" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
+          <div :class="['flex gap-4 max-w-[85%] sm:max-w-[75%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+            
+            <!-- Avatar -->
+            <div class="shrink-0 hidden sm:block">
+              <div v-if="msg.role === 'agent'" class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style="background: var(--wp-navy);">
+                <Icon name="heroicons:sparkles" class="w-4 h-4 text-amber-300" />
+              </div>
+              <div v-else class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
+                <Icon name="heroicons:user" class="w-4 h-4 text-white" />
+              </div>
+            </div>
+
+            <!-- Bubble Content -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center gap-2 px-1" :class="[msg.role === 'user' ? 'justify-end' : 'justify-start']">
+                <span class="text-[10px] font-extrabold uppercase tracking-widest" :style="{ color: msg.role === 'user' ? 'var(--wp-text-secondary)' : 'var(--wp-navy)' }">
+                  {{ msg.role === 'user' ? 'Anda' : 'Nahkoeda AI' }}
+                </span>
+                <span class="text-[9px] font-semibold text-slate-400">{{ msg.time }}</span>
+                <span v-if="msg.agentsUsed && msg.agentsUsed.length" class="px-2 py-0.5 rounded text-[8px] font-bold border" style="background: rgba(212,168,67,0.05); color: var(--wp-gold-dark); border-color: rgba(212,168,67,0.2);">
+                  <Icon name="heroicons:cpu-chip" class="w-3 h-3 inline align-text-bottom mr-0.5" />
+                  {{ msg.agentsUsed.join(', ') }}
+                </span>
+              </div>
+              
+              <div
+                :class="['p-4 sm:p-5 text-sm leading-relaxed whitespace-pre-wrap shadow-sm',
+                  msg.role === 'user'
+                    ? 'rounded-3xl rounded-tr-sm text-white'
+                    : 'rounded-3xl rounded-tl-sm border text-slate-800 bg-white']"
+                :style="msg.role === 'user'
+                  ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));'
+                  : 'border-color: var(--wp-border);'"
+              >{{ msg.content }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div v-if="sending" class="flex w-full justify-start animate-fade-in">
+          <div class="flex gap-4 max-w-[85%] sm:max-w-[75%] flex-row">
+            <div class="shrink-0 hidden sm:block">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style="background: var(--wp-navy);">
+                <Icon name="heroicons:sparkles" class="w-4 h-4 text-amber-300 animate-pulse" />
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center gap-2 px-1 justify-start">
+                <span class="text-[10px] font-extrabold uppercase tracking-widest" style="color: var(--wp-navy);">Nahkoeda AI</span>
+              </div>
+              <div class="p-4 sm:p-5 rounded-3xl rounded-tl-sm border bg-white flex items-center gap-2 h-14" style="border-color: var(--wp-border);">
+                <div class="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style="animation-delay: 0ms;"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style="animation-delay: 150ms;"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-300 animate-bounce" style="animation-delay: 300ms;"></div>
+                <span class="text-[10px] font-bold text-slate-400 ml-2">Sedang berpikir...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="p-4 sm:p-6 bg-white relative z-10 border-t" style="border-color: var(--wp-border);">
+        <div class="max-w-4xl mx-auto relative flex items-end gap-3 p-2 rounded-2xl border bg-slate-50 transition-colors focus-within:bg-white focus-within:border-[var(--wp-gold)] shadow-inner focus-within:shadow-md" style="border-color: var(--wp-border);">
+          <textarea
+            v-model="inputText"
+            rows="1"
+            placeholder="Tanyakan sesuatu pada Asisten AI..."
+            class="flex-1 max-h-32 min-h-[44px] bg-transparent resize-none outline-none text-sm py-3 px-3 text-slate-800 placeholder-slate-400 custom-scrollbar"
+            @keydown.enter.prevent="sendMessage()"
+            @input="autoResize"
+            ref="textareaRef"
+            :disabled="sending"
+          ></textarea>
+          
+          <button
+            @click="sendMessage()"
+            :disabled="sending || !inputText.trim()"
+            class="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center transition-all shadow-sm mb-0.5"
+            :class="inputText.trim() && !sending ? 'hover:scale-105 hover:shadow-lg' : 'opacity-50 cursor-not-allowed'"
+            :style="inputText.trim() && !sending
+              ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;'
+              : 'background: var(--wp-border); color: var(--wp-text-secondary);'"
+          >
+            <Icon name="heroicons:paper-airplane" class="w-5 h-5 -mt-0.5 ml-0.5" />
+          </button>
+        </div>
+        <p class="text-[9px] text-center mt-3 font-semibold text-slate-400">
+          Nahkoeda AI dapat membuat kesalahan. Harap periksa kembali informasi penting.
+        </p>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { api } from '~/utils/api'
-
-const route = useRoute()
 
 interface Message {
   role: 'user' | 'agent'
   content: string
   time: string
   agentsUsed?: string[]
-  routingMode?: string
 }
 
 const messages = ref<Message[]>([])
 const inputText = ref('')
 const sending = ref(false)
-const activeAgent = ref('auto')
 const chatContainer = ref<HTMLElement | null>(null)
-
-const quickAgents = [
-  { id: 'auto', label: 'Auto', color: '#D4A843', bg: 'rgba(212,168,67,0.08)' },
-  { id: 'orchestrator', label: 'Orchestrator', color: '#D4A843', bg: 'rgba(212,168,67,0.08)' },
-  { id: 'finance', label: 'Finance', color: '#059669', bg: 'rgba(5,150,105,0.06)' },
-  { id: 'stock', label: 'Stock', color: '#B8922E', bg: 'rgba(212,168,67,0.06)' },
-  { id: 'marketing', label: 'Marketing', color: '#8B5CF6', bg: 'rgba(139,92,246,0.06)' },
-  { id: 'research', label: 'Research', color: '#3B82F6', bg: 'rgba(59,130,246,0.06)' },
-]
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
 const exampleQuestions = [
-  'Berapa stok beras premium?',
-  'Bagaimana omzet minggu ini?',
-  'Buatkan ide promo untuk kopi',
-  'Cek harga pasar minyak goreng',
+  { icon: 'heroicons:banknotes', title: 'Ringkasan Penjualan', desc: '"Berapa total pendapatan saya minggu ini?"' },
+  { icon: 'heroicons:archive-box', title: 'Cek Stok Menipis', desc: '"Barang apa saja yang stoknya hampir habis?"' },
+  { icon: 'heroicons:megaphone', title: 'Ide Pemasaran', desc: '"Buatkan teks promosi untuk produk kopi bubuk."' },
+  { icon: 'heroicons:chart-bar', title: 'Analisis Bisnis', desc: '"Bagaimana tren penjualan saya bulan ini?"' },
 ]
 
 const now = () => new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
@@ -191,11 +180,20 @@ const scrollToBottom = async () => {
   }
 }
 
+const autoResize = () => {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 128) + 'px'
+}
+
 const sendMessage = async (text?: string) => {
   const msg = (text || inputText.value).trim()
   if (!msg || sending.value) return
 
   inputText.value = ''
+  if (textareaRef.value) textareaRef.value.style.height = 'auto'
+  
   messages.value.push({ role: 'user', content: msg, time: now() })
   await scrollToBottom()
 
@@ -204,15 +202,14 @@ const sendMessage = async (text?: string) => {
     const result = await api.post('/agentic/chat', { message: msg })
     messages.value.push({
       role: 'agent',
-      content: result.reply || 'Maaf, ada kendala teknis.',
+      content: result.reply || 'Maaf, ada kendala teknis dari sistem.',
       time: now(),
       agentsUsed: result.agents_used || [],
-      routingMode: result.routing_mode,
     })
   } catch (err: any) {
     messages.value.push({
       role: 'agent',
-      content: '⚠️ Maaf, layanan AI sedang tidak tersedia. Silakan coba lagi nanti.\n\n' + (err.message || ''),
+      content: '⚠️ Maaf, layanan AI sedang tidak tersedia atau terputus. Silakan coba lagi nanti.\n\n' + (err.message || ''),
       time: now(),
     })
   } finally {
@@ -222,14 +219,29 @@ const sendMessage = async (text?: string) => {
 }
 
 const clearChat = () => {
-  messages.value = []
+  if (messages.value.length === 0) return
+  if (confirm('Anda yakin ingin menghapus seluruh riwayat percakapan saat ini?')) {
+    messages.value = []
+  }
 }
 
-// Pre-select agent from query param
 onMounted(() => {
-  const agentParam = route.query.agent as string
-  if (agentParam && quickAgents.some(a => a.id === agentParam)) {
-    activeAgent.value = agentParam
-  }
+  autoResize()
 })
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+textarea.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+</style>

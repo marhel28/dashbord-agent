@@ -62,20 +62,12 @@
           <div class="pt-3 pb-1">
             <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">AI Copilot</p>
             <NuxtLink to="/chat" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:chat-bubble-left-right" class="w-5 h-5" />
-              <span>Chat</span>
-            </NuxtLink>
-            <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:users" class="w-5 h-5" />
+              <Icon name="heroicons:sparkles" class="w-5 h-5" />
               <span>Asisten AI</span>
             </NuxtLink>
             <NuxtLink to="/skill-marketplace" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:building-storefront" class="w-5 h-5" />
               <span>Skill Marketplace</span>
-            </NuxtLink>
-            <NuxtLink to="/tambah-skill" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:plus-circle" class="w-5 h-5" />
-              <span>Tambah Skill</span>
             </NuxtLink>
             <NuxtLink to="/knowledge-base" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:book-open" class="w-5 h-5" />
@@ -244,13 +236,13 @@
         <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
         <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Beranda</span>
       </NuxtLink>
-      <NuxtLink to="/agents" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+      <NuxtLink to="/chat" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:sparkles" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Asisten</span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Asisten AI</span>
       </NuxtLink>
-      <NuxtLink to="/tambah-skill" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:plus-circle" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">+ Skill</span>
+      <NuxtLink to="/skill-marketplace" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:building-storefront" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Market</span>
       </NuxtLink>
       <NuxtLink to="/inventory" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:archive-box" class="w-5 h-5" />
