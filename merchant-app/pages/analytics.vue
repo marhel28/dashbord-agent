@@ -1,23 +1,180 @@
 <template>
-  <div class="space-y-6">
-    <div class="border-b pb-4" style="border-color: var(--wp-navy);">
-      <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Analitik</h1>
-      <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
-        Wawasan mendalam tentang performa bisnis Anda.
-      </p>
+  <div class="h-full flex flex-col space-y-4">
+    <!-- Header -->
+    <div class="flex-shrink-0 flex items-center justify-between border-b pb-3" style="border-color: var(--wp-border);">
+      <div>
+        <h1 class="text-xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Kecerdasan Bisnis</h1>
+        <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
+          Insight operasional untuk 30 hari terakhir.
+        </p>
+      </div>
+      <!-- Placeholder for future AI button -->
+      <button class="px-3 py-1.5 text-[10px] font-bold rounded-lg border flex items-center gap-2 opacity-50 cursor-not-allowed bg-slate-50 text-slate-500" title="Akan Hadir">
+        <Icon name="heroicons:sparkles" class="w-3.5 h-3.5 text-slate-400" /> Analisis AI (Segera Hadir)
+      </button>
     </div>
 
-    <!-- Main Content Card -->
-    <div class="bg-white border p-6 shadow-sm flex flex-col items-center justify-center min-h-[300px]" style="border-color: var(--wp-border); border-radius: 0px;">
-      <Icon name="heroicons:wrench-screwdriver" class="w-12 h-12 text-slate-300 mb-4" />
-      <h2 class="text-sm font-bold uppercase tracking-wider mb-2" style="color: var(--wp-navy);">Dalam Pengembangan</h2>
-      <p class="text-xs text-center text-slate-500 max-w-md leading-relaxed">
-        Halaman <strong style="color: var(--wp-gold);">Analitik</strong> saat ini sedang dibangun dan akan segera tersedia pada rilis berikutnya. 
-      </p>
+    <!-- Content area: 2 columns -->
+    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pb-4 pr-1">
+      
+      <!-- Left Column: Peak Hours & Fast Moving -->
+      <div class="flex flex-col gap-4">
+        <!-- Peak Hours -->
+        <div class="bg-white border rounded-xl p-4 shadow-sm h-1/2 flex flex-col" style="border-color: var(--wp-border);">
+          <div class="flex items-center gap-2 mb-4 border-b pb-2" style="border-color: var(--wp-border);">
+            <div class="p-1.5 rounded-md bg-blue-50 text-blue-600">
+              <Icon name="heroicons:clock" class="w-4 h-4" />
+            </div>
+            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Jam Tersibuk Toko</h2>
+          </div>
+          
+          <div class="flex-1 flex flex-col justify-center">
+            <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
+            <div v-else-if="!peakHours.length" class="text-xs text-center text-slate-400 italic">Belum ada data transaksi 30 hari terakhir.</div>
+            <div v-else class="space-y-3">
+              <div v-for="(ph, idx) in peakHours" :key="idx" class="flex items-center justify-between">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-600">
+                  <span class="w-4 text-slate-400 text-right">{{ idx + 1 }}.</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-100 border text-[11px]">{{ ph.hour }} WIB</span>
+                </div>
+                <div class="text-xs font-black" style="color: var(--wp-navy);">
+                  {{ ph.transaction_count }} Transaksi
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fast Moving -->
+        <div class="bg-white border rounded-xl p-4 shadow-sm h-1/2 flex flex-col" style="border-color: var(--wp-border);">
+          <div class="flex items-center gap-2 mb-4 border-b pb-2" style="border-color: var(--wp-border);">
+            <div class="p-1.5 rounded-md bg-green-50 text-green-600">
+              <Icon name="heroicons:rocket-launch" class="w-4 h-4" />
+            </div>
+            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Paling Laris Terjual</h2>
+          </div>
+          
+          <div class="flex-1 flex flex-col">
+            <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
+            <div v-else-if="!fastMoving.length" class="text-xs text-center text-slate-400 italic">Belum ada data penjualan.</div>
+            <div v-else class="space-y-2">
+              <div v-for="(item, idx) in fastMoving" :key="idx" class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-slate-700 truncate max-w-[150px]">{{ item.product_name }}</span>
+                  <span class="text-[10px] text-slate-400">Sisa Stok: {{ item.current_stock }}</span>
+                </div>
+                <div class="text-xs font-black text-green-600 bg-green-100/50 px-2 py-1 rounded">
+                  {{ item.total_sold }} terjual
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Dead Stock -->
+      <div class="flex flex-col">
+        <div class="bg-white border rounded-xl p-4 shadow-sm h-full flex flex-col relative overflow-hidden" style="border-color: var(--wp-border);">
+          <!-- Decorative background -->
+          <div class="absolute -right-10 -top-10 text-rose-50 opacity-50 transform rotate-12 pointer-events-none">
+            <Icon name="heroicons:archive-box-x-mark" class="w-48 h-48" />
+          </div>
+
+          <div class="flex items-center gap-2 mb-4 border-b pb-2 relative z-10" style="border-color: var(--wp-border);">
+            <div class="p-1.5 rounded-md bg-rose-50 text-rose-600">
+              <Icon name="heroicons:exclamation-triangle" class="w-4 h-4" />
+            </div>
+            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Stok Mati (Dead Stock)</h2>
+          </div>
+          <p class="text-[10px] text-slate-500 mb-3 relative z-10 font-medium">Barang yang tidak laku sama sekali dalam 30 hari terakhir. Pertimbangkan diskon atau buang agar modal tidak mandek.</p>
+
+          <div class="flex-1 overflow-y-auto pr-1 relative z-10">
+            <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
+            <div v-else-if="!deadStock.length" class="flex flex-col items-center justify-center py-10 text-center">
+              <Icon name="heroicons:check-badge" class="w-10 h-10 text-emerald-400 mb-2" />
+              <span class="text-xs font-bold text-slate-600">Luar Biasa!</span>
+              <span class="text-[10px] text-slate-400 mt-1 max-w-[150px]">Tidak ada stok mati. Semua produk Anda laku bulan ini.</span>
+            </div>
+            <div v-else class="space-y-2">
+              <div v-for="(ds, idx) in deadStock" :key="idx" class="flex items-center justify-between p-2 rounded-lg border border-rose-100 bg-white hover:bg-rose-50/30 transition-colors">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-slate-700 truncate max-w-[150px]" :title="ds.product_name">{{ ds.product_name }}</span>
+                  <span class="text-[10px] font-semibold text-rose-500 mt-0.5">Mangkrak: {{ ds.stock_quantity }} pcs</span>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="text-[10px] text-slate-400">Modal Terkunci</span>
+                  <span class="text-xs font-black text-rose-600">Rp {{ formatCurrencyCompact(ds.total_capital_stuck) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="!loading && deadStock.length > 0" class="mt-4 pt-3 border-t relative z-10 flex justify-between items-center" style="border-color: var(--wp-border);">
+            <span class="text-xs font-semibold text-slate-500">Total Modal Tertahan:</span>
+            <span class="text-sm font-black text-rose-600">Rp {{ formatCurrencyCompact(totalDeadCapital) }}</span>
+          </div>
+
+        </div>
+      </div>
+      
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Halaman ini di-generate otomatis
+import { ref, onMounted, computed } from 'vue'
+import { api } from '~/utils/api'
+
+interface DeadStockItem {
+  product_name: string
+  stock_quantity: number
+  cost_price: number
+  total_capital_stuck: number
+}
+
+interface FastMovingItem {
+  product_name: string
+  current_stock: number
+  total_sold: number
+}
+
+interface PeakHourItem {
+  hour: string
+  transaction_count: number
+}
+
+const loading = ref(true)
+const deadStock = ref<DeadStockItem[]>([])
+const fastMoving = ref<FastMovingItem[]>([])
+const peakHours = ref<PeakHourItem[]>([])
+
+const totalDeadCapital = computed(() => {
+  return deadStock.value.reduce((sum, item) => sum + item.total_capital_stuck, 0)
+})
+
+const formatCurrencyCompact = (val: number) => {
+  return val.toLocaleString('id-ID')
+}
+
+const loadData = async () => {
+  loading.value = true
+  try {
+    const [resDead, resFast, resPeak] = await Promise.all([
+      api.get('/analytics/dead-stock'),
+      api.get('/analytics/fast-moving'),
+      api.get('/analytics/peak-hours')
+    ])
+    deadStock.value = resDead || []
+    fastMoving.value = resFast || []
+    peakHours.value = resPeak || []
+  } catch (error) {
+    console.error("Failed to load analytics", error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadData()
+})
 </script>
