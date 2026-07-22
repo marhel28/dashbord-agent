@@ -222,7 +222,7 @@ const downloadPdf = async () => {
           downloadingPdf.value = false
           
           // Construct the base URL appropriately (adjusting for development/production)
-          const baseURL = api.defaults.baseURL || ''
+          const baseURL = 'https://cctv-api.desa-sidomukti.com'
           const downloadUrl = `${baseURL}/finance/export-pdf/download/${taskId}`
           
           // Open the URL to trigger the browser download
