@@ -5,8 +5,14 @@
       <div>
         <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Keuangan & Arus Kas</h1>
         <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">
-          Pantau kesehatan finansial toko Anda secara keseluruhan bulan ini.
+          Pantau kesehatan finansial toko Anda. Pilih rentang waktu.
         </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="date" v-model="startDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
+        <span class="text-xs text-slate-500">-</span>
+        <input type="date" v-model="endDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
+        <button @click="loadData" class="px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
       </div>
       <div class="flex gap-2">
         <button @click="downloadPdf" :disabled="downloadingPdf" class="px-4 py-2 text-xs font-bold rounded-lg transition-all shadow-sm flex items-center gap-2 border bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50" style="border-color: var(--wp-border);">
@@ -70,7 +76,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Chart -->
         <div class="lg:col-span-2 bg-white border rounded-2xl p-6 shadow-sm" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-4" style="color: var(--wp-text);">Arus Kas (30 Hari Terakhir)</h2>
+          <h2 class="text-base font-bold mb-4" style="color: var(--wp-text);">Arus Kas (Periode Dipilih)</h2>
           <VChart :option="cashflowOption" autoresize class="h-72" />
         </div>
 
@@ -160,6 +166,9 @@ const showExpenseModal = ref(false)
 const submitting = ref(false)
 const downloadingPdf = ref(false)
 
+const startDate = ref('')
+const endDate = ref('')
+
 const formExpense = ref({
   amount: 0,
   category: 'OPERATIONAL',
@@ -178,10 +187,14 @@ const formatDate = (iso: string) => {
 const loadData = async () => {
   loading.value = true
   try {
+    const params: any = {}
+    if (startDate.value) params.start_date = startDate.value
+    if (endDate.value) params.end_date = endDate.value
+
     const [sumRes, expRes, flowRes] = await Promise.all([
-      api.get('/finance/summary'),
-      api.get('/finance/expenses'),
-      api.get('/finance/cashflow')
+      api.get('/finance/summary', { params }),
+      api.get('/finance/expenses', { params }),
+      api.get('/finance/cashflow', { params })
     ])
     summary.value = sumRes
     expenses.value = expRes
