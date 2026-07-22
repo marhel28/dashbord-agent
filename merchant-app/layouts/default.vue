@@ -27,7 +27,7 @@
     </header>
 
     <!-- ── Sidebar (Large Devices) ── -->
-    <aside class="w-64 bg-white border-r border-[var(--wp-border)] p-0 flex flex-col justify-between hidden lg:flex shrink-0 relative">
+    <aside class="w-64 bg-white border-r border-[var(--wp-border)] p-0 flex flex-col justify-between hidden lg:flex shrink-0 sticky top-0 h-screen overflow-y-auto custom-scrollbar">
       <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--wp-gold)] via-[var(--wp-gold-light)] to-[var(--wp-gold-dark)] opacity-80"></div>
 
       <div class="p-6 pl-7">
@@ -53,10 +53,10 @@
           </div>
         </NuxtLink>
 
-        <nav class="mt-6 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)] pr-2 custom-scrollbar">
+        <nav class="mt-6 space-y-1">
           <NuxtLink to="/" exact-active-class="nav-active" class="nav-link">
             <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
-            <span>Dashboard</span>
+            <span>Beranda</span>
           </NuxtLink>
 
           <div class="pt-3 pb-1">
@@ -67,7 +67,7 @@
             </NuxtLink>
             <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:users" class="w-5 h-5" />
-              <span>AI Agents</span>
+              <span>Asisten AI</span>
             </NuxtLink>
             <NuxtLink to="/skill-marketplace" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:building-storefront" class="w-5 h-5" />
@@ -89,25 +89,25 @@
 
           <div class="pt-3 pb-1">
             <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Bisnis & Operasional</p>
-            <NuxtLink to="/sales" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink to="/sales-report" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:banknotes" class="w-5 h-5" />
-              <span>Sales</span>
+              <span>Laporan Penjualan</span>
             </NuxtLink>
             <NuxtLink to="/inventory" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:archive-box" class="w-5 h-5" />
-              <span>Inventory</span>
+              <span>Stok Barang</span>
             </NuxtLink>
             <NuxtLink v-if="showCrm" to="/customers" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:user-group" class="w-5 h-5" />
-              <span>Customers</span>
+              <span>Pelanggan (CRM)</span>
             </NuxtLink>
             <NuxtLink to="/finance" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:currency-dollar" class="w-5 h-5" />
-              <span>Finance</span>
+              <span>Keuangan</span>
             </NuxtLink>
             <NuxtLink to="/marketing" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:megaphone" class="w-5 h-5" />
-              <span>Marketing</span>
+              <span>Pemasaran</span>
             </NuxtLink>
           </div>
 
@@ -115,19 +115,19 @@
             <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Manajemen</p>
             <NuxtLink to="/analytics" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:chart-bar" class="w-5 h-5" />
-              <span>Analytics</span>
+              <span>Analitik</span>
             </NuxtLink>
             <NuxtLink to="/decision-support" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:light-bulb" class="w-5 h-5" />
-              <span>Decision Support</span>
+              <span>Keputusan</span>
             </NuxtLink>
             <NuxtLink to="/operations" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:cog" class="w-5 h-5" />
-              <span>Operations</span>
+              <span>Operasional</span>
             </NuxtLink>
             <NuxtLink to="/team" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:user-plus" class="w-5 h-5" />
-              <span>Team</span>
+              <span>Tim</span>
             </NuxtLink>
           </div>
 
@@ -135,15 +135,15 @@
             <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Sistem</p>
             <NuxtLink to="/automation" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:command-line" class="w-5 h-5" />
-              <span>Automation</span>
+              <span>Otomatisasi</span>
             </NuxtLink>
-            <NuxtLink to="/integrations" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink to="/konektor" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:puzzle-piece" class="w-5 h-5" />
-              <span>Integrations</span>
+              <span>Konektor</span>
             </NuxtLink>
             <NuxtLink to="/documents" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:document-text" class="w-5 h-5" />
-              <span>Documents</span>
+              <span>Dokumen</span>
             </NuxtLink>
             <NuxtLink to="/monitoring" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:computer-desktop" class="w-5 h-5" />
