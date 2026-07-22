@@ -178,10 +178,12 @@
           <span class="text-[11px] font-bold px-3.5 py-1.5 tracking-wide select-none" style="background: var(--wp-navy); color: white;">
             Asisten AI
           </span>
-          <button class="relative p-2 transition" style="color: var(--wp-text-secondary);">
+          <NuxtLink to="/notifikasi" class="relative p-2 transition" style="color: var(--wp-text-secondary);">
             <Icon name="heroicons:bell" class="w-5 h-5" />
-            <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style="background: var(--wp-gold);"></span>
-          </button>
+            <span v-if="unreadCount > 0" class="absolute top-1 right-1 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-bold text-white shadow" style="background: var(--wp-navy);">
+              {{ unreadCount > 9 ? '9+' : unreadCount }}
+            </span>
+          </NuxtLink>
           <button class="p-2 transition" style="color: var(--wp-text-secondary);">
             <Icon name="heroicons:question-mark-circle" class="w-5 h-5" />
           </button>
@@ -248,6 +250,17 @@
         <Icon name="heroicons:archive-box" class="w-5 h-5" />
         <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Stok</span>
       </NuxtLink>
+      <NuxtLink to="/notifikasi" exact-active-class="mobile-nav-active" class="mobile-nav-link relative">
+        <Icon name="heroicons:bell" class="w-5 h-5" />
+        <span v-if="unreadCount > 0" class="absolute top-1 right-1/4 translate-x-1/2 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-bold text-white shadow" style="background: var(--wp-navy);">
+          {{ unreadCount > 9 ? '9+' : unreadCount }}
+        </span>
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Notif</span>
+      </NuxtLink>
+      <NuxtLink to="/konektor" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:share" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Profil</span>
+      </NuxtLink>
       <NuxtLink to="/sales-report" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:chart-bar" class="w-5 h-5" />
         <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Laporan</span>
@@ -260,22 +273,25 @@
 
     <!-- ── Toast Notifications ── -->
     <div class="fixed top-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
-      <div v-for="notif in notifications" :key="notif.id" class="bg-white border-l-4 shadow-lg rounded p-4 pr-10 relative pointer-events-auto min-w-[300px] animate-fade-in-up" :style="`border-color: var(--wp-border); border-left-color: ${notif.type === 'NEW_TRANSACTION' ? 'var(--wp-navy)' : '#10B981'};`">
-        <button @click="dismissNotification(notif.id)" class="absolute top-2 right-2 text-slate-400 hover:text-slate-600">
+      <div v-for="toast in activeToasts" :key="toast.id" class="bg-white border-l-4 shadow-lg rounded p-4 pr-10 relative pointer-events-auto min-w-[300px] animate-fade-in-up" :style="`border-color: var(--wp-border); border-left-color: ${toast.type === 'NEW_TRANSACTION' ? 'var(--wp-navy)' : '#10B981'};`">
+        <button @click="dismissToast(toast.id)" class="absolute top-2 right-2 text-slate-400 hover:text-slate-600">
           <Icon name="heroicons:x-mark" class="w-4 h-4" />
         </button>
-        <h4 class="text-sm font-bold text-slate-800">{{ notif.title }}</h4>
-        <p class="text-xs text-slate-600 mt-1">{{ notif.message }}</p>
+        <h4 class="text-sm font-bold text-slate-800">{{ toast.title }}</h4>
+        <p class="text-xs text-slate-600 mt-1">{{ toast.message }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed, reactive, ref } from 'vue'
-import { useAuth } from '../composables/useAuth'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useAuth } from '~/composables/useAuth'
+import { useNotificationStore } from '~/composables/useNotificationStore'
+import { navigateTo } from '#app'
 
 const { user, isAuthenticated, checkAuth, logout: doLogout } = useAuth()
+const { loadNotifications, addNotification, unreadCount } = useNotificationStore()
 const colorMode = useColorMode()
 
 const logoSrc = computed(() => {
@@ -359,6 +375,7 @@ const handleTelegramClick = (event: MouseEvent) => {
 
 onMounted(() => {
   checkAuth()
+  loadNotifications()
   if (!isAuthenticated.value) {
     navigateTo('/login')
   } else {
@@ -375,24 +392,23 @@ const handleLogout = () => {
 }
 
 // ── WebSocket & Notifications Logic ──
-const notifications = ref<Array<{id: string, title: string, message: string, type: string}>>([])
+const activeToasts = ref<Array<{id: string, title: string, message: string, type: string}>>([])
 let ws: WebSocket | null = null
 
-const dismissNotification = (id: string) => {
-  notifications.value = notifications.value.filter(n => n.id !== id)
+const dismissToast = (id: string) => {
+  activeToasts.value = activeToasts.value.filter(n => n.id !== id)
 }
 
-const showNotification = (title: string, message: string, type: string = 'INFO') => {
+const showToast = (title: string, message: string, type: string = 'INFO') => {
   const id = Math.random().toString(36).substring(7)
-  notifications.value.push({ id, title, message, type })
-  setTimeout(() => dismissNotification(id), 6000)
+  activeToasts.value.push({ id, title, message, type })
+  setTimeout(() => dismissToast(id), 6000)
 }
 
 const connectWebSocket = () => {
   const token = localStorage.getItem('access_token')
   if (!token) return
 
-  // In production, you might want to use dynamic URL based on env
   const wsUrl = `wss://cctv-api.desa-sidomukti.com/ws/notifications?token=${token}`
   ws = new WebSocket(wsUrl)
 
@@ -404,7 +420,8 @@ const connectWebSocket = () => {
     try {
       const data = JSON.parse(event.data)
       if (data.title && data.message) {
-        showNotification(data.title, data.message, data.type)
+        showToast(data.title, data.message, data.type)
+        addNotification({ title: data.title, message: data.message, type: data.type })
       }
     } catch (e) {
       console.error('WebSocket message parsing error:', e)
