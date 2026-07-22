@@ -67,6 +67,22 @@
       </button>
     </div>
 
+    <!-- Pertanyaan yang Sering Diajukan (FAQ) -->
+    <div class="mt-8 border-t pt-8 animate-fade-in-up" style="border-color: var(--wp-border); animation-delay: 0.3s;">
+      <h2 class="text-xl font-extrabold mb-6" style="color: var(--wp-navy);">Tanya Jawab (FAQ)</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="(faq, idx) in faqs" :key="idx" class="bg-white border rounded-xl p-5 shadow-sm" style="border-color: var(--wp-border);">
+          <h3 class="text-sm font-bold mb-2 flex items-start gap-2" style="color: var(--wp-navy);">
+            <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
+            {{ faq.question }}
+          </h3>
+          <p class="text-xs leading-relaxed text-slate-600 pl-7">
+            {{ faq.answer }}
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Help Banner -->
     <div class="mt-8 bg-slate-900 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative shadow-lg">
       <div class="absolute -right-10 -top-10 opacity-10">
@@ -94,6 +110,34 @@ useHead({
 })
 
 const searchQuery = ref('')
+
+// Pertanyaan yang Sering Diajukan (FAQ) - Plain, Direct, Non-AI Slop
+const faqs = [
+  {
+    question: 'Bagaimana cara melihat barang yang paling susah laku?',
+    answer: 'Buka menu "Analitik" di sebelah kiri, lalu lihat bagian "Stok Mati". Di situ ada daftar barang yang tidak terjual sama sekali beserta info berapa rupiah uang modal Anda yang tertahan.'
+  },
+  {
+    question: 'Kenapa angka di menu Keuangan berbeda dengan Laporan Penjualan?',
+    answer: 'Laporan Penjualan hanya menghitung omset kotor dari barang laku. Sedangkan menu Keuangan menghitung semuanya, termasuk pengeluaran harian (bayar listrik, gaji karyawan) dan uang kulakan (restock) sehingga menghasilkan Laba Bersih riil.'
+  },
+  {
+    question: 'Apa maksudnya modal "mangkrak" atau "tertahan"?',
+    answer: 'Modal mangkrak adalah uang belanja Anda yang nyangkut karena barangnya tidak laku-laku. Daripada menumpuk di gudang, sebaiknya barang ini segera didiskon agar uangnya bisa berputar lagi.'
+  },
+  {
+    question: 'Bagaimana cara terima laporan otomatis di Telegram?',
+    answer: 'Masuk ke menu "Konektor", lalu klik "Hubungkan Telegram" dan ikuti petunjuknya. Kalau sudah tersambung, bot akan otomatis mengirim laporan penjualan ke HP Anda.'
+  },
+  {
+    question: 'Bolehkah saya pakai bahasa daerah saat ngobrol dengan Asisten AI?',
+    answer: 'Boleh. Anda tidak perlu bahasa baku. Cukup ketik santai seperti "Tolong cek penjualan hari ini" atau "Barang apa yang lagi kosong?", AI akan mengerti dan langsung mencarikan datanya.'
+  },
+  {
+    question: 'Ada kesalahan ketik saat input pengeluaran, bagaimana perbaikinya?',
+    answer: 'Fitur edit pengeluaran sedang dalam pengembangan. Untuk sementara, Anda bisa membatalkan efeknya dengan mencatat pemasukan (Lain-lain) sebesar angka yang salah agar saldonya kembali seimbang.'
+  }
+]
 
 // Content for help center based on existing features
 const helpCategories = [
