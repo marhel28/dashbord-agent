@@ -20,7 +20,7 @@
       <!-- Left Column: Peak Hours & Fast Moving -->
       <div class="flex flex-col gap-4">
         <!-- Peak Hours -->
-        <div class="bg-white border rounded-xl p-4 shadow-sm h-1/2 flex flex-col" style="border-color: var(--wp-border);">
+        <div class="bg-white border rounded-xl p-4 shadow-sm flex flex-col" style="border-color: var(--wp-border);">
           <div class="flex items-center gap-2 mb-4 border-b pb-2" style="border-color: var(--wp-border);">
             <div class="p-1.5 rounded-md bg-blue-50 text-blue-600">
               <Icon name="heroicons:clock" class="w-4 h-4" />
@@ -46,7 +46,7 @@
         </div>
 
         <!-- Fast Moving -->
-        <div class="bg-white border rounded-xl p-4 shadow-sm h-1/2 flex flex-col" style="border-color: var(--wp-border);">
+        <div class="bg-white border rounded-xl p-4 shadow-sm flex flex-col" style="border-color: var(--wp-border);">
           <div class="flex items-center gap-2 mb-4 border-b pb-2" style="border-color: var(--wp-border);">
             <div class="p-1.5 rounded-md bg-green-50 text-green-600">
               <Icon name="heroicons:rocket-launch" class="w-4 h-4" />
