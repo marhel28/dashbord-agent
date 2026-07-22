@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6 animate-fade-in">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
@@ -9,6 +9,11 @@
         </p>
       </div>
       <div class="flex gap-2">
+        <button @click="downloadPdf" :disabled="downloadingPdf" class="px-4 py-2 text-xs font-bold rounded-lg transition-all shadow-sm flex items-center gap-2 border bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50" style="border-color: var(--wp-border);">
+          <Icon v-if="downloadingPdf" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+          <Icon v-else name="heroicons:document-arrow-down" class="w-4 h-4" />
+          {{ downloadingPdf ? 'Menyiapkan...' : 'Unduh Laporan (PDF)' }}
+        </button>
         <button @click="showExpenseModal = true" class="px-4 py-2 text-xs font-bold rounded-lg transition-all shadow-sm flex items-center gap-2" style="background: linear-gradient(135deg, var(--wp-navy), #1e293b); color: white;">
           <Icon name="heroicons:plus" class="w-4 h-4" /> Catat Pengeluaran
         </button>
@@ -153,6 +158,7 @@ const expenses = ref<any[]>([])
 const loading = ref(true)
 const showExpenseModal = ref(false)
 const submitting = ref(false)
+const downloadingPdf = ref(false)
 
 const formExpense = ref({
   amount: 0,
@@ -198,6 +204,40 @@ const submitExpense = async () => {
     alert('Gagal menyimpan pengeluaran')
   } finally {
     submitting.value = false
+  }
+}
+
+const downloadPdf = async () => {
+  downloadingPdf.value = true
+  try {
+    const res = await api.post('/finance/export-pdf')
+    const taskId = res.task_id
+    
+    // Polling status
+    const pollInterval = setInterval(async () => {
+      try {
+        const statusRes = await api.get(`/finance/export-pdf/status/${taskId}`)
+        if (statusRes.status === 'SUCCESS') {
+          clearInterval(pollInterval)
+          downloadingPdf.value = false
+          
+          // Construct the base URL appropriately (adjusting for development/production)
+          const baseURL = api.defaults.baseURL || ''
+          const downloadUrl = `${baseURL}/finance/export-pdf/download/${taskId}`
+          
+          // Open the URL to trigger the browser download
+          window.open(downloadUrl, '_blank')
+        }
+      } catch (e) {
+        clearInterval(pollInterval)
+        downloadingPdf.value = false
+        alert('Gagal mengecek status PDF.')
+      }
+    }, 2000)
+    
+  } catch (e) {
+    downloadingPdf.value = false
+    alert('Gagal memulai unduhan PDF.')
   }
 }
 
