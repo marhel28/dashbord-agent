@@ -1,23 +1,144 @@
-<template>
-  <div class="space-y-6">
-    <div class="border-b pb-4" style="border-color: var(--wp-navy);">
-      <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Memory</h1>
-      <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
-        Lihat dan kelola memori jangka panjang AI Copilot.
-      </p>
+﻿<template>
+  <div class="space-y-6 animate-fade-in">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
+      <div class="border-b pb-4" style="border-color: var(--wp-navy);">
+        <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Memory Center</h1>
+        <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
+          Pusat kendali ingatan seluruh Agen AI Copilot Anda.
+        </p>
+      </div>
+      <button @click="fetchAllMemories" class="px-5 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
+        Segarkan Memori
+      </button>
     </div>
 
-    <!-- Main Content Card -->
-    <div class="bg-white border p-6 shadow-sm flex flex-col items-center justify-center min-h-[300px]" style="border-color: var(--wp-border); border-radius: 0px;">
-      <Icon name="heroicons:wrench-screwdriver" class="w-12 h-12 text-slate-300 mb-4" />
-      <h2 class="text-sm font-bold uppercase tracking-wider mb-2" style="color: var(--wp-navy);">Dalam Pengembangan</h2>
-      <p class="text-xs text-center text-slate-500 max-w-md leading-relaxed">
-        Halaman <strong style="color: var(--wp-gold);">Memory</strong> saat ini sedang dibangun dan akan segera tersedia pada rilis berikutnya. 
-      </p>
+    <!-- Loading State -->
+    <div v-if="loading" class="flex flex-col items-center justify-center min-h-[300px] border rounded-2xl bg-white" style="border-color: var(--wp-border);">
+      <div class="w-8 h-8 rounded-full border-4 animate-spin mb-4" style="border-color: var(--wp-border); border-top-color: var(--wp-gold);"></div>
+      <p class="text-xs font-bold" style="color: var(--wp-text-secondary);">Mengekstrak ingatan para AI...</p>
+    </div>
+
+    <!-- Combined Memory List -->
+    <div v-else-if="allMemories.length > 0" class="space-y-3">
+      <div v-for="m in allMemories" :key="m.id" class="p-4 bg-white border rounded-xl shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest text-white shadow-sm" :style="{ background: m.agentColor || 'var(--wp-navy)' }">
+              {{ m.agentName }}
+            </span>
+            <span class="text-[9px] font-bold" style="color: var(--wp-text-secondary);">{{ relativeTime(m.created_at) }}</span>
+          </div>
+          <button @click="deleteMemory(m)" class="p-1.5 rounded-lg hover:bg-red-50 transition" title="Hapus memori">
+            <Icon name="heroicons:trash" class="w-4 h-4 text-red-500" />
+          </button>
+        </div>
+        <p class="text-xs leading-relaxed" style="color: var(--wp-text);">{{ m.text }}</p>
+        
+        <div class="flex items-center gap-2 mt-3 flex-wrap">
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">
+            ⭐ Penting: {{ m.importance }}/5
+          </span>
+          <span v-if="m.access_count > 0" class="text-[9px]" style="color: var(--wp-text-secondary);">
+            Dibaca {{ m.access_count }}x
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div v-else class="flex flex-col items-center justify-center min-h-[300px] border rounded-2xl bg-white" style="border-color: var(--wp-border);">
+      <Icon name="heroicons:cpu-chip" class="w-12 h-12 mb-3 text-slate-300" />
+      <p class="text-sm font-bold" style="color: var(--wp-text-secondary);">Belum ada memori</p>
+      <p class="text-xs mt-1 text-slate-500 max-w-sm text-center">Para AI Anda belum menyimpan informasi jangka panjang apa pun. Mulailah mengobrol dengan AI Copilot.</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Halaman ini di-generate otomatis
+import { ref, onMounted } from 'vue'
+import { api } from '~/utils/api'
+
+const allMemories = ref<any[]>([])
+const loading = ref(false)
+
+const agentMeta: Record<string, {name: string, color: string}> = {
+  orchestrator: { name: 'Orchestrator', color: '#D4A843' },
+  finance: { name: 'Finance Agent', color: '#059669' },
+  stock: { name: 'Stock Agent', color: '#B8922E' },
+  marketing: { name: 'Marketing Agent', color: '#8B5CF6' },
+  research: { name: 'Research Agent', color: '#3B82F6' },
+}
+
+const relativeTime = (iso: string) => {
+  if (!iso) return ''
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diffMs / 60000)
+  if (mins < 1) return 'baru saja'
+  if (mins < 60) return mins + 'm lalu'
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return hours + 'j lalu'
+  const days = Math.floor(hours / 24)
+  if (days < 30) return days + 'h lalu'
+  return new Date(iso).toLocaleDateString('id-ID')
+}
+
+const fetchAllMemories = async () => {
+  loading.value = true
+  try {
+    const agentsResult = await api.get('/agentic/agents')
+    const agents = agentsResult || []
+    
+    let combined: any[] = []
+    
+    await Promise.all(agents.map(async (agent: any) => {
+      try {
+        const mems = await api.get(/agentic/agents/\/memory, { params: { limit: '20' } })
+        if (mems && mems.memories) {
+          const color = agentMeta[agent.id]?.color || '#0F1A2E'
+          const name = agentMeta[agent.id]?.name || agent.name || agent.id
+          
+          mems.memories.forEach((m: any) => {
+            m.agentId = agent.id
+            m.agentName = name
+            m.agentColor = color
+            combined.push(m)
+          })
+        }
+      } catch (e) {
+        // Skip on error
+      }
+    }))
+    
+    // Sort by created_at desc
+    combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    allMemories.value = combined
+  } catch (err) {
+    console.error(err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const deleteMemory = async (m: any) => {
+  if (!confirm('Hapus memori ini dari ingatan AI?')) return
+  try {
+    await api.delete(/agentic/agents/\/memory/\)
+    allMemories.value = allMemories.value.filter(mem => mem.id !== m.id)
+  } catch (e) {
+    alert('Gagal menghapus memori.')
+  }
+}
+
+onMounted(() => {
+  fetchAllMemories()
+})
 </script>
+
+<style scoped>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+</style>
