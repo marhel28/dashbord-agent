@@ -170,10 +170,8 @@
     <!-- ── Main Area ── -->
     <div class="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
       <header class="h-16 bg-white/80 backdrop-blur-md border-b border-[var(--wp-border)] px-8 items-center justify-between shrink-0 sticky top-0 z-[var(--wp-z-sticky)] hidden lg:flex">
-        <div class="relative w-full max-w-sm">
-          <Icon name="heroicons:magnifying-glass" class="absolute left-3.5 top-2.5 w-4 h-4" style="color: var(--wp-text-secondary);" />
-          <input type="text" placeholder="Cari..." class="w-full pl-10 pr-4 py-2 rounded text-xs transition border outline-none" style="background-color: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
-        </div>
+        <!-- Global Search -->
+        <GlobalSearch />
         <div class="flex items-center gap-4">
           <span class="text-[11px] font-bold px-3.5 py-1.5 tracking-wide select-none" style="background: var(--wp-navy); color: white;">
             Asisten AI
