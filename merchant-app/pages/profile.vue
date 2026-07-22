@@ -106,6 +106,61 @@
         </form>
       </div>
     </div>
+
+    <!-- Change Password Card -->
+    <div class="bg-white dark:bg-slate-800 border border-[var(--wp-border)] rounded shadow-sm overflow-hidden mt-6">
+      <div class="p-6 md:p-8">
+        <h2 class="text-lg font-bold text-[var(--wp-navy)] dark:text-white mb-1">Ganti Password</h2>
+        <p class="text-xs text-slate-500 mb-6">Pastikan akun Anda aman dengan menggunakan kata sandi yang kuat.</p>
+        
+        <form @submit.prevent="handleChangePassword" class="space-y-4 max-w-xl">
+          <div class="space-y-1.5">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Password Lama</label>
+            <input v-model="passForm.old_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Password Baru</label>
+            <input v-model="passForm.new_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required minlength="8" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Konfirmasi Password Baru</label>
+            <input v-model="passForm.confirm_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required minlength="8" />
+          </div>
+
+          <div v-if="passErrorMsg" class="p-3 bg-rose-50 text-rose-600 text-xs font-bold rounded border border-rose-100 flex items-center gap-2">
+            <Icon name="heroicons:exclamation-circle" class="w-4 h-4" />
+            <span>{{ passErrorMsg }}</span>
+          </div>
+          <div v-if="passSuccessMsg" class="p-3 bg-emerald-50 text-emerald-600 text-xs font-bold rounded border border-emerald-100 flex items-center gap-2">
+            <Icon name="heroicons:check-circle" class="w-4 h-4" />
+            <span>{{ passSuccessMsg }}</span>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" :disabled="isChangingPassword" class="px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center md:justify-start gap-2" style="background: var(--wp-navy); border-radius: 4px;">
+              <Icon v-if="isChangingPassword" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+              <Icon v-else name="heroicons:key" class="w-4 h-4" />
+              <span>{{ isChangingPassword ? 'Memproses...' : 'Perbarui Password' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Danger Zone (Delete Account) -->
+    <div class="border border-rose-200 bg-rose-50 rounded shadow-sm overflow-hidden mt-6">
+      <div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-rose-700 mb-1">Zona Bahaya</h2>
+          <p class="text-xs text-rose-600/80">Hapus akun secara permanen. Tindakan ini tidak dapat dibatalkan dan semua data akan hilang.</p>
+        </div>
+        <button @click="confirmDeleteAccount" :disabled="isDeletingAccount" class="px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition rounded shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 shrink-0">
+          <Icon v-if="isDeletingAccount" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+          <Icon v-else name="heroicons:trash" class="w-4 h-4" />
+          <span>{{ isDeletingAccount ? 'Memproses...' : 'Hapus Akun' }}</span>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -113,6 +168,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useRouter } from 'vue-router'
+import { api } from '~/utils/api'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
@@ -133,6 +189,16 @@ const form = ref({
 const isSubmitting = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
+
+// Password variables
+const passForm = ref({
+  old_password: '',
+  new_password: '',
+  confirm_password: ''
+})
+const isChangingPassword = ref(false)
+const passErrorMsg = ref('')
+const passSuccessMsg = ref('')
 
 // Map variables
 const mapContainer = ref<HTMLElement | null>(null)
@@ -294,6 +360,58 @@ const handleUpdateProfile = async () => {
     errorMsg.value = error.message || 'Terjadi kesalahan sistem'
   } finally {
     isSubmitting.value = false
+  }
+}
+
+const handleChangePassword = async () => {
+  passErrorMsg.value = ''
+  passSuccessMsg.value = ''
+
+  if (passForm.value.new_password !== passForm.value.confirm_password) {
+    passErrorMsg.value = 'Password baru dan konfirmasi tidak cocok.'
+    return
+  }
+
+  isChangingPassword.value = true
+  try {
+    await api.post('/auth/change-password', {
+      old_password: passForm.value.old_password,
+      new_password: passForm.value.new_password
+    })
+    
+    passSuccessMsg.value = 'Password berhasil diubah!'
+    passForm.value.old_password = ''
+    passForm.value.new_password = ''
+    passForm.value.confirm_password = ''
+    
+    setTimeout(() => { passSuccessMsg.value = '' }, 3000)
+  } catch (error: any) {
+    passErrorMsg.value = error.response?.data?.detail || error.message || 'Gagal mengubah password'
+  } finally {
+    isChangingPassword.value = false
+  }
+}
+
+const isDeletingAccount = ref(false)
+const confirmDeleteAccount = async () => {
+  if (!confirm('Apakah Anda yakin ingin menghapus akun ini secara permanen? Semua data akan hilang.')) return
+  if (!confirm('Peringatan Terakhir: Lanjutkan menghapus akun?')) return
+
+  isDeletingAccount.value = true
+  try {
+    await api.post('/auth/delete-account')
+    alert('Akun berhasil dihapus.')
+    
+    // Clear tokens and redirect
+    const tokenCookie = useCookie('auth_token')
+    const refreshCookie = useCookie('refresh_token')
+    tokenCookie.value = null
+    refreshCookie.value = null
+    
+    window.location.href = '/login'
+  } catch (error: any) {
+    alert('Gagal menghapus akun: ' + (error.response?.data?.detail || error.message))
+    isDeletingAccount.value = false
   }
 }
 </script>
