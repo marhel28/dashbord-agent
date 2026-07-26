@@ -177,8 +177,12 @@
 
 <script setup lang="ts">
 import { ref, computed, markRaw } from 'vue'
-import { VueFlow, useVueFlow, Background, Controls, MiniMap, type Node, type Edge, type Connection, type EdgeMouseEvent, type NodeMouseEvent } from '@vue-flow/core'
+import { VueFlow, useVueFlow, type Node, type Edge, type Connection } from '@vue-flow/core'
+import { Background } from '@vue-flow/background'
+import { Controls } from '@vue-flow/controls'
+import { MiniMap } from '@vue-flow/minimap'
 import '@vue-flow/core/dist/style.css'
+import '@vue-flow/background/dist/style.css'
 import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
 import TriggerNode from './TriggerNode.vue'
