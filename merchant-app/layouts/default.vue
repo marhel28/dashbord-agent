@@ -403,9 +403,27 @@ const showToast = (title: string, message: string, type: string = 'INFO') => {
   setTimeout(() => dismissToast(id), 6000)
 }
 
+// ── JWT expiry check (token valid for 1 hour) ──
+const isTokenValid = (token) => {
+  if (!token) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const exp = payload.exp * 1000 // convert to ms
+    return Date.now() < exp
+  } catch {
+    return false
+  }
+}
+
 const connectWebSocket = () => {
   const token = localStorage.getItem('access_token')
   if (!token) return
+
+  // Don't connect with expired token — will cause infinite reconnect loop
+  if (!isTokenValid(token)) {
+    console.log('WebSocket: token expired, skipping connection')
+    return
+  }
 
   const wsUrl = `wss://cctv-api.desa-sidomukti.com/ws/notifications?token=${token}`
   ws = new WebSocket(wsUrl)
@@ -417,6 +435,12 @@ const connectWebSocket = () => {
   ws.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data)
+      // Handle token_expired error from server
+      if (data.type === 'error' && data.code === 'token_expired') {
+        console.log('WebSocket: server reported token expired')
+        ws?.close()
+        return
+      }
       if (data.title && data.message) {
         showToast(data.title, data.message, data.type)
         addNotification({ title: data.title, message: data.message, type: data.type })
@@ -426,8 +450,13 @@ const connectWebSocket = () => {
     }
   }
 
-  ws.onclose = () => {
-    console.log('WebSocket disconnected')
+  ws.onclose = (event) => {
+    console.log(`WebSocket disconnected (code: ${event.code})`)
+    // Don't reconnect if token is expired (code 1008 = policy violation)
+    if (event.code === 1008) {
+      console.log('WebSocket: auth failed, not reconnecting')
+      return
+    }
     // Attempt reconnect after 5 seconds if still authenticated
     if (isAuthenticated.value) {
       setTimeout(connectWebSocket, 5000)

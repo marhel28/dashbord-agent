@@ -11,12 +11,34 @@
     <div class="bg-white dark:bg-slate-800 border border-[var(--wp-border)] rounded shadow-sm overflow-hidden">
       <div class="p-6 md:p-8 border-b border-[var(--wp-border)] bg-slate-50 dark:bg-slate-800/50 flex flex-col md:flex-row items-center gap-6">
         <!-- Profile Picture Area -->
-        <div class="relative group">
-          <div v-if="user?.photo_profile" class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-slate-700 shadow-md">
-            <img :src="user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
+        <div class="relative group flex flex-col items-center gap-3">
+          <div class="relative">
+            <div v-if="photoPreview || user?.photo_profile" class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-slate-700 shadow-md">
+              <img :src="photoPreview || user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
+            </div>
+            <div v-else class="w-24 h-24 rounded-full border-4 border-white dark:border-slate-700 shadow-md flex items-center justify-center text-3xl font-black text-white" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
+              {{ user?.name?.charAt(0) || 'U' }}
+            </div>
+            <!-- Loading overlay -->
+            <div v-if="photoUploading" class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+              <Icon name="heroicons:arrow-path" class="w-6 h-6 text-white animate-spin" />
+            </div>
           </div>
-          <div v-else class="w-24 h-24 rounded-full border-4 border-white dark:border-slate-700 shadow-md flex items-center justify-center text-3xl font-black text-white" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-            {{ user?.name?.charAt(0) || 'U' }}
+          <!-- Photo upload controls -->
+          <div class="flex flex-col items-center gap-2">
+            <input type="file" accept="image/*" @change="handlePhotoChange" class="hidden" ref="photoInput" />
+            <div class="flex gap-2">
+              <button type="button" @click="photoInput?.click()" class="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded border border-[var(--wp-border)] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <Icon name="heroicons:photo" class="w-3.5 h-3.5" />
+                {{ selectedFile ? 'Ganti Foto' : 'Pilih Foto' }}
+              </button>
+              <button v-if="selectedFile" type="button" @click="uploadPhoto" :disabled="photoUploading" class="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-colors" style="background: var(--wp-gold);">
+                <Icon name="heroicons:check" class="w-3.5 h-3.5" />
+                {{ photoUploading ? 'Mengupload...' : 'Simpan Foto' }}
+              </button>
+            </div>
+            <p v-if="photoUploadError" class="text-red-500 text-[10px] font-medium">{{ photoUploadError }}</p>
+            <p v-if="photoSuccessMsg" class="text-green-600 text-[10px] font-medium">{{ photoSuccessMsg }}</p>
           </div>
         </div>
 
@@ -190,6 +212,14 @@ const isSubmitting = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
 
+// Photo upload state
+const photoInput = ref<HTMLInputElement | null>(null)
+const selectedFile = ref<File | null>(null)
+const photoPreview = ref<string | null>(null)
+const photoUploading = ref(false)
+const photoUploadError = ref('')
+const photoSuccessMsg = ref('')
+
 // Password variables
 const passForm = ref({
   old_password: '',
@@ -360,6 +390,49 @@ const handleUpdateProfile = async () => {
     errorMsg.value = error.message || 'Terjadi kesalahan sistem'
   } finally {
     isSubmitting.value = false
+  }
+}
+
+// Photo upload handlers
+const handlePhotoChange = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  if (file.size > 5 * 1024 * 1024) {
+    photoUploadError.value = 'Ukuran gambar maksimal 5MB'
+    selectedFile.value = null
+    photoPreview.value = null
+    return
+  }
+
+  selectedFile.value = file
+  photoUploadError.value = ''
+  photoSuccessMsg.value = ''
+
+  const reader = new FileReader()
+  reader.onload = (ev) => { photoPreview.value = ev.target?.result as string }
+  reader.readAsDataURL(file)
+}
+
+const uploadPhoto = async () => {
+  if (!selectedFile.value) return
+
+  photoUploading.value = true
+  photoUploadError.value = ''
+  photoSuccessMsg.value = ''
+
+  try {
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+    const result = await api.post('/stocks/upload-image', formData, { headers: {} as any })
+    await updateProfile({ photo_profile: result.url })
+    photoSuccessMsg.value = 'Foto profil berhasil diperbarui!'
+    selectedFile.value = null
+    setTimeout(() => { photoSuccessMsg.value = '' }, 3000)
+  } catch (err: any) {
+    photoUploadError.value = err.message || 'Gagal mengupload foto'
+  } finally {
+    photoUploading.value = false
   }
 }
 
