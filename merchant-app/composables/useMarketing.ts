@@ -1,8 +1,9 @@
 /**
  * Marketing Composable — state management for Marketing Command Center.
  *
- * Follows the useAnalytics pattern: state refs, fetch functions,
- * loading/error handling, formatters.
+ * Dual-path:
+ * - Path A (Gateway Direct): fetch* functions call /agentic/marketing/* for structured data
+ * - Path B (Orchestrator Chat): sendChat calls /agentic/marketing/chat for open-ended queries
  */
 
 import { ref } from 'vue'
@@ -43,10 +44,16 @@ export interface OverviewData {
   ai_recommendations: string[]
 }
 
+export interface ChatMessage {
+  role: 'user' | 'ai'
+  text: string
+  agents?: string[]
+}
+
 // ── Composable ──────────────────────────────────────────────────────
 
 export const useMarketing = () => {
-  // State
+  // Path A state — structured data from gateway
   const overview = ref<OverviewData | null>(null)
   const recommendations = ref<MarketingRecommendation[]>([])
   const kpis = ref<MarketingKPI[]>([])
@@ -57,24 +64,29 @@ export const useMarketing = () => {
   const channels = ref<any>(null)
   const insights = ref<any>(null)
   const health = ref<any>(null)
-  const generatedContent = ref<any>(null)
 
+  // Path B state — chat
+  const chatMessages = ref<ChatMessage[]>([])
+  const chatSending = ref(false)
+
+  // Content generation state
+  const generatedContent = ref<any>(null)
+  const showContentModal = ref(false)
+  const contentGenerating = ref(false)
+
+  // Common state
   const loading = ref(false)
   const error = ref('')
 
-  // ── Fetchers ─────────────────────────────────────────────────────
+  // ── Path A: Gateway Direct fetchers ────────────────────────────────
 
   const fetchOverview = async () => {
-    loading.value = true
-    error.value = ''
     try {
       const res = await api.get('/agentic/marketing/overview')
       overview.value = res.data || res
       kpis.value = res.data?.kpis || res?.kpis || []
     } catch (err: any) {
       error.value = err.message || 'Gagal memuat overview'
-    } finally {
-      loading.value = false
     }
   }
 
@@ -159,7 +171,37 @@ export const useMarketing = () => {
     }
   }
 
-  const generateContent = async (productName: string, platform = 'instagram', goal = 'hard_selling') => {
+  // ── Path B: Orchestrator Chat ─────────────────────────────────────
+
+  const sendChat = async (message: string) => {
+    chatMessages.value.push({ role: 'user', text: message })
+    chatSending.value = true
+    try {
+      const res = await api.post('/agentic/marketing/chat', { message })
+      chatMessages.value.push({
+        role: 'ai',
+        text: res.reply || res.data?.reply || 'Maaf, ada kendala teknis.',
+        agents: res.agents_used || res.data?.agents_used || [],
+      })
+    } catch (err: any) {
+      chatMessages.value.push({
+        role: 'ai',
+        text: `Maaf, terjadi kesalahan: ${err.message || 'Unknown error'}`,
+      })
+    } finally {
+      chatSending.value = false
+    }
+  }
+
+  const clearChat = () => {
+    chatMessages.value = []
+  }
+
+  // ── Content Generation ────────────────────────────────────────────
+
+  const generateCaption = async (productName: string, platform = 'instagram', goal = 'hard_selling') => {
+    contentGenerating.value = true
+    error.value = ''
     try {
       const res = await api.post('/agentic/marketing/content/generate', {
         product_name: productName,
@@ -167,11 +209,23 @@ export const useMarketing = () => {
         goal,
       })
       generatedContent.value = res.data || res
+      showContentModal.value = true
       return generatedContent.value
     } catch (err: any) {
       error.value = err.message || 'Gagal generate konten'
       throw err
+    } finally {
+      contentGenerating.value = false
     }
+  }
+
+  const openContentModal = (content: any) => {
+    generatedContent.value = content
+    showContentModal.value = true
+  }
+
+  const closeContentModal = () => {
+    showContentModal.value = false
   }
 
   const createCampaignPlan = async (params: {
@@ -221,7 +275,7 @@ export const useMarketing = () => {
   }
 
   return {
-    // State
+    // Path A state
     overview,
     recommendations,
     kpis,
@@ -232,11 +286,21 @@ export const useMarketing = () => {
     channels,
     insights,
     health,
+
+    // Path B state
+    chatMessages,
+    chatSending,
+
+    // Content state
     generatedContent,
+    showContentModal,
+    contentGenerating,
+
+    // Common state
     loading,
     error,
 
-    // Actions
+    // Path A actions
     fetchOverview,
     fetchRecommendations,
     fetchKpis,
@@ -247,8 +311,18 @@ export const useMarketing = () => {
     fetchChannels,
     fetchInsights,
     fetchHealth,
-    generateContent,
+
+    // Path B actions
+    sendChat,
+    clearChat,
+
+    // Content actions
+    generateCaption,
+    openContentModal,
+    closeContentModal,
     createCampaignPlan,
+
+    // Load all
     loadAll,
   }
 }
