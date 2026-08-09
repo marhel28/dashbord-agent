@@ -266,45 +266,62 @@
       </div>
     </template>
 
-    <!-- ═══ CONTENT RESULT MODAL ═══ -->
+    <!-- ═══ CONTENT RESULT MODAL (3 Variants) ═══ -->
     <Teleport to="body">
       <div v-if="showContentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6);" @click.self="closeContentModal">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto" style="background: var(--wp-surface);">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background: var(--wp-surface);">
           <div class="p-6 border-b flex items-center justify-between sticky top-0 z-10" style="border-color: var(--wp-border); background: var(--wp-surface);">
             <div class="flex items-center gap-2">
               <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
                 <Icon name="heroicons:sparkles" class="w-4 h-4 text-white" />
               </div>
-              <h3 class="text-base font-black uppercase tracking-wider" style="color: var(--wp-navy);">Hasil Konten</h3>
+              <div>
+                <h3 class="text-base font-black uppercase tracking-wider" style="color: var(--wp-navy);">Hasil Konten AI</h3>
+                <p class="text-[10px]" style="color: var(--wp-text-secondary);">{{ generatedContent?.product }} — 3 varian caption dinamis</p>
+              </div>
             </div>
             <button @click="closeContentModal" class="p-1.5 rounded-lg hover:bg-slate-100 transition">
               <Icon name="heroicons:x-mark" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
             </button>
           </div>
           <div class="p-6">
-            <!-- Caption -->
-            <div v-if="generatedContent?.caption" class="mb-4">
-              <label class="block text-[10px] font-bold uppercase tracking-wider mb-2" style="color: var(--wp-text-secondary);">Caption</label>
+            <!-- Variant Tabs -->
+            <div v-if="generatedContent?.variants?.length" class="space-y-4">
+              <div v-for="(variant, i) in generatedContent.variants" :key="i"
+                   class="p-4 rounded-xl border"
+                   :style="i === 0 ? 'border-color: var(--wp-gold); background: linear-gradient(135deg, rgba(212,168,67,0.05), transparent);' : 'border-color: var(--wp-border);'">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-sm font-bold" style="color: var(--wp-text);">{{ variant.style || 'Caption' }}</span>
+                  <button @click="copyText(variant.caption || '')" class="text-[10px] font-bold px-2 py-1 rounded" style="background: var(--wp-bg); color: var(--wp-text-secondary);">
+                    📋 Copy
+                  </button>
+                </div>
+                <p class="text-xs leading-relaxed whitespace-pre-wrap mb-3" style="color: var(--wp-text);">{{ variant.caption || 'Tidak ada caption' }}</p>
+                <!-- Hashtags -->
+                <div v-if="variant.hashtags?.length" class="flex flex-wrap gap-1.5 mb-2">
+                  <span v-for="tag in variant.hashtags" :key="tag" class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
+                    {{ tag }}
+                  </span>
+                </div>
+                <!-- CTA + Headline -->
+                <div v-if="variant.cta || variant.headline" class="flex gap-2 flex-wrap text-[10px]" style="color: var(--wp-text-secondary);">
+                  <span v-if="variant.cta" class="px-2 py-0.5 rounded" style="background: var(--wp-bg);">CTA: <strong style="color: var(--wp-text);">{{ variant.cta }}</strong></span>
+                  <span v-if="variant.headline" class="px-2 py-0.5 rounded" style="background: var(--wp-bg);">Headline: <strong style="color: var(--wp-text);">{{ variant.headline }}</strong></span>
+                </div>
+                <!-- Image Idea -->
+                <p v-if="variant.image_idea" class="text-[10px] italic mt-2" style="color: var(--wp-text-secondary);">💡 {{ variant.image_idea }}</p>
+              </div>
+            </div>
+
+            <!-- Fallback: single caption -->
+            <div v-else-if="generatedContent?.caption" class="mb-4">
               <div class="p-4 rounded-xl border text-xs leading-relaxed whitespace-pre-wrap" style="border-color: var(--wp-border); background: var(--wp-bg); color: var(--wp-text);">
                 {{ generatedContent.caption }}
               </div>
             </div>
 
-            <!-- Hashtags -->
-            <div v-if="generatedContent?.hashtags?.length" class="mb-4">
-              <label class="block text-[10px] font-bold uppercase tracking-wider mb-2" style="color: var(--wp-text-secondary);">Hashtags</label>
-              <div class="flex flex-wrap gap-2">
-                <span v-for="tag in generatedContent.hashtags" :key="tag"
-                      class="text-xs font-semibold px-2.5 py-1 rounded-full cursor-pointer hover:shadow-md transition"
-                      style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);"
-                      @click="copyText(tag)">
-                  {{ tag }}
-                </span>
-              </div>
-            </div>
-
             <!-- Meta -->
-            <div v-if="generatedContent?.platform" class="flex gap-3 mb-4 text-xs flex-wrap" style="color: var(--wp-text-secondary);">
+            <div v-if="generatedContent?.platform" class="flex gap-3 mb-4 text-xs flex-wrap mt-4" style="color: var(--wp-text-secondary);">
               <span class="px-2 py-1 rounded" style="background: var(--wp-bg);">Platform: <strong style="color: var(--wp-text);">{{ generatedContent.platform }}</strong></span>
               <span v-if="generatedContent?.product" class="px-2 py-1 rounded" style="background: var(--wp-bg);">Produk: <strong style="color: var(--wp-text);">{{ generatedContent.product }}</strong></span>
             </div>
@@ -314,7 +331,7 @@
               <button @click="copyContent()"
                       class="flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl text-white transition hover:shadow-md"
                       style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
-                {{ copied ? '✅ Tersalin!' : '📋 Copy Semua' }}
+                {{ copied ? '✅ Tersalin!' : '📋 Copy Semua Caption' }}
               </button>
               <button @click="closeContentModal"
                       class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl border transition"
@@ -415,12 +432,20 @@ const handleSendChat = async (message: string) => {
 
 const copyContent = async () => {
   if (!generatedContent.value) return
-  const text = [
-    generatedContent.value.caption,
-    '',
-    ...(generatedContent.value.hashtags || []),
-  ].join('\n')
-  await copyText(text)
+  const variants = generatedContent.value.variants || []
+  if (variants.length) {
+    const text = variants.map((v: any, i: number) =>
+      `${i + 1}. ${v.style || 'Caption'}\n${v.caption || ''}\n${(v.hashtags || []).join(' ')}\nCTA: ${v.cta || '-'}`
+    ).join('\n\n---\n\n')
+    await copyText(text)
+  } else {
+    const text = [
+      generatedContent.value.caption || '',
+      '',
+      ...(generatedContent.value.hashtags || []),
+    ].join('\n')
+    await copyText(text)
+  }
 }
 
 const copyText = async (text: string) => {
