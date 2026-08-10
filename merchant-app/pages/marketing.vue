@@ -285,13 +285,57 @@
             </button>
           </div>
           <div class="p-6">
+            <!-- ═══ AI RECOMMENDATION (Marketing Score + Strategy) ═══ -->
+            <div v-if="generatedContent?.marketing_score?.score > 0" class="mb-5 p-4 rounded-xl border" style="border-color: var(--wp-border); background: linear-gradient(135deg, rgba(212,168,67,0.03), transparent);">
+              <!-- Score Badge -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white"
+                       :style="`background: ${generatedContent.marketing_score.score >= 70 ? '#22c55e' : generatedContent.marketing_score.score >= 50 ? '#f59e0b' : '#ef4444'};`">
+                    {{ generatedContent.marketing_score.score }}
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Marketing Score</p>
+                    <p class="text-xs font-bold" style="color: var(--wp-text);">{{ generatedContent.recommendation?.strategy || 'Recommended' }}</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-[10px]" style="color: var(--wp-text-secondary);">Confidence</p>
+                  <p class="text-sm font-bold" style="color: var(--wp-gold);">{{ generatedContent.recommendation?.confidence || 0 }}%</p>
+                </div>
+              </div>
+              <!-- Reasons -->
+              <div v-if="generatedContent.recommendation?.reasons?.length" class="space-y-1">
+                <p v-for="(reason, ri) in generatedContent.recommendation.reasons" :key="ri" class="text-[10px] flex items-start gap-1.5" style="color: var(--wp-text-secondary);">
+                  <span style="color: var(--wp-gold);">•</span>
+                  <span>{{ reason }}</span>
+                </p>
+              </div>
+              <!-- Component Breakdown (collapsible) -->
+              <div v-if="generatedContent.marketing_score?.components" class="mt-2 pt-2 border-t" style="border-color: var(--wp-border);">
+                <div class="flex gap-2 flex-wrap">
+                  <span v-for="(val, key) in generatedContent.marketing_score.components" :key="key"
+                        class="text-[9px] font-semibold px-1.5 py-0.5 rounded"
+                        style="background: var(--wp-bg); color: var(--wp-text-secondary);">
+                    {{ key }}: {{ val }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <!-- Variant Tabs -->
             <div v-if="generatedContent?.variants?.length" class="space-y-4">
               <div v-for="(variant, i) in generatedContent.variants" :key="i"
                    class="p-4 rounded-xl border"
                    :style="i === 0 ? 'border-color: var(--wp-gold); background: linear-gradient(135deg, rgba(212,168,67,0.05), transparent);' : 'border-color: var(--wp-border);'">
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-sm font-bold" style="color: var(--wp-text);">{{ variant.style || 'Caption' }}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold" style="color: var(--wp-text);">{{ variant.emoji }} {{ variant.style || 'Caption' }}</span>
+                    <span v-if="variant.score" class="text-[9px] font-bold px-1.5 py-0.5 rounded text-white"
+                          :style="`background: ${variant.score >= 80 ? '#22c55e' : variant.score >= 60 ? '#f59e0b' : '#94a3b8'};`">
+                      {{ variant.score }}
+                    </span>
+                  </div>
                   <button @click="copyText(variant.caption || '')" class="text-[10px] font-bold px-2 py-1 rounded" style="background: var(--wp-bg); color: var(--wp-text-secondary);">
                     📋 Copy
                   </button>
