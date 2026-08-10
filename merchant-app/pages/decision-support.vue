@@ -100,7 +100,7 @@
               v-for="rec in quickWins"
               :key="'qw_' + rec.product_uuid"
               class="bg-white border p-4 shadow-sm cursor-pointer hover:shadow-md transition-all"
-              style="border-color: var(--wp-border); border-top: 3px solid var(--wp-gold);"
+              style="border-color: var(--wp-border);"
               @click="scrollToRec(rec)"
             >
               <p class="text-[10px] font-bold uppercase tracking-wider mb-1" :style="{ color: ACTION_COLORS[rec.action_type]?.color || '#64748B' }">
@@ -108,7 +108,7 @@
               </p>
               <p class="text-xs font-bold mb-1" style="color: var(--wp-navy);">{{ rec.product_name }}</p>
               <p class="text-sm font-black" style="color: var(--wp-gold);">
-                Rp {{ rec.expected_impact_rupiah.toLocaleString('id-ID') }}
+                Rp {{ (rec.expected_impact_rupiah ?? 0).toLocaleString('id-ID') }}
               </p>
               <p class="text-[10px] mt-1" style="color: var(--wp-text-secondary);">{{ rec.recommendation_text }}</p>
             </div>

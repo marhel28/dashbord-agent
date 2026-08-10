@@ -1,12 +1,10 @@
 <template>
-  <!-- Guard: only render if recommendation has required fields -->
+  <!-- Guard: only render if recommendation exists -->
   <div
-    v-if="recommendation && recommendation.metrics && recommendation.scores"
-    class="bg-white border p-5 shadow-sm transition-all hover:shadow-md relative overflow-hidden"
+    v-if="recommendation"
+    class="bg-white border p-5 shadow-sm transition-all hover:shadow-md"
     :style="{ borderColor: 'var(--wp-border)' }"
   >
-    <!-- Priority accent bar -->
-    <div class="absolute top-0 left-0 right-0 h-1" :style="{ backgroundColor: accentColor }" />
 
     <!-- Header: Action Badge + Priority -->
     <div class="flex items-start justify-between mb-3 mt-1">
@@ -37,33 +35,36 @@
       {{ recommendation.product_name }}
     </h3>
     <p class="text-[10px] font-semibold mb-3" style="color: var(--wp-text-secondary);">
-      Stok {{ recommendation.metrics.stock_qty }} pcs &bull;
-      {{ recommendation.metrics.days_of_inventory < 999 ? recommendation.metrics.days_of_inventory.toFixed(1) + ' hari persediaan' : 'tanpa pergerakan' }}
-      &bull; Margin {{ recommendation.metrics.margin_pct.toFixed(0) }}%
+      <template v-if="recommendation.metrics">
+        Stok {{ recommendation.metrics.stock_qty ?? 0 }} pcs &bull;
+        {{ (recommendation.metrics.days_of_inventory ?? 999) < 999 ? (recommendation.metrics.days_of_inventory ?? 0).toFixed(1) + ' hari persediaan' : 'tanpa pergerakan' }}
+        &bull; Margin {{ (recommendation.metrics.margin_pct ?? 0).toFixed(0) }}%
+      </template>
+      <template v-else>Data metrik tidak tersedia</template>
     </p>
 
     <!-- Score Bars -->
-    <div class="space-y-1.5 mb-3">
+    <div v-if="recommendation.scores" class="space-y-1.5 mb-3">
       <div class="flex items-center gap-2">
         <span class="text-[9px] font-semibold uppercase tracking-wider w-14 shrink-0" style="color: var(--wp-text-secondary);">Impact</span>
         <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div class="h-full rounded-full transition-all" :style="{ width: `${recommendation.scores.impact}%`, backgroundColor: 'var(--wp-error)' }" />
+          <div class="h-full rounded-full transition-all" :style="{ width: `${recommendation.scores.impact ?? 0}%`, backgroundColor: 'var(--wp-error)' }" />
         </div>
-        <span class="text-[10px] font-bold w-6 text-right" style="color: var(--wp-error);">{{ recommendation.scores.impact }}</span>
+        <span class="text-[10px] font-bold w-6 text-right" style="color: var(--wp-error);">{{ recommendation.scores.impact ?? 0 }}</span>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-[9px] font-semibold uppercase tracking-wider w-14 shrink-0" style="color: var(--wp-text-secondary);">Urgency</span>
         <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div class="h-full rounded-full transition-all" :style="{ width: `${recommendation.scores.urgency}%`, backgroundColor: 'var(--wp-warning)' }" />
+          <div class="h-full rounded-full transition-all" :style="{ width: `${recommendation.scores.urgency ?? 0}%`, backgroundColor: 'var(--wp-warning)' }" />
         </div>
-        <span class="text-[10px] font-bold w-6 text-right" style="color: var(--wp-warning);">{{ recommendation.scores.urgency }}</span>
+        <span class="text-[10px] font-bold w-6 text-right" style="color: var(--wp-warning);">{{ recommendation.scores.urgency ?? 0 }}</span>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-[9px] font-semibold uppercase tracking-wider w-14 shrink-0" style="color: var(--wp-text-secondary);">Conf</span>
         <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div class="h-full rounded-full transition-all" :style="{ width: `${recommendation.confidence}%`, backgroundColor: confidenceBarColor }" />
+          <div class="h-full rounded-full transition-all" :style="{ width: `${recommendation.confidence ?? 0}%`, backgroundColor: confidenceBarColor }" />
         </div>
-        <span class="text-[10px] font-bold w-6 text-right" :style="{ color: confidenceBarColor }">{{ recommendation.confidence }}%</span>
+        <span class="text-[10px] font-bold w-6 text-right" :style="{ color: confidenceBarColor }">{{ recommendation.confidence ?? 0 }}%</span>
       </div>
     </div>
 
@@ -86,14 +87,14 @@
     </p>
 
     <!-- Evidence (expandable) -->
-    <div v-if="recommendation.evidence && recommendation.evidence.length > 0" class="mb-3">
+    <div v-if="(recommendation.evidence || []).length > 0" class="mb-3">
       <button
         class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors"
         style="color: var(--wp-navy);"
         @click="showEvidence = !showEvidence"
       >
         <Icon :name="showEvidence ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-3 h-3" />
-        Mengapa? ({{ recommendation.evidence.length }} alasan)
+        Mengapa? ({{ (recommendation.evidence || []).length }} alasan)
       </button>
       <div v-if="showEvidence" class="mt-2 pl-4 space-y-1">
         <div
@@ -106,7 +107,7 @@
           <span>{{ ev }}</span>
         </div>
         <!-- Confidence Factors -->
-        <div v-if="recommendation.confidence_factors && recommendation.confidence_factors.length > 0" class="pt-2 mt-2 border-t" style="border-color: var(--wp-border);">
+        <div v-if="(recommendation.confidence_factors || []).length > 0" class="pt-2 mt-2 border-t" style="border-color: var(--wp-border);">
           <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color: var(--wp-text-secondary);">
             Confidence Factors:
           </p>
@@ -130,9 +131,9 @@
     </div>
 
     <!-- Multi-CTA Buttons -->
-    <div v-if="recommendation.cta && recommendation.cta.length > 0" class="flex gap-2 flex-wrap">
+    <div v-if="(recommendation.cta || []).length > 0" class="flex gap-2 flex-wrap">
       <button
-        v-for="cta in recommendation.cta"
+        v-for="cta in (recommendation.cta || [])"
         :key="cta.action"
         class="flex-1 min-w-[80px] py-2 text-[10px] font-bold uppercase tracking-wider text-white transition-all hover:opacity-90 active:scale-[0.98] rounded"
         :style="{ backgroundColor: ctaColor }"
@@ -230,7 +231,7 @@ const impactIconColor = computed(() => style.value.impactIcon)
 const impactLabel = computed(() => style.value.impactLabel)
 
 const priorityColor = computed(() => {
-  const p = props.recommendation.priority
+  const p = props.recommendation.priority ?? 0
   if (p >= 80) return 'var(--wp-error)'
   if (p >= 60) return 'var(--wp-warning)'
   if (p >= 40) return '#3B82F6'
@@ -238,7 +239,7 @@ const priorityColor = computed(() => {
 })
 
 const confidenceBarColor = computed(() => {
-  const c = props.recommendation.confidence
+  const c = props.recommendation.confidence ?? 0
   if (c >= 80) return 'var(--wp-success)'
   if (c >= 50) return 'var(--wp-warning)'
   return 'var(--wp-error)'
@@ -246,7 +247,7 @@ const confidenceBarColor = computed(() => {
 
 const impactText = computed(() => {
   const rp = props.recommendation.expected_impact_rupiah
-  if (!rp || rp <= 0) return 'Perlu analisis lanjut'
+  if (!rp || typeof rp !== 'number' || rp <= 0) return 'Perlu analisis lanjut'
   return `Rp ${rp.toLocaleString('id-ID')}`
 })
 </script>
