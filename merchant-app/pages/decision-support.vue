@@ -198,7 +198,7 @@
         </div>
 
         <!-- Empty -->
-        <div v-if="filteredRecommendations.length === 0 && !loading" class="bg-white border p-12 shadow-sm text-center" style="border-color: var(--wp-border);">
+        <div v-if="(filteredRecommendations ?? []).length === 0 && !loading" class="bg-white border p-12 shadow-sm text-center" style="border-color: var(--wp-border);">
           <Icon name="heroicons:check-circle" class="w-12 h-12 text-emerald-400 mx-auto mb-4" />
           <h2 class="text-sm font-bold uppercase tracking-wider mb-2" style="color: var(--wp-navy);">Semua Baik-Baik Saja</h2>
           <p class="text-xs max-w-md mx-auto" style="color: var(--wp-text-secondary);">Tidak ada rekomendasi mendesak saat ini.</p>

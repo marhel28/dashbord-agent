@@ -33,7 +33,7 @@
           
           <div class="flex-1 flex flex-col justify-center">
             <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
-            <div v-else-if="!peakHours.length" class="text-xs text-center text-slate-400 italic">Belum ada data transaksi di periode ini.</div>
+            <div v-else-if="!(peakHours ?? []).length" class="text-xs text-center text-slate-400 italic">Belum ada data transaksi di periode ini.</div>
             <div v-else class="space-y-3">
               <div v-for="(ph, idx) in peakHours" :key="idx" class="flex items-center justify-between">
                 <div class="flex items-center gap-2 text-xs font-bold text-slate-600">
@@ -59,7 +59,7 @@
           
           <div class="flex-1 flex flex-col">
             <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
-            <div v-else-if="!fastMoving.length" class="text-xs text-center text-slate-400 italic">Belum ada data penjualan.</div>
+            <div v-else-if="!(fastMoving ?? []).length" class="text-xs text-center text-slate-400 italic">Belum ada data penjualan.</div>
             <div v-else class="space-y-2">
               <div v-for="(item, idx) in fastMoving" :key="idx" class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 gap-2 overflow-hidden">
                 <div class="flex flex-col min-w-0 flex-1">
@@ -93,7 +93,7 @@
 
           <div class="flex-1 overflow-y-auto pr-1 relative z-10">
             <div v-if="loading" class="flex justify-center py-4"><Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-slate-300" /></div>
-            <div v-else-if="!deadStock.length" class="flex flex-col items-center justify-center py-10 text-center">
+            <div v-else-if="!(deadStock ?? []).length" class="flex flex-col items-center justify-center py-10 text-center">
               <Icon name="heroicons:check-badge" class="w-10 h-10 text-emerald-400 mb-2" />
               <span class="text-xs font-bold text-slate-600">Luar Biasa!</span>
               <span class="text-[10px] text-slate-400 mt-1 max-w-[150px]">Tidak ada stok mati. Semua produk Anda laku bulan ini.</span>
@@ -112,7 +112,7 @@
             </div>
           </div>
 
-          <div v-if="!loading && deadStock.length > 0" class="mt-4 pt-3 border-t relative z-10 flex justify-between items-center" style="border-color: var(--wp-border);">
+          <div v-if="!loading && (deadStock ?? []).length > 0" class="mt-4 pt-3 border-t relative z-10 flex justify-between items-center" style="border-color: var(--wp-border);">
             <span class="text-xs font-semibold text-slate-500">Total Modal Tertahan:</span>
             <span class="text-sm font-black text-rose-600">Rp {{ formatCurrencyCompact(totalDeadCapital) }}</span>
           </div>
