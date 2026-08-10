@@ -1,527 +1,252 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
+  <div class="space-y-4 animate-fade-in">
     <!-- Header -->
-    <div class="border-b pb-4" style="border-color: var(--wp-navy);">
-      <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Pemasaran</h1>
-      <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
-        Kelola promosi, konten, dan strategi penjualan toko.
-      </p>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="loading && !recommendations.length" class="flex items-center justify-center py-20">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 mx-auto mb-4" style="border-color: rgba(212,168,67,0.2); border-top-color: var(--wp-gold);"></div>
-        <p class="text-xs font-semibold" style="color: var(--wp-text-secondary);">Menganalisis data toko Anda...</p>
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-black tracking-tight" style="color: var(--wp-navy);">Pemasaran</h1>
+        <p class="text-[10px]" style="color: var(--wp-text-secondary);">AI-powered marketing command center</p>
       </div>
-    </div>
-
-    <!-- Error -->
-    <div v-else-if="error && !recommendations.length" class="bg-white border p-8 shadow-sm text-center rounded-2xl" style="border-color: var(--wp-border);">
-      <Icon name="heroicons:exclamation-triangle" class="w-12 h-12 mx-auto mb-4" style="color: #D97706;" />
-      <p class="text-sm font-semibold mb-3" style="color: var(--wp-text);">{{ error }}</p>
-      <button @click="loadAll()" class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded text-white" style="background: var(--wp-gold);">
-        Coba Lagi
+      <button @click="showContentStudio = true" class="px-4 py-2 text-xs font-bold rounded-lg text-white" style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
+        + Buat Konten
       </button>
     </div>
 
-    <!-- Content -->
-    <template v-else>
-      <!-- ═══ 1. PRODUK REKOMENDASI AI (Hero) ═══ -->
-      <div class="bg-white border-2 rounded-2xl p-6 shadow-sm relative overflow-hidden" style="border-color: var(--wp-gold);">
-        <div class="absolute top-0 left-0 right-0 h-1.5 rounded-b" style="background: linear-gradient(90deg, var(--wp-gold), #B8922E);"></div>
-        <div class="flex items-center justify-between mb-5">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
-              <Icon name="heroicons:fire" class="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h2 class="text-base font-black uppercase tracking-wider" style="color: var(--wp-navy);">Produk Rekomendasi AI</h2>
-              <p class="text-[10px]" style="color: var(--wp-text-secondary);">Berdasarkan penjualan, stok, margin & tren</p>
-            </div>
-          </div>
-          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
-            {{ recommendations.length }} produk
-          </span>
+    <!-- Tabs -->
+    <div class="flex gap-1 border-b" style="border-color: var(--wp-border);">
+      <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
+              class="px-4 py-2 text-xs font-bold transition border-b-2"
+              :class="activeTab === tab.id ? 'border-[var(--wp-gold)]' : 'border-transparent'"
+              :style="activeTab === tab.id ? 'color: var(--wp-navy);' : 'color: var(--wp-text-secondary);'">
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- ═══ TAB: Content ═══ -->
+    <div v-if="activeTab === 'content'" class="space-y-4">
+      <!-- AI Recommendation -->
+      <div v-if="recommendations.length" class="p-4 rounded-xl border-2" style="border-color: var(--wp-gold); background: linear-gradient(135deg, rgba(212,168,67,0.03), transparent);">
+        <div class="flex items-center gap-2 mb-3">
+          <Icon name="heroicons:fire" class="w-5 h-5" style="color: var(--wp-gold);" />
+          <span class="text-xs font-bold" style="color: var(--wp-navy);">Rekomendasi Hari Ini</span>
         </div>
-
-        <div v-if="recommendations.length" class="space-y-3">
-          <div v-for="(rec, i) in recommendations.slice(0, 5)" :key="i"
-               class="p-4 rounded-xl border transition hover:shadow-md"
-               :style="i === 0 ? 'border-color: var(--wp-gold); background: linear-gradient(135deg, rgba(212,168,67,0.05), rgba(212,168,67,0.02));' : 'border-color: var(--wp-border); background: var(--wp-surface);'">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="text-lg">{{ getRankIcon(i) }}</span>
-                  <span class="text-sm font-bold truncate" style="color: var(--wp-text);">{{ rec.product }}</span>
-                  <span class="text-[10px] font-bold px-2.5 py-1 rounded-full text-white shrink-0" :style="{ background: getScoreColor(rec.score) }">
-                    Score {{ rec.score }}
-                  </span>
-                  <span v-if="rec.data?.stock_qty" class="text-[10px] font-bold px-2 py-0.5 rounded" style="background: var(--wp-bg); color: var(--wp-text-secondary);">
-                    Stok: {{ rec.data.stock_qty }}
-                  </span>
-                </div>
-                <!-- Component bars -->
-                <div class="grid grid-cols-3 gap-2 mb-2">
-                  <div v-for="(value, key) in rec.components || {}" :key="key">
-                    <div class="flex items-center justify-between mb-0.5">
-                      <span class="text-[9px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ getComponentLabel(key) }}</span>
-                      <span class="text-[9px] font-bold" :style="{ color: getScoreColor(value) }">{{ value }}</span>
-                    </div>
-                    <div class="h-1.5 rounded-full overflow-hidden" style="background: var(--wp-border);">
-                      <div class="h-full rounded-full transition-all duration-500" :style="{ width: value + '%', background: getScoreColor(value) }"></div>
-                    </div>
-                  </div>
-                </div>
-                <p class="text-xs leading-relaxed" style="color: var(--wp-text-secondary);">{{ rec.reason }}</p>
-              </div>
-              <div class="flex gap-2 shrink-0">
-                <button @click="handleGenerateCaption(rec.product)"
-                        :disabled="contentGenerating"
-                        class="px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg text-white disabled:opacity-50 transition hover:shadow-md"
-                        style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
-                  {{ contentGenerating ? '⏳' : '✍️' }} Caption
-                </button>
-                <button @click="handleCreateCampaign(rec.product)"
-                        class="px-4 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg border transition hover:shadow-md"
-                        style="border-color: var(--wp-border); color: var(--wp-text);">
-                  🎯 Promo
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p v-else class="text-xs text-center py-8" style="color: var(--wp-text-secondary);">
-          Belum ada data produk. Pastikan Anda memiliki stok dan transaksi penjualan.
-        </p>
-      </div>
-
-      <!-- ═══ 2. KPI + CONTENT STUDIO ═══ -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- KPI Cards -->
-        <div class="xl:col-span-1 space-y-4">
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-navy);">📊 KPI Marketing</h3>
-          <div v-for="(kpi, i) in displayKpis" :key="i"
-               class="bg-white border rounded-xl p-4 shadow-sm transition hover:shadow-md relative overflow-hidden"
-               style="border-color: var(--wp-border);">
-            <div class="absolute top-0 left-3 right-3 h-0.5 rounded-b" :style="{ background: kpi.color || 'var(--wp-gold)' }"></div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ kpi.label }}</span>
-              <Icon :name="kpi.icon || 'heroicons:chart-bar'" class="w-4 h-4" style="color: var(--wp-gold);" />
-            </div>
-            <p class="text-xl font-extrabold tracking-tight" style="color: var(--wp-text); font-variant-numeric: tabular-nums;">{{ kpi.value }}</p>
-          </div>
-        </div>
-
-        <!-- Content Studio -->
-        <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm" style="border-color: var(--wp-border);">
-          <div class="flex items-center gap-2 mb-4">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
-              <Icon name="heroicons:pencil-square" class="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h2 class="text-base font-black uppercase tracking-wider" style="color: var(--wp-navy);">Content Studio</h2>
-              <p class="text-[10px]" style="color: var(--wp-text-secondary);">Buat konten marketing dengan AI</p>
-            </div>
-          </div>
-
-          <!-- Product selector with stock -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style="color: var(--wp-text-secondary);">Produk</label>
-              <select v-model="selectedProduct" class="w-full px-3 py-2.5 text-sm border rounded-lg focus:outline-none focus:border-[var(--wp-gold)]" style="border-color: var(--wp-border); background: var(--wp-bg); color: var(--wp-text);">
-                <option value="">-- Pilih produk --</option>
-                <option v-for="rec in recommendations" :key="rec.uuid" :value="rec.product">
-                  {{ rec.product }} (Stok: {{ rec.data?.stock_qty || 0 }})
-                </option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style="color: var(--wp-text-secondary);">Platform</label>
-              <div class="flex gap-2 flex-wrap">
-                <button v-for="p in platforms" :key="p.value"
-                        @click="selectedPlatform = p.value"
-                        class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border transition"
-                        :style="selectedPlatform === p.value ? 'background: var(--wp-gold); color: white; border-color: var(--wp-gold);' : 'border-color: var(--wp-border); color: var(--wp-text);'">
-                  {{ p.icon }} {{ p.label }}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Content type buttons -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <button @click="handleGenerateCaption(selectedProduct, selectedPlatform)"
-                    :disabled="!selectedProduct || contentGenerating"
-                    class="flex flex-col items-center gap-1.5 p-4 rounded-xl border text-center hover:shadow-md transition disabled:opacity-40"
-                    style="border-color: var(--wp-border); background: linear-gradient(135deg, rgba(212,168,67,0.05), transparent);">
-              <span class="text-xl">✍️</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text);">Caption</span>
-            </button>
-            <button @click="handleGenerateCaption(selectedProduct, selectedPlatform)"
-                    :disabled="!selectedProduct || contentGenerating"
-                    class="flex flex-col items-center gap-1.5 p-4 rounded-xl border text-center hover:shadow-md transition disabled:opacity-40"
-                    style="border-color: var(--wp-border); background: linear-gradient(135deg, rgba(139,92,246,0.05), transparent);">
-              <span class="text-xl">🎬</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text);">Script Video</span>
-            </button>
-            <button @click="handleGenerateCaption(selectedProduct, selectedPlatform)"
-                    :disabled="!selectedProduct || contentGenerating"
-                    class="flex flex-col items-center gap-1.5 p-4 rounded-xl border text-center hover:shadow-md transition disabled:opacity-40"
-                    style="border-color: var(--wp-border); background: linear-gradient(135deg, rgba(5,150,105,0.05), transparent);">
-              <span class="text-xl">📸</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text);">Ide Konten</span>
-            </button>
-            <button @click="handleGenerateCaption(selectedProduct, selectedPlatform)"
-                    :disabled="!selectedProduct || contentGenerating"
-                    class="flex flex-col items-center gap-1.5 p-4 rounded-xl border text-center hover:shadow-md transition disabled:opacity-40"
-                    style="border-color: var(--wp-border); background: linear-gradient(135deg, rgba(217,119,6,0.05), transparent);">
-              <span class="text-xl">📢</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text);">Copy Promo</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ 3. CHAT ASSISTANT ═══ -->
-      <div class="bg-white border rounded-2xl shadow-sm overflow-hidden" style="border-color: var(--wp-border);">
-        <div class="p-4 border-b flex items-center justify-between" style="border-color: var(--wp-border); background: linear-gradient(135deg, rgba(212,168,67,0.03), transparent);">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #059669, #047857);">
-              <Icon name="heroicons:chat-bubble-oval-left-ellipsis" class="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h2 class="text-base font-black uppercase tracking-wider" style="color: var(--wp-navy);">Asisten Marketing AI</h2>
-              <p class="text-[10px]" style="color: var(--wp-text-secondary);">Tanyakan strategi, promo, atau konten</p>
-            </div>
-          </div>
-          <button v-if="chatMessages.length" @click="clearChat()" class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded hover:bg-slate-100" style="color: var(--wp-text-secondary);">
-            Clear
-          </button>
-        </div>
-
-        <!-- Messages -->
-        <div class="p-4 max-h-96 overflow-y-auto space-y-3" style="background: var(--wp-bg);">
-          <div v-if="!chatMessages.length" class="text-center py-8">
-            <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background: linear-gradient(135deg, rgba(212,168,67,0.1), rgba(139,92,246,0.1));">
-              <Icon name="heroicons:light-bulb" class="w-8 h-8" style="color: var(--wp-gold);" />
-            </div>
-            <p class="text-sm font-semibold mb-2" style="color: var(--wp-text);">Apa yang ingin Anda promosikan hari ini?</p>
-            <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Tanyakan tentang strategi, promo, atau konten untuk toko Anda</p>
-            <div class="flex gap-2 flex-wrap justify-center">
-              <button v-for="prompt in examplePrompts" :key="prompt"
-                      @click="handleSendChat(prompt)"
-                      class="px-3 py-1.5 text-[10px] font-bold rounded-full border hover:shadow-md transition"
-                      style="border-color: var(--wp-border); color: var(--wp-text); background: var(--wp-surface);">
-                {{ prompt }}
-              </button>
-            </div>
-          </div>
-          <div v-for="(msg, i) in chatMessages" :key="i"
-               :class="['flex', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-            <div class="max-w-[85%]">
-              <div v-if="msg.role === 'ai' && msg.agents?.length" class="flex gap-1 mb-1">
-                <span v-for="agent in msg.agents" :key="agent"
-                      class="text-[9px] font-bold px-1.5 py-0.5 rounded" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
-                  {{ agent }}
-                </span>
-              </div>
-              <div class="px-4 py-3 rounded-2xl text-xs leading-relaxed"
-                   :style="msg.role === 'user'
-                     ? 'background: linear-gradient(135deg, var(--wp-gold), #B8922E); color: white; border-bottom-right-radius: 6px;'
-                     : 'background: white; color: var(--wp-text); border: 1px solid var(--wp-border); border-bottom-left-radius: 6px;'">
-                <div class="whitespace-pre-wrap" v-html="formatMessage(msg.text)"></div>
-              </div>
-            </div>
-          </div>
-          <!-- Typing -->
-          <div v-if="chatSending" class="flex justify-start">
-            <div class="px-4 py-3 rounded-2xl" style="background: white; border: 1px solid var(--wp-border); border-bottom-left-radius: 6px;">
-              <div class="flex gap-1.5">
-                <span class="w-2 h-2 rounded-full animate-bounce" style="background: var(--wp-gold); animation-delay: 0ms;"></span>
-                <span class="w-2 h-2 rounded-full animate-bounce" style="background: var(--wp-gold); animation-delay: 150ms;"></span>
-                <span class="w-2 h-2 rounded-full animate-bounce" style="background: var(--wp-gold); animation-delay: 300ms;"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Input -->
-        <div class="p-4 border-t flex gap-2" style="border-color: var(--wp-border); background: var(--wp-surface);">
-          <textarea
-            v-model="chatInput"
-            @keydown.enter.prevent="handleSendChat(chatInput); chatInput = ''"
-            placeholder="Tanyakan tentang pemasaran... (contoh: buat caption untuk produk terlaris)"
-            rows="1"
-            class="flex-1 px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:border-[var(--wp-gold)] resize-none"
-            style="border-color: var(--wp-border); background: var(--wp-bg); color: var(--wp-text);"
-          ></textarea>
-          <button @click="handleSendChat(chatInput); chatInput = ''"
-                  :disabled="!chatInput.trim() || chatSending"
-                  class="px-4 py-2.5 rounded-xl text-white text-xs font-bold disabled:opacity-50 transition hover:shadow-md"
-                  style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
-            <Icon name="heroicons:paper-airplane" class="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </template>
-
-    <!-- ═══ CONTENT RESULT MODAL (3 Variants) ═══ -->
-    <Teleport to="body">
-      <div v-if="showContentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6);" @click.self="closeContentModal">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background: var(--wp-surface);">
-          <div class="p-6 border-b flex items-center justify-between sticky top-0 z-10" style="border-color: var(--wp-border); background: var(--wp-surface);">
+        <div class="flex items-center justify-between p-3 rounded-lg" style="background: var(--wp-surface);">
+          <div class="flex-1">
             <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
-                <Icon name="heroicons:sparkles" class="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <h3 class="text-base font-black uppercase tracking-wider" style="color: var(--wp-navy);">Hasil Konten AI</h3>
-                <p class="text-[10px]" style="color: var(--wp-text-secondary);">{{ generatedContent?.product }} — 3 varian caption dinamis</p>
-              </div>
+              <span class="text-sm font-bold" style="color: var(--wp-text);">{{ recommendations[0].product }}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" :style="{ background: getScoreColor(recommendations[0].score) }">
+                {{ recommendations[0].score }}/100
+              </span>
             </div>
-            <button @click="closeContentModal" class="p-1.5 rounded-lg hover:bg-slate-100 transition">
+            <p class="text-[10px] mt-1" style="color: var(--wp-text-secondary);">{{ recommendations[0].reason }}</p>
+          </div>
+          <button @click="handleGenerateCaption(recommendations[0].product)" class="px-3 py-1.5 text-[10px] font-bold rounded-lg text-white" style="background: var(--wp-gold);">
+            Generate
+          </button>
+        </div>
+      </div>
+
+      <!-- Scheduled Content -->
+      <div v-if="scheduledContent.length" class="p-4 rounded-xl border" style="border-color: var(--wp-border);">
+        <span class="text-xs font-bold" style="color: var(--wp-navy);">Konten Terjadwal</span>
+        <div class="mt-2 space-y-2">
+          <div v-for="item in scheduledContent" :key="item.key" class="flex items-center justify-between p-2 rounded-lg" style="background: var(--wp-bg);">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium truncate" style="color: var(--wp-text);">{{ item.message }}</p>
+              <p class="text-[10px]" style="color: var(--wp-text-secondary);">{{ item.cron }}</p>
+            </div>
+            <button @click="cancelScheduled(item)" class="text-[10px] text-red-500 hover:text-red-700">Batal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: Campaign ═══ -->
+    <div v-if="activeTab === 'campaign'" class="space-y-4">
+      <!-- AI Campaign Recommendation -->
+      <div v-if="campaignRecommendation" class="p-4 rounded-xl border" style="border-color: var(--wp-border);">
+        <div class="flex items-center gap-2 mb-3">
+          <Icon name="heroicons:light-bulb" class="w-5 h-5" style="color: var(--wp-gold);" />
+          <span class="text-xs font-bold" style="color: var(--wp-navy);">Saran Campaign AI</span>
+        </div>
+        <div class="p-3 rounded-lg" style="background: var(--wp-bg);">
+          <p class="text-sm font-bold" style="color: var(--wp-text);">{{ campaignRecommendation.product }}</p>
+          <p class="text-[10px] mt-1" style="color: var(--wp-text-secondary);">{{ campaignRecommendation.reason }}</p>
+          <button @click="createCampaignFromRec" class="mt-2 px-3 py-1.5 text-[10px] font-bold rounded-lg text-white" style="background: var(--wp-gold);">
+            Buat Campaign
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Campaigns -->
+      <div class="space-y-3">
+        <div v-for="campaign in campaigns" :key="campaign.id" class="p-4 rounded-xl border" style="border-color: var(--wp-border);">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold" style="color: var(--wp-text);">{{ campaign.product_name }}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(16,185,129,0.1); color: #059669;">
+              {{ campaign.progress?.percent || 0 }}%
+            </span>
+          </div>
+          <div class="h-1.5 rounded-full overflow-hidden mb-2" style="background: var(--wp-border);">
+            <div class="h-full rounded-full" :style="{ width: (campaign.progress?.percent || 0) + '%', background: 'var(--wp-gold)' }"></div>
+          </div>
+          <div class="flex gap-3 text-[10px]" style="color: var(--wp-text-secondary);">
+            <span>{{ campaign.progress?.total || 0 }} Steps</span>
+            <span>{{ campaign.progress?.completed || 0 }} Done</span>
+            <span>{{ campaign.progress?.scheduled || 0 }} Scheduled</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: Analytics ═══ -->
+    <div v-if="activeTab === 'analytics'" class="space-y-4">
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div v-for="kpi in kpis" :key="kpi.label" class="p-3 rounded-xl border" style="border-color: var(--wp-border);">
+          <p class="text-[10px] font-medium" style="color: var(--wp-text-secondary);">{{ kpi.label }}</p>
+          <p class="text-lg font-black" style="color: var(--wp-text);">{{ kpi.value }}</p>
+        </div>
+      </div>
+
+      <!-- Top Products -->
+      <div v-if="recommendations.length" class="p-4 rounded-xl border" style="border-color: var(--wp-border);">
+        <span class="text-xs font-bold" style="color: var(--wp-navy);">Top Produk</span>
+        <div class="mt-2 space-y-2">
+          <div v-for="(rec, i) in recommendations.slice(0, 5)" :key="i" class="flex items-center justify-between p-2 rounded-lg" style="background: var(--wp-bg);">
+            <div class="flex items-center gap-2">
+              <span class="text-sm">{{ getRankIcon(i) }}</span>
+              <span class="text-xs font-medium" style="color: var(--wp-text);">{{ rec.product }}</span>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" :style="{ background: getScoreColor(rec.score) }">
+              {{ rec.score }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Content Result Modal ═══ -->
+    <Teleport to="body">
+      <div v-if="showContentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6);" @click.self="showContentModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background: var(--wp-surface);">
+          <div class="p-5 border-b flex items-center justify-between sticky top-0 z-10" style="border-color: var(--wp-border); background: var(--wp-surface);">
+            <h3 class="text-sm font-black uppercase" style="color: var(--wp-navy);">Hasil Konten AI</h3>
+            <button @click="showContentModal = false" class="p-1.5 rounded-lg hover:bg-slate-100">
               <Icon name="heroicons:x-mark" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
             </button>
           </div>
-          <div class="p-6">
-            <!-- ═══ AI RECOMMENDATION (Marketing Score + Strategy) ═══ -->
-            <div v-if="generatedContent?.marketing_score?.score > 0" class="mb-5 p-4 rounded-xl border" style="border-color: var(--wp-border); background: linear-gradient(135deg, rgba(212,168,67,0.03), transparent);">
-              <!-- Score Badge -->
-              <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white"
-                       :style="`background: ${generatedContent.marketing_score.score >= 70 ? '#22c55e' : generatedContent.marketing_score.score >= 50 ? '#f59e0b' : '#ef4444'};`">
-                    {{ generatedContent.marketing_score.score }}
-                  </div>
-                  <div>
-                    <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Marketing Score</p>
-                    <p class="text-xs font-bold" style="color: var(--wp-text);">{{ generatedContent.recommendation?.strategy || 'Recommended' }}</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-[10px]" style="color: var(--wp-text-secondary);">Confidence</p>
-                  <p class="text-sm font-bold" style="color: var(--wp-gold);">{{ generatedContent.recommendation?.confidence || 0 }}%</p>
-                </div>
+          <div class="p-5 space-y-4">
+            <!-- Marketing Score -->
+            <div v-if="generatedContent?.marketing_score" class="flex items-center gap-3 p-3 rounded-xl" style="background: var(--wp-bg);">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white" :style="{ background: getScoreColor(generatedContent.marketing_score.score) }">
+                {{ generatedContent.marketing_score.score }}
               </div>
-              <!-- Reasons -->
-              <div v-if="generatedContent.recommendation?.reasons?.length" class="space-y-1">
-                <p v-for="(reason, ri) in generatedContent.recommendation.reasons" :key="ri" class="text-[10px] flex items-start gap-1.5" style="color: var(--wp-text-secondary);">
-                  <span style="color: var(--wp-gold);">•</span>
-                  <span>{{ reason }}</span>
-                </p>
-              </div>
-              <!-- Component Breakdown (collapsible) -->
-              <div v-if="generatedContent.marketing_score?.components" class="mt-2 pt-2 border-t" style="border-color: var(--wp-border);">
-                <div class="flex gap-2 flex-wrap">
-                  <span v-for="(val, key) in generatedContent.marketing_score.components" :key="key"
-                        class="text-[9px] font-semibold px-1.5 py-0.5 rounded"
-                        style="background: var(--wp-bg); color: var(--wp-text-secondary);">
-                    {{ key }}: {{ val }}
-                  </span>
-                </div>
+              <div>
+                <p class="text-[10px] font-bold" style="color: var(--wp-text-secondary);">Marketing Score</p>
+                <p class="text-xs font-bold" style="color: var(--wp-text);">{{ generatedContent.recommendation?.strategy }}</p>
               </div>
             </div>
-
-            <!-- Variant Tabs -->
-            <div v-if="generatedContent?.variants?.length" class="space-y-4">
-              <div v-for="(variant, i) in generatedContent.variants" :key="i"
-                   class="p-4 rounded-xl border"
-                   :style="i === 0 ? 'border-color: var(--wp-gold); background: linear-gradient(135deg, rgba(212,168,67,0.05), transparent);' : 'border-color: var(--wp-border);'">
-                <div class="flex items-center justify-between mb-3">
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-bold" style="color: var(--wp-text);">{{ variant.emoji }} {{ variant.style || 'Caption' }}</span>
-                    <span v-if="variant.score" class="text-[9px] font-bold px-1.5 py-0.5 rounded text-white"
-                          :style="`background: ${variant.score >= 80 ? '#22c55e' : variant.score >= 60 ? '#f59e0b' : '#94a3b8'};`">
-                      {{ variant.score }}
-                    </span>
-                  </div>
-                  <button @click="copyText(variant.caption || '')" class="text-[10px] font-bold px-2 py-1 rounded" style="background: var(--wp-bg); color: var(--wp-text-secondary);">
-                    📋 Copy
-                  </button>
-                </div>
-                <p class="text-xs leading-relaxed whitespace-pre-wrap mb-3" style="color: var(--wp-text);">{{ variant.caption || 'Tidak ada caption' }}</p>
-                <!-- Hashtags -->
-                <div v-if="variant.hashtags?.length" class="flex flex-wrap gap-1.5 mb-2">
-                  <span v-for="tag in variant.hashtags" :key="tag" class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
-                    {{ tag }}
-                  </span>
-                </div>
-                <!-- CTA + Headline -->
-                <div v-if="variant.cta || variant.headline" class="flex gap-2 flex-wrap text-[10px]" style="color: var(--wp-text-secondary);">
-                  <span v-if="variant.cta" class="px-2 py-0.5 rounded" style="background: var(--wp-bg);">CTA: <strong style="color: var(--wp-text);">{{ variant.cta }}</strong></span>
-                  <span v-if="variant.headline" class="px-2 py-0.5 rounded" style="background: var(--wp-bg);">Headline: <strong style="color: var(--wp-text);">{{ variant.headline }}</strong></span>
-                </div>
-                <!-- Image Idea -->
-                <p v-if="variant.image_idea" class="text-[10px] italic mt-2" style="color: var(--wp-text-secondary);">💡 {{ variant.image_idea }}</p>
+            <!-- Variants -->
+            <div v-for="(variant, i) in generatedContent?.variants || []" :key="i" class="p-4 rounded-xl border" style="border-color: var(--wp-border);">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold" style="color: var(--wp-text);">{{ variant.emoji }} {{ variant.style }}</span>
+                <span v-if="variant.score" class="text-[9px] font-bold px-1.5 py-0.5 rounded text-white" :style="{ background: getScoreColor(variant.score) }">
+                  {{ variant.score }}
+                </span>
+              </div>
+              <p class="text-xs leading-relaxed whitespace-pre-wrap mb-2" style="color: var(--wp-text);">{{ variant.caption }}</p>
+              <div v-if="variant.hashtags?.length" class="flex flex-wrap gap-1">
+                <span v-for="tag in variant.hashtags" :key="tag" class="text-[9px] px-1.5 py-0.5 rounded-full" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">{{ tag }}</span>
               </div>
             </div>
-
-            <!-- Fallback: single caption -->
-            <div v-else-if="generatedContent?.caption" class="mb-4">
-              <div class="p-4 rounded-xl border text-xs leading-relaxed whitespace-pre-wrap" style="border-color: var(--wp-border); background: var(--wp-bg); color: var(--wp-text);">
-                {{ generatedContent.caption }}
-              </div>
-            </div>
-
-            <!-- Meta -->
-            <div v-if="generatedContent?.platform" class="flex gap-3 mb-4 text-xs flex-wrap mt-4" style="color: var(--wp-text-secondary);">
-              <span class="px-2 py-1 rounded" style="background: var(--wp-bg);">Platform: <strong style="color: var(--wp-text);">{{ generatedContent.platform }}</strong></span>
-              <span v-if="generatedContent?.product" class="px-2 py-1 rounded" style="background: var(--wp-bg);">Produk: <strong style="color: var(--wp-text);">{{ generatedContent.product }}</strong></span>
-            </div>
-
             <!-- Actions -->
             <div class="flex gap-2">
-              <button @click="copyContent()"
-                      class="flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl text-white transition hover:shadow-md"
-                      style="background: linear-gradient(135deg, var(--wp-gold), #B8922E);">
-                {{ copied ? '✅ Tersalin!' : '📋 Copy Semua Caption' }}
+              <button @click="copyAllCaptions()" class="flex-1 py-2 text-xs font-bold rounded-lg text-white" style="background: var(--wp-gold);">
+                {{ copied ? '✅ Tersalin!' : '📋 Copy Semua' }}
               </button>
-              <button @click="closeContentModal"
-                      class="px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl border transition"
-                      style="border-color: var(--wp-border); color: var(--wp-text);">
-                Tutup
+              <button @click="openScheduleModal()" class="flex-1 py-2 text-xs font-bold rounded-lg border" style="border-color: var(--wp-border); color: var(--wp-text);">
+                📅 Jadwalkan
               </button>
             </div>
           </div>
         </div>
       </div>
     </Teleport>
+
+    <!-- ═══ Schedule Modal ═══ -->
+    <ScheduleContentModal
+      v-if="showScheduleModal"
+      :content="generatedContent"
+      @close="showScheduleModal = false"
+      @scheduled="onContentScheduled"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import ScheduleContentModal from '~/components/ScheduleContentModal.vue'
 import { useMarketing } from '~/composables/useMarketing'
 
 const {
-  recommendations, kpis, loading, error,
-  chatMessages, chatSending,
-  generatedContent, showContentModal, contentGenerating,
-  fetchRecommendations, fetchKpis, loadAll,
-  sendChat, clearChat,
-  generateCaption, closeContentModal,
+  recommendations, kpis, campaigns, scheduledContent, campaignRecommendation,
+  loading, generatedContent, contentGenerating, copied,
+  loadRecommendations, loadKpis, loadCampaigns, loadScheduledContent, loadCampaignRecommendation,
+  generateCaption, copyAllCaptions, cancelScheduledContent,
 } = useMarketing()
 
-// ── Chat state ──────────────────────────────────────────────────────
-const chatInput = ref('')
-const copied = ref(false)
+const activeTab = ref<'content' | 'campaign' | 'analytics'>('content')
+const showContentModal = ref(false)
+const showScheduleModal = ref(false)
+const showContentStudio = ref(false)
 
-const examplePrompts = [
-  'Buat caption untuk produk terlaris',
-  'Strategi promo mingguan',
-  'Produk apa yang harus saya promosikan?',
-  'Ide konten TikTok untuk snack',
+const tabs = [
+  { id: 'content' as const, label: '✨ Content' },
+  { id: 'campaign' as const, label: '📢 Campaign' },
+  { id: 'analytics' as const, label: '📊 Analytics' },
 ]
 
-// ── Content studio state ────────────────────────────────────────────
-const selectedProduct = ref('')
-const selectedPlatform = ref('instagram')
-
-const platforms = [
-  { value: 'whatsapp', label: 'WA', icon: '💬' },
-  { value: 'instagram', label: 'IG', icon: '📸' },
-  { value: 'tiktok', label: 'TT', icon: '🎵' },
-  { value: 'facebook', label: 'FB', icon: '👥' },
-]
-
-// ── Helpers ────────────────────────────────────────────────────────
-
-const getRankIcon = (i: number) => ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][i] || '⭐'
-
-const getScoreColor = (score: number) => {
-  if (score >= 80) return '#D4A843'  // gold
-  if (score >= 60) return '#059669'  // green
-  if (score >= 40) return '#D97706'  // amber
-  return '#64748B'  // gray
+// ── Helpers ──
+function getRankIcon(i: number) { return ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][i] || '•' }
+function getScoreColor(score: number) {
+  if (score >= 75) return '#059669'
+  if (score >= 50) return '#D97706'
+  return '#DC2626'
 }
 
-const getComponentLabel = (key: string) => ({
-  stock: 'Stok',
-  trend: 'Tren',
-  margin: 'Margin',
-  potential: 'Potensi',
-  promo: 'Promo',
-  seasonal: 'Musim',
-}[key] || key)
-
-const formatMessage = (text: string) => {
-  if (!text) return ''
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+// ── Actions ──
+async function handleGenerateCaption(product: string) {
+  await generateCaption(product)
+  showContentModal.value = true
 }
 
-// ── Handlers ───────────────────────────────────────────────────────
+function openScheduleModal() {
+  showContentModal.value = false
+  showScheduleModal.value = true
+}
 
-const handleGenerateCaption = async (productName?: string, platform?: string) => {
-  const product = productName || selectedProduct.value
-  if (!product) return
-  try {
-    await generateCaption(product, platform || selectedPlatform.value)
-  } catch (err) {
-    // error handled in composable
+function onContentScheduled() {
+  showScheduleModal.value = false
+  loadScheduledContent()
+}
+
+async function cancelScheduled(item: any) {
+  if (confirm('Batalkan pengingat ini?')) {
+    await cancelScheduledContent(item.reminder_id || item.key.split(':').pop())
+    loadScheduledContent()
   }
 }
 
-const handleCreateCampaign = async (productName: string) => {
-  await sendChat(`Buat strategi promo untuk ${productName}`)
+async function createCampaignFromRec() {
+  // TODO: Implement campaign creation from recommendation
 }
 
-const handleSendChat = async (message: string) => {
-  if (!message.trim()) return
-  await sendChat(message)
-  chatInput.value = ''
-}
-
-const copyContent = async () => {
-  if (!generatedContent.value) return
-  const variants = generatedContent.value.variants || []
-  if (variants.length) {
-    const text = variants.map((v: any, i: number) =>
-      `${i + 1}. ${v.style || 'Caption'}\n${v.caption || ''}\n${(v.hashtags || []).join(' ')}\nCTA: ${v.cta || '-'}`
-    ).join('\n\n---\n\n')
-    await copyText(text)
-  } else {
-    const text = [
-      generatedContent.value.caption || '',
-      '',
-      ...(generatedContent.value.hashtags || []),
-    ].join('\n')
-    await copyText(text)
-  }
-}
-
-const copyText = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
-  } catch {
-    // fallback
-  }
-}
-
-// ── Display KPIs ──────────────────────────────────────────────────
-
-const displayKpis = computed(() => {
-  if (kpis.value.length) {
-    return kpis.value.map((k: any, i: number) => ({
-      ...k,
-      color: ['#D4A843', '#059669', '#3B82F6', '#8B5CF6'][i % 4],
-    }))
-  }
-  return [
-    { label: 'Omzet 30 Hari', value: 'Rp 0', icon: 'heroicons:banknotes', color: '#D4A843' },
-    { label: 'Transaksi', value: '0', icon: 'heroicons:shopping-cart', color: '#059669' },
-    { label: 'Rata-rata Order', value: 'Rp 0', icon: 'heroicons:calculator', color: '#3B82F6' },
-    { label: 'Conversion', value: '0%', icon: 'heroicons:chart-bar', color: '#8B5CF6' },
-  ]
-})
-
-// ── Load data ──────────────────────────────────────────────────────
-
-onMounted(() => {
-  loadAll()
+// ── Init (fast first paint: only recommendations + kpis) ──
+onMounted(async () => {
+  await Promise.all([loadRecommendations(), loadKpis()])
+  // Lazy-load other data
+  loadCampaigns()
+  loadScheduledContent()
+  loadCampaignRecommendation()
 })
 </script>

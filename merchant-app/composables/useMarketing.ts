@@ -228,6 +228,17 @@ export const useMarketing = () => {
     showContentModal.value = false
   }
 
+  const copied = ref(false)
+  const copyAllCaptions = () => {
+    const variants = generatedContent.value?.variants || []
+    const text = variants.map((v: any, i: number) =>
+      `${i + 1}. ${v.style}\n${v.caption}\n${v.hashtags?.join(' ') || ''}\nCTA: ${v.cta || ''}`
+    ).join('\n\n---\n\n')
+    navigator.clipboard.writeText(text)
+    copied.value = true
+    setTimeout(() => copied.value = false, 2000)
+  }
+
   const createCampaignPlan = async (params: {
     objective?: string
     budget?: number
@@ -250,27 +261,42 @@ export const useMarketing = () => {
     }
   }
 
-  // ── Load all data ───────────────────────────────────────────────
+  // ── Automation State ────────────────────────────────────────────
+  const scheduledContent = ref<any[]>([])
+  const campaigns = ref<any[]>([])
+  const campaignRecommendation = ref<any>(null)
 
-  const loadAll = async () => {
-    loading.value = true
-    error.value = ''
+  // ── Automation Actions ──────────────────────────────────────────
+  const loadScheduledContent = async () => {
     try {
-      await Promise.all([
-        fetchOverview(),
-        fetchRecommendations(),
-        fetchKpis(),
-        fetchSlowProducts(),
-        fetchCalendar(),
-        fetchCustomers(),
-        fetchChannels(),
-        fetchInsights(),
-        fetchHealth(),
-      ])
-    } catch (err: any) {
-      error.value = err.message || 'Gagal memuat data marketing'
-    } finally {
-      loading.value = false
+      const res = await api.get('/agentic/automation/scheduled-content')
+      scheduledContent.value = res || []
+    } catch (err) {
+      console.error('Failed to load scheduled content:', err)
+    }
+  }
+
+  const cancelScheduledContent = async (id: string) => {
+    await api.delete(`/agentic/automation/scheduled-content/${id}`)
+    await loadScheduledContent()
+  }
+
+  const loadCampaigns = async () => {
+    try {
+      const res = await api.get('/agentic/automation/campaigns')
+      campaigns.value = res || []
+    } catch (err) {
+      console.error('Failed to load campaigns:', err)
+    }
+  }
+
+  const loadCampaignRecommendation = async () => {
+    try {
+      const res = await api.get('/agentic/automation/campaigns')
+      // Get recommendation from first campaign or fetch separately
+      campaignRecommendation.value = null // TODO: Add recommendation endpoint
+    } catch (err) {
+      console.error('Failed to load campaign recommendation:', err)
     }
   }
 
@@ -279,7 +305,6 @@ export const useMarketing = () => {
     overview,
     recommendations,
     kpis,
-    campaigns,
     slowProducts,
     calendar,
     customers,
@@ -295,6 +320,12 @@ export const useMarketing = () => {
     generatedContent,
     showContentModal,
     contentGenerating,
+    copied,
+
+    // Automation state
+    scheduledContent,
+    campaigns,
+    campaignRecommendation,
 
     // Common state
     loading,
@@ -321,8 +352,12 @@ export const useMarketing = () => {
     openContentModal,
     closeContentModal,
     createCampaignPlan,
+    copyAllCaptions,
 
-    // Load all
-    loadAll,
+    // Automation actions
+    loadScheduledContent,
+    cancelScheduledContent,
+    loadCampaigns,
+    loadCampaignRecommendation,
   }
 }
