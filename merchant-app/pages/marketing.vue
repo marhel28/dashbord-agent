@@ -60,10 +60,8 @@
       <!-- ═══ 1. KPI STRIP ═══ -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
         <div v-for="(kpi, i) in displayKpis" :key="i"
-             class="bg-white border rounded-xl p-4 shadow-sm relative overflow-hidden transition hover:shadow-md"
+             class="bg-white border rounded-xl p-4 shadow-sm transition hover:shadow-md"
              style="border-color: var(--wp-border);">
-          <!-- accent bar top -->
-          <div class="absolute top-0 left-0 right-0 h-0.5 rounded-b" :style="{ background: kpi.color }"></div>
           <div class="flex items-center justify-between mb-3">
             <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ kpi.label }}</span>
             <div class="w-7 h-7 rounded-lg flex items-center justify-center" :style="{ background: kpi.color + '18' }">
@@ -77,11 +75,8 @@
       </div>
 
       <!-- ═══ 2. PRODUK REKOMENDASI AI ═══ -->
-      <div class="bg-white border-2 rounded-xl shadow-sm relative overflow-hidden"
+      <div class="bg-white border-2 rounded-xl shadow-sm"
            style="border-color: var(--wp-gold);">
-        <!-- gold accent -->
-        <div class="absolute top-0 left-0 right-0 h-1"
-             style="background: linear-gradient(90deg, var(--wp-gold), var(--wp-gold-dark));"></div>
 
         <!-- header -->
         <div class="flex items-center justify-between px-6 pt-6 pb-4">
