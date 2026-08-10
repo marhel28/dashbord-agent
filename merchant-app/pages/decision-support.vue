@@ -191,7 +191,7 @@
       <div class="bg-white border p-6 shadow-sm" style="border-color: var(--wp-border);">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <Icon name:"heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-gold);" />
+            <Icon name="heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-gold);" />
             <h2 class="text-sm font-bold uppercase tracking-wider" style="color: var(--wp-navy);">AI Insight</h2>
           </div>
           <button
