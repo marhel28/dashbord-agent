@@ -136,15 +136,21 @@ export const useAutomation = () => {
   const fetchReminders = async () => {
     try {
       const result = await api.get('/automation/reminders')
-      reminders.value = result as Reminder[]
+      reminders.value = (result as { data: Reminder[] }).data || []
     } catch (err: any) {
       console.error('Failed to fetch reminders:', err)
       throw err
     }
   }
 
-  const createReminder = async (data: { message: string; cron: string; once?: boolean }) => {
+  const createReminder = async (data: { message: string; cron?: string; once?: boolean }) => {
     const result = await api.post('/automation/reminders', data)
+    await fetchReminders()
+    return result
+  }
+
+  const updateReminder = async (reminderId: string, data: { message: string; cron: string; once?: boolean }) => {
+    const result = await api.put(`/automation/reminders/${reminderId}`, data)
     await fetchReminders()
     return result
   }
@@ -186,7 +192,7 @@ export const useAutomation = () => {
   const fetchSystemJobs = async () => {
     try {
       const result = await api.get('/automation/system-jobs')
-      systemJobs.value = result as SystemJob[]
+      systemJobs.value = (result as { data: SystemJob[] }).data || []
     } catch (err: any) {
       console.error('Failed to fetch system jobs:', err)
       throw err
