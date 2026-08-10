@@ -263,7 +263,6 @@ export const useMarketing = () => {
 
   // ── Automation State ────────────────────────────────────────────
   const scheduledContent = ref<any[]>([])
-  const campaigns = ref<any[]>([])
   const campaignRecommendation = ref<any>(null)
 
   // ── Automation Actions ──────────────────────────────────────────
