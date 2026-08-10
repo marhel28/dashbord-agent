@@ -1,5 +1,7 @@
 <template>
+  <!-- Guard: only render if recommendation has required fields -->
   <div
+    v-if="recommendation && recommendation.metrics && recommendation.scores"
     class="bg-white border p-5 shadow-sm transition-all hover:shadow-md relative overflow-hidden"
     :style="{ borderColor: 'var(--wp-border)' }"
   >
@@ -79,12 +81,12 @@
     </div>
 
     <!-- Expected Outcome -->
-    <p class="text-[10px] leading-relaxed mb-3 px-1" style="color: var(--wp-text);">
+    <p v-if="recommendation.expected_outcome" class="text-[10px] leading-relaxed mb-3 px-1" style="color: var(--wp-text);">
       <span class="font-semibold">Hasil:</span> {{ recommendation.expected_outcome }}
     </p>
 
     <!-- Evidence (expandable) -->
-    <div v-if="recommendation.evidence.length > 0" class="mb-3">
+    <div v-if="recommendation.evidence && recommendation.evidence.length > 0" class="mb-3">
       <button
         class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors"
         style="color: var(--wp-navy);"
@@ -95,7 +97,7 @@
       </button>
       <div v-if="showEvidence" class="mt-2 pl-4 space-y-1">
         <div
-          v-for="(ev, i) in recommendation.evidence"
+          v-for="(ev, i) in (recommendation.evidence || [])"
           :key="i"
           class="text-[10px] flex items-start gap-1.5"
           style="color: var(--wp-text-secondary);"
@@ -104,12 +106,12 @@
           <span>{{ ev }}</span>
         </div>
         <!-- Confidence Factors -->
-        <div v-if="recommendation.confidence_factors.length > 0" class="pt-2 mt-2 border-t" style="border-color: var(--wp-border);">
+        <div v-if="recommendation.confidence_factors && recommendation.confidence_factors.length > 0" class="pt-2 mt-2 border-t" style="border-color: var(--wp-border);">
           <p class="text-[9px] font-bold uppercase tracking-wider mb-1" style="color: var(--wp-text-secondary);">
             Confidence Factors:
           </p>
           <div
-            v-for="(cf, i) in recommendation.confidence_factors"
+            v-for="(cf, i) in (recommendation.confidence_factors || [])"
             :key="i"
             class="text-[10px]"
             style="color: var(--wp-text-secondary);"
@@ -121,19 +123,19 @@
     </div>
 
     <!-- Recommendation Text -->
-    <div class="mb-3 p-2 bg-slate-50 rounded">
+    <div v-if="recommendation.recommendation_text" class="mb-3 p-2 bg-slate-50 rounded">
       <p class="text-[10px] font-semibold" style="color: var(--wp-navy);">
         {{ recommendation.recommendation_text }}
       </p>
     </div>
 
     <!-- Multi-CTA Buttons -->
-    <div class="flex gap-2 flex-wrap">
+    <div v-if="recommendation.cta && recommendation.cta.length > 0" class="flex gap-2 flex-wrap">
       <button
         v-for="cta in recommendation.cta"
         :key="cta.action"
         class="flex-1 min-w-[80px] py-2 text-[10px] font-bold uppercase tracking-wider text-white transition-all hover:opacity-90 active:scale-[0.98] rounded"
-        :style="{ backgroundColor: cta.primary ? ctaColor : 'var(--wp-text-secondary)', opacity: cta.primary ? 1 : 0.8 }"
+        :style="{ backgroundColor: ctaColor }"
         @click="$emit('action', recommendation, cta)"
       >
         {{ cta.label }}
@@ -244,7 +246,7 @@ const confidenceBarColor = computed(() => {
 
 const impactText = computed(() => {
   const rp = props.recommendation.expected_impact_rupiah
-  if (rp <= 0) return 'Perlu analisis lanjut'
+  if (!rp || rp <= 0) return 'Perlu analisis lanjut'
   return `Rp ${rp.toLocaleString('id-ID')}`
 })
 </script>

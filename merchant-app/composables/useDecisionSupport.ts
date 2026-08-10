@@ -127,7 +127,9 @@ const opportunityRecs = computed(() =>
 )
 
 const quickWins = computed(() =>
-  [...recommendations.value].sort((a, b) => b.expected_impact_rupiah - a.expected_impact_rupiah).slice(0, 3),
+  [...recommendations.value]
+    .sort((a, b) => (b.expected_impact_rupiah || 0) - (a.expected_impact_rupiah || 0))
+    .slice(0, 3),
 )
 
 const restockCount = computed(() =>
