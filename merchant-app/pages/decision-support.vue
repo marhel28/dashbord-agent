@@ -88,16 +88,16 @@
         </div>
 
         <!-- Quick Wins -->
-        <div v-if="quickWins.length > 0">
+        <div v-if="(quickWins ?? []).length > 0">
           <div class="flex items-center gap-2 mb-3">
             <Icon name="heroicons:bolt" class="w-4 h-4" style="color: var(--wp-gold);" />
             <h2 class="text-xs font-bold uppercase tracking-wider" style="color: var(--wp-gold);">
-              Quick Wins ({{ quickWins.length }})
+              Quick Wins ({{ (quickWins ?? []).length }})
             </h2>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
-              v-for="rec in quickWins"
+              v-for="rec in (quickWins ?? [])"
               :key="'qw_' + rec.product_uuid"
               class="bg-white border p-4 shadow-sm cursor-pointer hover:shadow-md transition-all"
               style="border-color: var(--wp-border);"
@@ -110,7 +110,7 @@
               <p class="text-sm font-black" style="color: var(--wp-gold);">
                 Rp {{ (rec.expected_impact_rupiah ?? 0).toLocaleString('id-ID') }}
               </p>
-              <p class="text-[10px] mt-1" style="color: var(--wp-text-secondary);">{{ rec.recommendation_text }}</p>
+              <p class="text-[10px] mt-1" style="color: var(--wp-text-secondary);">{{ rec.recommendation_text || '' }}</p>
             </div>
           </div>
         </div>
@@ -146,34 +146,54 @@
         </div>
 
         <!-- Critical Section -->
-        <div v-if="criticalRecs.length > 0">
-          <SectionHeader icon="heroicons:exclamation-circle" color="#DC2626" :count="criticalRecs.length" label="CRITICAL" />
+        <div v-if="(criticalRecs ?? []).length > 0">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full" style="background-color: #DC2626;" />
+            <h2 class="text-xs font-bold uppercase tracking-wider" style="color: #DC2626;">
+              CRITICAL ({{ (criticalRecs ?? []).length }})
+            </h2>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DecisionCard v-for="rec in criticalRecs" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
+            <DecisionCard v-for="rec in (criticalRecs ?? [])" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
           </div>
         </div>
 
         <!-- High Priority Section -->
-        <div v-if="highRecs.length > 0">
-          <SectionHeader icon="heroicons:fire" color="#EA580C" :count="highRecs.length" label="Prioritas Tinggi" />
+        <div v-if="(highRecs ?? []).length > 0">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full" style="background-color: #EA580C;" />
+            <h2 class="text-xs font-bold uppercase tracking-wider" style="color: #EA580C;">
+              Prioritas Tinggi ({{ (highRecs ?? []).length }})
+            </h2>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DecisionCard v-for="rec in highRecs" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
+            <DecisionCard v-for="rec in (highRecs ?? [])" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
           </div>
         </div>
 
         <!-- Medium Section -->
-        <div v-if="mediumRecs.length > 0">
-          <SectionHeader icon="heroicons:eye" color="#3B82F6" :count="mediumRecs.length" label="Perlu Perhatian" />
+        <div v-if="(mediumRecs ?? []).length > 0">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full" style="background-color: #3B82F6;" />
+            <h2 class="text-xs font-bold uppercase tracking-wider" style="color: #3B82F6;">
+              Perlu Perhatian ({{ (mediumRecs ?? []).length }})
+            </h2>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DecisionCard v-for="rec in mediumRecs" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
+            <DecisionCard v-for="rec in (mediumRecs ?? [])" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
           </div>
         </div>
 
         <!-- Opportunity Section -->
-        <div v-if="opportunityRecs.length > 0">
-          <SectionHeader icon="heroicons:rocket-launch" color="#059669" :count="opportunityRecs.length" label="Peluang" />
+        <div v-if="(opportunityRecs ?? []).length > 0">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full" style="background-color: #059669;" />
+            <h2 class="text-xs font-bold uppercase tracking-wider" style="color: #059669;">
+              Peluang ({{ (opportunityRecs ?? []).length }})
+            </h2>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DecisionCard v-for="rec in opportunityRecs" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
+            <DecisionCard v-for="rec in (opportunityRecs ?? [])" :key="rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
           </div>
         </div>
 
@@ -227,7 +247,7 @@
       <div v-if="insight?.recommendations?.length" class="mt-4 space-y-3">
         <h3 class="text-xs font-bold uppercase tracking-wider" style="color: var(--wp-navy);">Rekomendasi Terkait</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <DecisionCard v-for="rec in insight.recommendations" :key="'ins_' + rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
+          <DecisionCard v-for="rec in (insight?.recommendations ?? [])" :key="'ins_' + rec.product_uuid + rec.action_type" :recommendation="rec" @action="handleAction" />
         </div>
       </div>
     </div>
@@ -366,33 +386,5 @@ function scrollToRec(rec: Recommendation) {
 
 onMounted(() => {
   refresh()
-})
-</script>
-
-<!-- SectionHeader sub-component -->
-<script lang="ts">
-import { defineComponent, h } from 'vue'
-
-export const SectionHeader = defineComponent({
-  name: 'SectionHeader',
-  props: {
-    icon: { type: String, required: true },
-    color: { type: String, required: true },
-    count: { type: Number, required: true },
-    label: { type: String, required: true },
-  },
-  setup(props) {
-    return () =>
-      h('div', { class: 'flex items-center gap-2 mb-3' }, [
-        h('div', {
-          class: 'w-2 h-2 rounded-full',
-          style: { backgroundColor: props.color },
-        }),
-        h('h2', {
-          class: 'text-xs font-bold uppercase tracking-wider',
-          style: { color: props.color },
-        }, `${props.label} (${props.count})`),
-      ])
-  },
 })
 </script>
