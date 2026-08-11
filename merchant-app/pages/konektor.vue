@@ -1,122 +1,190 @@
 <template>
-  <div class="flex flex-col lg:flex-row h-[calc(100vh-8rem)] lg:h-[calc(100vh-5rem)] w-full overflow-hidden animate-fade-in">
-    <!-- ── Interactive Vue Flow Canvas ── -->
-    <div class="flex-1 relative border border-[var(--wp-border)] bg-[var(--wp-surface)] overflow-hidden">
-      <ClientOnly>
-        <VueFlow
-          v-model:nodes="nodes"
-          v-model:edges="edges"
-          :class="colorMode.value === 'dark' ? 'dark' : ''"
-          class="w-full h-full"
-          :default-viewport="{ x: 50, y: 100, zoom: 0.75 }"
-          :min-zoom="0.2"
-          :max-zoom="4"
-          @node-click="onNodeClick"
-          @pane-click="selectedNode = null"
-        >
-          <!-- Background Grid -->
-          <Background pattern-color="#888" :gap="16" :size="1" />
+  <div>
+    <!-- ═══ DESKTOP: VueFlow Canvas + Detail Panel (>= 768px, unchanged) ═══ -->
+    <div class="hidden md:flex flex-col lg:flex-row h-[calc(100vh-8rem)] lg:h-[calc(100vh-5rem)] w-full overflow-hidden animate-fade-in">
+      <!-- ── Interactive Vue Flow Canvas ── -->
+      <div class="flex-1 relative border border-[var(--wp-border)] bg-[var(--wp-surface)] overflow-hidden">
+        <ClientOnly>
+          <VueFlow
+            v-model:nodes="nodes"
+            v-model:edges="edges"
+            :class="colorMode.value === 'dark' ? 'dark' : ''"
+            class="w-full h-full"
+            :default-viewport="{ x: 50, y: 100, zoom: 0.75 }"
+            :min-zoom="0.2"
+            :max-zoom="4"
+            @node-click="onNodeClick"
+            @pane-click="selectedNode = null"
+          >
+            <!-- Background Grid -->
+            <Background pattern-color="#888" :gap="16" :size="1" />
 
-          <!-- Interactive Controls -->
-          <Controls position="bottom-left" />
+            <!-- Interactive Controls -->
+            <Controls position="bottom-left" />
 
-          <!-- Mini Map for easy navigation -->
-          <MiniMap position="bottom-right" />
-        </VueFlow>
-        <template #fallback>
-          <div class="flex items-center justify-center w-full h-full">
-            <div class="text-center space-y-3">
-              <div class="w-10 h-10 mx-auto border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold); border-radius: 0px;"></div>
-              <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Memuat peta alur…</p>
+            <!-- Mini Map for easy navigation -->
+            <MiniMap position="bottom-right" />
+          </VueFlow>
+          <template #fallback>
+            <div class="flex items-center justify-center w-full h-full">
+              <div class="text-center space-y-3">
+                <div class="w-10 h-10 mx-auto border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold); border-radius: 0px;"></div>
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Memuat peta alur…</p>
+              </div>
+            </div>
+          </template>
+        </ClientOnly>
+
+        <!-- Toggle Help Banner -->
+        <div class="absolute top-4 left-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-[var(--wp-border)] p-3 shadow-md max-w-xs pointer-events-auto z-10">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--wp-navy)] mb-1">Nahkoeda Orchestration Map</h3>
+          <p class="text-[9px] font-semibold text-slate-400 uppercase tracking-wide leading-relaxed">
+            Peta interaktif alur komunikasi FastAPI Orchestrator, AI Agent, dan infrastruktur sistem Nahkoeda. Klik pada node untuk membaca detil fungsinya.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── Interactive Detail Panel ── -->
+      <div class="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-[var(--wp-border)] bg-[var(--wp-surface)] p-6 flex flex-col shrink-0 overflow-y-auto">
+        <div v-if="selectedNode" class="space-y-4">
+          <!-- Node Header Info -->
+          <div class="border-b pb-4" style="border-color: var(--wp-border);">
+            <span class="px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-widest text-white" :style="{ backgroundColor: selectedNode.data.color }">
+              {{ selectedNode.data.category }}
+            </span>
+            <h2 class="text-lg font-black uppercase tracking-tight mt-2 text-[var(--wp-navy)]">
+              {{ selectedNode.label }}
+            </h2>
+            <p class="text-[10px] text-slate-400 font-mono mt-1">ID: {{ selectedNode.id }}</p>
+          </div>
+
+          <!-- Node Description -->
+          <div class="space-y-3">
+            <div>
+              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Deskripsi Fungsi</h4>
+              <p class="text-xs font-semibold leading-relaxed text-[var(--wp-text)]">
+                {{ selectedNode.data.description }}
+              </p>
+            </div>
+
+            <div v-if="selectedNode.data.subcomponents">
+              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Fitur / Sub-Komponen</h4>
+              <ul class="space-y-1">
+                <li
+                  v-for="sub in selectedNode.data.subcomponents"
+                  :key="sub"
+                  class="text-[10px] font-bold flex items-center gap-1.5 text-[var(--wp-text)]"
+                >
+                  <span class="w-1.5 h-1.5 shrink-0 bg-[var(--wp-gold)]"></span>
+                  <span>{{ sub }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="selectedNode.data.technologies">
+              <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Teknologi Terkait</h4>
+              <div class="flex flex-wrap gap-1.5">
+                <span
+                  v-for="tech in selectedNode.data.technologies"
+                  :key="tech"
+                  class="px-2 py-1 text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-700/50 text-[var(--wp-text)]"
+                  style="border-radius: 2px;"
+                >
+                  {{ tech }}
+                </span>
+              </div>
             </div>
           </div>
-        </template>
-      </ClientOnly>
+        </div>
 
-      <!-- Toggle Help Banner -->
-      <div class="absolute top-4 left-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur border border-[var(--wp-border)] p-3 shadow-md max-w-xs pointer-events-auto z-10">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--wp-navy)] mb-1">Nahkoeda Orchestration Map</h3>
-        <p class="text-[9px] font-semibold text-slate-400 uppercase tracking-wide leading-relaxed">
-          Peta interaktif alur komunikasi FastAPI Orchestrator, AI Agent, dan infrastruktur sistem Nahkoeda. Klik pada node untuk membaca detil fungsinya.
-        </p>
+        <!-- Initial State Detail Panel -->
+        <div v-else class="flex-1 flex flex-col items-center justify-center text-center py-10">
+          <div class="w-12 h-12 flex items-center justify-center bg-slate-50 dark:bg-slate-800 border border-[var(--wp-border)] mb-4">
+            <Icon name="heroicons:sparkles" class="w-6 h-6 text-slate-400" />
+          </div>
+          <h4 class="text-xs font-bold uppercase tracking-widest text-[var(--wp-navy)]">Pilih Node</h4>
+          <p class="text-[10px] text-slate-400 uppercase tracking-wider mt-1.5 max-w-xs leading-relaxed">
+            Klik pada salah satu node sistem di kanvas peta untuk memuat arsitektur teknis lengkap.
+          </p>
+        </div>
       </div>
     </div>
 
-    <!-- ── Interactive Detail Panel ── -->
-    <div class="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-[var(--wp-border)] bg-[var(--wp-surface)] p-6 flex flex-col shrink-0 overflow-y-auto">
+    <!-- ═══ MOBILE: Node list + detail sheet (< 768px) ═══ -->
+    <div class="md:hidden space-y-4 pb-safe">
+      <div>
+        <h1 class="text-xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Peta Arsitektur</h1>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Nahkoeda Orchestration Map · {{ nodes.length }} node sistem</p>
+      </div>
+
+      <div class="space-y-2">
+        <button
+          v-for="node in nodes"
+          :key="node.id"
+          @click="selectedNode = node"
+          class="w-full flex items-center gap-3 p-3 bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface text-left active:scale-[0.98] transition"
+          style="min-height: var(--wp-touch-target);"
+        >
+          <div class="w-3 h-3 rounded-full shrink-0" :style="{ backgroundColor: node.data.color }"></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold truncate" style="color: var(--wp-text);">{{ node.label }}</p>
+            <p class="text-[9px] uppercase tracking-wider truncate" style="color: var(--wp-text-secondary);">{{ node.data.category }}</p>
+          </div>
+          <Icon name="heroicons:chevron-right" class="w-4 h-4 shrink-0" style="color: var(--wp-text-secondary);" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile node detail sheet -->
+    <MobileSheet v-if="selectedNode" v-model:open="mobileNodeSheetOpen" :title="selectedNode?.label" class="md:hidden">
       <div v-if="selectedNode" class="space-y-4">
-        <!-- Node Header Info -->
-        <div class="border-b pb-4" style="border-color: var(--wp-border);">
+        <div class="border-b pb-3" style="border-color: var(--wp-border);">
           <span class="px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-widest text-white" :style="{ backgroundColor: selectedNode.data.color }">
             {{ selectedNode.data.category }}
           </span>
-          <h2 class="text-lg font-black uppercase tracking-tight mt-2 text-[var(--wp-navy)]">
-            {{ selectedNode.label }}
-          </h2>
-          <p class="text-[10px] text-slate-400 font-mono mt-1">ID: {{ selectedNode.id }}</p>
+          <p class="text-[10px] text-slate-400 font-mono mt-2">ID: {{ selectedNode.id }}</p>
         </div>
-
-        <!-- Node Description -->
-        <div class="space-y-3">
-          <div>
-            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Deskripsi Fungsi</h4>
-            <p class="text-xs font-semibold leading-relaxed text-[var(--wp-text)]">
-              {{ selectedNode.data.description }}
-            </p>
-          </div>
-
-          <div v-if="selectedNode.data.subcomponents">
-            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Fitur / Sub-Komponen</h4>
-            <ul class="space-y-1">
-              <li
-                v-for="sub in selectedNode.data.subcomponents"
-                :key="sub"
-                class="text-[10px] font-bold flex items-center gap-1.5 text-[var(--wp-text)]"
-              >
-                <span class="w-1.5 h-1.5 shrink-0 bg-[var(--wp-gold)]"></span>
-                <span>{{ sub }}</span>
-              </li>
-            </ul>
-          </div>
-
-          <div v-if="selectedNode.data.technologies">
-            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Teknologi Terkait</h4>
-            <div class="flex flex-wrap gap-1.5">
-              <span
-                v-for="tech in selectedNode.data.technologies"
-                :key="tech"
-                class="px-2 py-1 text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-700/50 text-[var(--wp-text)]"
-                style="border-radius: 2px;"
-              >
-                {{ tech }}
-              </span>
-            </div>
+        <div>
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Deskripsi Fungsi</h4>
+          <p class="text-xs font-semibold leading-relaxed" style="color: var(--wp-text);">{{ selectedNode.data.description }}</p>
+        </div>
+        <div v-if="selectedNode.data.subcomponents">
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Fitur / Sub-Komponen</h4>
+          <ul class="space-y-1">
+            <li v-for="sub in selectedNode.data.subcomponents" :key="sub" class="text-[10px] font-bold flex items-center gap-1.5" style="color: var(--wp-text);">
+              <span class="w-1.5 h-1.5 shrink-0 bg-[var(--wp-gold)]"></span>
+              <span>{{ sub }}</span>
+            </li>
+          </ul>
+        </div>
+        <div v-if="selectedNode.data.technologies">
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Teknologi Terkait</h4>
+          <div class="flex flex-wrap gap-1.5">
+            <span v-for="tech in selectedNode.data.technologies" :key="tech" class="px-2 py-1 text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-700/50" style="color: var(--wp-text); border-radius: var(--wp-radius-mobile);">
+              {{ tech }}
+            </span>
           </div>
         </div>
       </div>
-
-      <!-- Initial State Detail Panel -->
-      <div v-else class="flex-1 flex flex-col items-center justify-center text-center py-10">
-        <div class="w-12 h-12 flex items-center justify-center bg-slate-50 dark:bg-slate-800 border border-[var(--wp-border)] mb-4">
-          <Icon name="heroicons:sparkles" class="w-6 h-6 text-slate-400" />
-        </div>
-        <h4 class="text-xs font-bold uppercase tracking-widest text-[var(--wp-navy)]">Pilih Node</h4>
-        <p class="text-[10px] text-slate-400 uppercase tracking-wider mt-1.5 max-w-xs leading-relaxed">
-          Klik pada salah satu node sistem di kanvas peta untuk memuat arsitektur teknis lengkap.
-        </p>
-      </div>
-    </div>
+    </MobileSheet>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
+import MobileSheet from '~/components/mobile/MobileSheet.vue'
 
 const colorMode = useColorMode()
+
+// Mobile node detail sheet open state — synced with selectedNode.
+const mobileNodeSheetOpen = computed({
+  get: () => !!selectedNode.value,
+  set: (val: boolean) => { if (!val) selectedNode.value = null },
+})
 
 // Custom colors for system layers
 const COLORS = {

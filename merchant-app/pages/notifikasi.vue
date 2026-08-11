@@ -28,7 +28,7 @@
         v-for="notif in notifications" 
         :key="notif.id"
         @click="markAsRead(notif.id)"
-        class="bg-white dark:bg-slate-800 border rounded shadow-sm p-4 md:p-5 flex gap-4 transition hover:shadow cursor-pointer relative overflow-hidden active:scale-[0.99]"
+        class="bg-white dark:bg-slate-800 border rounded shadow-sm p-4 md:p-5 flex gap-4 transition hover:shadow cursor-pointer relative overflow-hidden active:scale-[0.99] min-h-[44px]"
         :class="[notif.read ? 'border-[var(--wp-border)] opacity-80' : 'border-l-4 border-l-[var(--wp-navy)] border-[var(--wp-border)]']"
       >
         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="[notif.type === 'NEW_TRANSACTION' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600']">

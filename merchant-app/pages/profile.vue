@@ -119,7 +119,7 @@
           </div>
 
           <div class="pt-4 flex justify-end">
-            <button type="submit" :disabled="isSubmitting" class="px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); border-radius: 4px;">
+            <button type="submit" :disabled="isSubmitting" class="w-full md:w-auto px-6 py-3 md:py-2.5 min-h-[44px] text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); border-radius: var(--wp-radius-mobile);">
               <Icon v-if="isSubmitting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
               <Icon v-else name="heroicons:check" class="w-4 h-4" />
               <span>{{ isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>

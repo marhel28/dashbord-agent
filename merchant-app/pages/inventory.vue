@@ -300,10 +300,11 @@
     </div>
 
     <!-- ═══════════ CREATE / EDIT MODAL ═══════════ -->
+    <!-- Desktop: centered dialog (>= 768px, unchanged) -->
     <Teleport to="body">
       <div
         v-if="showModal"
-        class="fixed inset-0 z-[var(--wp-z-modal)] flex items-start justify-center pt-[10vh] px-4"
+        class="fixed inset-0 z-[var(--wp-z-modal)] hidden md:flex items-start justify-center pt-[10vh] px-4"
         style="background: rgba(15,26,46,0.5);"
         @click.self="closeModal"
       >
@@ -541,11 +542,123 @@
       </div>
     </Teleport>
 
+    <!-- Mobile: bottom sheet (< 768px) — same form, native app feel -->
+    <MobileSheet v-if="showModal" v-model:open="showModal" :title="isEditing ? 'Edit Detail Produk' : 'Buat Produk Baru'" max-height="92vh" class="md:hidden">
+      <form @submit.prevent="saveProduct" class="space-y-4">
+        <div class="grid grid-cols-1 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Nama Produk <span style="color: #DC2626;">*</span></label>
+            <input v-model="form.product_name" type="text" required placeholder="Cth: Indomie Goreng Spesial" class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition border" :class="formErrors.product_name ? 'border-red-300 bg-red-50/30' : ''" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
+            <p v-if="formErrors.product_name" class="text-[10px] font-medium" style="color: #DC2626;">{{ formErrors.product_name }}</p>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">SKU</label>
+            <input v-model="form.sku" type="text" placeholder="e.g. IND-GOR-001" class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition border" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Barcode</label>
+            <input v-model="form.barcode" type="text" placeholder="e.g. 8991234567890" class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition border" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Kategori</label>
+            <div class="relative">
+              <select v-model="form.category" class="w-full px-4 py-2.5 rounded-lg text-sm outline-none transition border appearance-none" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);">
+                <option value="">Pilih Kategori</option>
+                <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+              </select>
+              <Icon name="heroicons:chevron-down" class="absolute right-3 top-3 w-4 h-4 pointer-events-none" style="color: var(--wp-text-secondary);" />
+            </div>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Foto Produk</label>
+          <div class="flex items-start gap-4">
+            <div class="w-20 h-20 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden shrink-0 relative" style="border-color: var(--wp-border); background: var(--wp-bg); border-radius: var(--wp-radius-mobile);">
+              <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
+              <Icon v-else name="heroicons:photo" class="w-8 h-8" style="color: #94A3B8;" />
+              <div v-if="uploadingImage" class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div class="w-6 h-6 border-2 animate-spin" style="border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition border" style="border-color: var(--wp-border); color: var(--wp-text-secondary); background: var(--wp-bg); border-radius: var(--wp-radius-mobile);">
+                <Icon name="heroicons:cloud-arrow-up" class="w-4 h-4" />
+                <span>{{ form.photo_url ? 'Ganti Foto' : 'Upload Foto' }}</span>
+                <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
+              </label>
+              <p class="text-[9px]" style="color: var(--wp-text-secondary);">JPG, PNG, WEBP · Maks 5MB</p>
+              <p v-if="uploadError" class="text-[10px] font-medium" style="color: #DC2626;">{{ uploadError }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Deskripsi</label>
+          <textarea v-model="form.description" rows="2" placeholder="Deskripsi singkat mengenai produk…" class="w-full px-4 py-2.5 text-sm outline-none transition border resize-none font-medium" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text); border-radius: var(--wp-radius-mobile);"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Harga Jual <span style="color: #DC2626;">*</span></label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xs font-semibold" style="color: var(--wp-text-secondary);">Rp</span>
+              <input v-model.number="form.price" type="number" required min="0" step="100" placeholder="0" class="w-full pl-10 pr-4 py-2.5 text-sm outline-none transition border font-mono font-semibold" :class="formErrors.price ? 'border-red-300 bg-red-50/30' : ''" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text); border-radius: var(--wp-radius-mobile);" />
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Harga Modal</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xs font-semibold" style="color: var(--wp-text-secondary);">Rp</span>
+              <input v-model.number="form.cost_price" type="number" min="0" step="100" placeholder="0" class="w-full pl-10 pr-4 py-2.5 text-sm outline-none transition border font-mono font-semibold" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text); border-radius: var(--wp-radius-mobile);" />
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Stok <span style="color: #DC2626;">*</span></label>
+            <input v-model.number="form.stock_quantity" type="number" required min="0" placeholder="0" class="w-full px-3 py-2.5 text-sm outline-none transition border font-mono font-semibold" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text); border-radius: var(--wp-radius-mobile);" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Min Stok</label>
+            <input v-model.number="form.min_stock" type="number" min="0" placeholder="0" class="w-full px-3 py-2.5 text-sm outline-none transition border font-mono font-semibold" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text); border-radius: var(--wp-radius-mobile);" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Satuan</label>
+            <select v-model="form.unit" class="w-full px-2 py-2.5 text-sm outline-none transition border font-bold uppercase tracking-wider" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text); border-radius: var(--wp-radius-mobile);">
+              <option value="pcs">pcs</option>
+              <option value="kg">kg</option>
+              <option value="liter">liter</option>
+              <option value="box">box</option>
+              <option value="pack">pack</option>
+              <option value="carton">carton</option>
+              <option value="gram">gram</option>
+              <option value="ml">ml</option>
+            </select>
+          </div>
+        </div>
+        <label v-if="isEditing" class="flex items-center gap-2 cursor-pointer select-none">
+          <input v-model="form.is_active" type="checkbox" class="w-4 h-4 accent-[var(--wp-gold)]" />
+          <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Produk Aktif</span>
+        </label>
+      </form>
+      <template #footer>
+        <div class="flex gap-3">
+          <button type="button" @click="closeModal" class="flex-1 min-h-[44px] px-4 border font-bold text-xs uppercase tracking-wider transition" style="border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: var(--wp-radius-mobile);">Batal</button>
+          <button type="button" @click="saveProduct" :disabled="saving" class="flex-1 min-h-[44px] px-4 text-white font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2" style="background: var(--wp-navy); border-radius: var(--wp-radius-mobile);">
+            <Icon v-if="saving" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+            <Icon v-else name="heroicons:check" class="w-4 h-4" />
+            <span>{{ isEditing ? 'Perbarui' : 'Simpan' }}</span>
+          </button>
+        </div>
+      </template>
+    </MobileSheet>
+
     <!-- ═══════════ DELETE CONFIRMATION ═══════════ -->
+    <!-- Desktop: centered dialog (>= 768px, unchanged) -->
     <Teleport to="body">
       <div
         v-if="showDeleteConfirm"
-        class="fixed inset-0 z-[var(--wp-z-modal)] flex items-center justify-center px-4"
+        class="fixed inset-0 z-[var(--wp-z-modal)] hidden md:flex items-center justify-center px-4"
         style="background: rgba(15,26,46,0.5);"
         @click.self="showDeleteConfirm = false"
       >
@@ -576,6 +689,29 @@
           </div>
         </div>
       </div>
+    </Teleport>
+
+    <!-- Mobile: bottom sheet confirm (< 768px) -->
+    <MobileSheet v-if="showDeleteConfirm" v-model:open="showDeleteConfirm" title="Hapus Produk?" class="md:hidden">
+      <div class="text-center py-2">
+        <div class="w-12 h-12 mx-auto flex items-center justify-center mb-4" style="background: #FEF2F2; border-radius: var(--wp-radius-mobile);">
+          <Icon name="heroicons:exclamation-triangle" class="w-6 h-6" style="color: #DC2626;" />
+        </div>
+        <p class="text-xs" style="color: var(--wp-text-secondary);">
+          Apakah Anda yakin ingin menghapus <strong style="color: var(--wp-text);">"{{ deleteTarget?.product_name }}"</strong>?
+          Tindakan ini tidak dapat dibatalkan.
+        </p>
+      </div>
+      <template #footer>
+        <div class="flex gap-3">
+          <button @click="showDeleteConfirm = false" class="flex-1 min-h-[44px] px-4 border font-bold text-xs uppercase tracking-wider transition" style="border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: var(--wp-radius-mobile);">Batal</button>
+          <button @click="doDelete" :disabled="deleting" class="flex-1 min-h-[44px] px-4 text-white font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2" style="background: #DC2626; border-radius: var(--wp-radius-mobile);">
+            <Icon v-if="deleting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+            <span>Hapus</span>
+          </button>
+        </div>
+      </template>
+    </MobileSheet>
     <!-- ═══════════ FLOATING BATCH ACTION BAR ═══════════ -->
     <Teleport to="body">
       <Transition name="slide-up">
@@ -650,6 +786,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { api } from '~/utils/api'
+import MobileSheet from '~/components/mobile/MobileSheet.vue'
 
 // ── Types ──
 interface StockItem {

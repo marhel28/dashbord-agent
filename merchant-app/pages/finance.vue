@@ -79,7 +79,7 @@
         <!-- Chart -->
         <div class="lg:col-span-2 bg-white border rounded-2xl p-6 shadow-sm" style="border-color: var(--wp-border);">
           <h2 class="text-base font-bold mb-4" style="color: var(--wp-text);">Arus Kas (Periode Dipilih)</h2>
-          <VChart :option="cashflowOption" autoresize class="h-72" />
+          <VChart :option="cashflowOption" autoresize class="h-56 md:h-72" />
         </div>
 
         <!-- Recent Expenses -->
@@ -111,8 +111,8 @@
       </div>
     </template>
 
-    <!-- Modal Catat Pengeluaran -->
-    <div v-if="showExpenseModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+    <!-- Modal Catat Pengeluaran: desktop centered dialog (>= 768px) -->
+    <div v-if="showExpenseModal" class="fixed inset-0 z-50 hidden md:flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
       <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden animate-fade-in-up">
         <div class="px-5 py-4 border-b flex justify-between items-center" style="border-color: var(--wp-border);">
           <h3 class="font-bold text-sm" style="color: var(--wp-navy);">Catat Pengeluaran</h3>
@@ -146,6 +146,34 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Catat Pengeluaran: mobile bottom sheet (< 768px) -->
+    <MobileSheet v-if="showExpenseModal" v-model:open="showExpenseModal" title="Catat Pengeluaran" class="md:hidden">
+      <form @submit.prevent="submitExpense" class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nominal (Rp)</label>
+          <input v-model.number="formExpense.amount" type="number" required min="1" class="w-full px-3 py-2.5 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Kategori</label>
+          <select v-model="formExpense.category" class="w-full px-3 py-2.5 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)] bg-white">
+            <option value="OPERATIONAL">Operasional (Listrik, Sewa, dll)</option>
+            <option value="SALARY">Gaji Karyawan</option>
+            <option value="MAINTENANCE">Perbaikan/Maintenance</option>
+            <option value="OTHER">Lain-lain</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat</label>
+          <input v-model="formExpense.description" type="text" required placeholder="Cth: Bayar tagihan internet" class="w-full px-3 py-2.5 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" />
+        </div>
+      </form>
+      <template #footer>
+        <button type="button" @click="submitExpense" :disabled="submitting" class="w-full py-3 rounded-lg text-xs font-bold text-white transition-transform active:scale-95 disabled:opacity-50" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); border-radius: var(--wp-radius-mobile);">
+          {{ submitting ? 'Menyimpan...' : 'Simpan Pengeluaran' }}
+        </button>
+      </template>
+    </MobileSheet>
   </div>
 </template>
 
@@ -153,6 +181,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { api } from '~/utils/api'
 import VChart from 'vue-echarts'
+import MobileSheet from '~/components/mobile/MobileSheet.vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { BarChart } from 'echarts/charts'

@@ -21,17 +21,17 @@
     <template v-else>
       <!-- Agent Badges Filter -->
       <div v-if="availableAgents.length > 0" class="flex flex-wrap gap-2 animate-fade-in-up" style="animation-delay: 0.1s;">
-        <button 
-          @click="selectedAgentId = null" 
-          class="px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm"
+        <button
+          @click="selectedAgentId = null"
+          class="px-3 py-1.5 min-h-[44px] rounded-full text-xs font-bold transition-all shadow-sm"
           :class="!selectedAgentId ? 'bg-slate-800 text-white' : 'bg-white border text-slate-500 hover:bg-slate-50'"
         >
           Semua Agent
         </button>
-        <button 
+        <button
           v-for="ag in availableAgents" :key="ag.id"
           @click="selectedAgentId = selectedAgentId === ag.id ? null : ag.id"
-          class="px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border flex items-center gap-1.5"
+          class="px-3 py-1.5 min-h-[44px] rounded-full text-xs font-bold transition-all shadow-sm border flex items-center gap-1.5"
           :class="selectedAgentId === ag.id ? 'opacity-100 ring-2 ring-offset-1' : 'bg-white hover:bg-slate-50'"
           :style="selectedAgentId === ag.id ? `background: ${ag.color}; color: white; border-color: ${ag.color}; ring-color: ${ag.color};` : `color: ${ag.color}; border-color: ${ag.color}40;`"
         >

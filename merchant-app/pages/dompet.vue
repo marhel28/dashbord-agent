@@ -43,7 +43,7 @@
       <div v-if="dailyIncomeOption" class="bg-white border rounded-2xl p-6 shadow-sm" style="border-color: var(--wp-border);">
         <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Tren Pendapatan (30 Hari)</h2>
         <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Penghasilan harian dari transaksi</p>
-        <VChart :option="dailyIncomeOption" autoresize class="h-48" />
+        <VChart :option="dailyIncomeOption" autoresize class="h-40 md:h-48" />
       </div>
 
       <!-- Recent Transactions -->
@@ -65,7 +65,7 @@
           <div
             v-for="txn in performance.recent_transactions"
             :key="txn.uuid"
-            class="flex items-center justify-between py-3.5 gap-3"
+            class="flex items-center justify-between py-3.5 gap-3 min-h-[44px]"
           >
             <div class="flex items-center gap-3 min-w-0 flex-1">
               <div

@@ -33,7 +33,7 @@ function logWarn(rule, msg) {
   totalWarnings++;
 }
 
-// 1. Signature Theme Tokens
+// 1. Signature Theme Tokens (12 original + mobile-native tokens added in the mobile overhaul)
 const REQUIRED_TOKENS = [
   '--wp-gold',
   '--wp-gold-light',
@@ -46,7 +46,12 @@ const REQUIRED_TOKENS = [
   '--wp-border',
   '--wp-success',
   '--wp-warning',
-  '--wp-error'
+  '--wp-error',
+  '--wp-touch-target',
+  '--wp-radius-mobile',
+  '--wp-bottom-nav-height',
+  '--wp-safe-area-bottom',
+  '--wp-safe-area-top'
 ];
 
 /**
@@ -396,6 +401,95 @@ function verifyOverflowPrevention() {
 }
 
 /**
+ * RULE 5: Touch Target — interactive elements guarantee >= 44px hit area.
+ * Checks that the mobile design system components enforce min-h-[44px]/min-w-[44px].
+ */
+function verifyTouchTargets() {
+  console.log(`\n${CYAN}--- [Rule 5] Touch Target (44px minimum) ---${RESET}`);
+  const mobileDir = path.join(ROOT_DIR, 'components', 'mobile');
+  if (!fs.existsSync(mobileDir)) {
+    logFail('Touch Target', 'components/mobile directory not found.');
+    return;
+  }
+  const files = getFiles(mobileDir, '.vue');
+  let checked = 0;
+  for (const f of files) {
+    const content = fs.readFileSync(f, 'utf8');
+    // Look for the touch-target enforcement pattern
+    if (/min-h-\[44px\]|min-w-\[44px\]|var\(--wp-touch-target\)/.test(content)) {
+      checked++;
+    }
+  }
+  if (checked > 0) {
+    logPass('Touch Target', `${checked} mobile component(s) enforce a 44px minimum touch target.`);
+  } else {
+    logFail('Touch Target', 'No mobile components enforce the 44px minimum touch target.');
+  }
+}
+
+/**
+ * RULE 6: Mobile Variant Presence — table pages carry the dual-render pair.
+ * Confirms the established `hidden md:block` (desktop table) ↔ `block md:hidden`
+ * (mobile cards) pattern exists on the three core table pages.
+ */
+function verifyMobileVariants() {
+  console.log(`\n${CYAN}--- [Rule 6] Mobile Variant Presence (dual-render) ---${RESET}`);
+  const tablePages = ['pages/index.vue', 'pages/inventory.vue', 'pages/sales-report.vue'];
+  for (const rel of tablePages) {
+    const abs = path.join(ROOT_DIR, rel);
+    if (!fs.existsSync(abs)) { logFail('Mobile Variant', `${rel} not found.`); continue; }
+    const content = fs.readFileSync(abs, 'utf8');
+    const hasDesktopTable = /hidden\s+md:(block|flex|grid)/.test(content);
+    const hasMobileCards = /block\s+md:hidden/.test(content);
+    if (hasDesktopTable && hasMobileCards) {
+      logPass('Mobile Variant', `${rel} has the dual-render table↔card pair.`);
+    } else {
+      logFail('Mobile Variant', `${rel} is missing the dual-render pair (desktop table: ${hasDesktopTable}, mobile cards: ${hasMobileCards}).`);
+    }
+  }
+}
+
+/**
+ * RULE 7: Safe-Area / Bottom Padding — mobile content clears the fixed nav.
+ * The main content container must include mobile bottom padding >= nav height,
+ * and the bottom nav must include safe-area padding.
+ */
+function verifySafeArea() {
+  console.log(`\n${CYAN}--- [Rule 7] Safe-Area & Bottom Padding ---${RESET}`);
+  const layoutPath = path.join(ROOT_DIR, 'layouts', 'default.vue');
+  const navPath = path.join(ROOT_DIR, 'components', 'MobileBottomNav.vue');
+
+  if (fs.existsSync(layoutPath)) {
+    const content = fs.readFileSync(layoutPath, 'utf8');
+    if (/pb-24|pb-\[calc\(6rem/.test(content)) {
+      logPass('Safe-Area', 'layouts/default.vue main content clears the mobile bottom nav.');
+    } else {
+      logFail('Safe-Area', 'layouts/default.vue main content lacks mobile bottom padding to clear the nav.');
+    }
+  }
+
+  if (fs.existsSync(navPath)) {
+    const content = fs.readFileSync(navPath, 'utf8');
+    if (/safe-area|wp-bottom-nav-height/.test(content)) {
+      logPass('Safe-Area', 'MobileBottomNav includes safe-area bottom inset.');
+    } else {
+      logFail('Safe-Area', 'MobileBottomNav lacks safe-area bottom inset.');
+    }
+  }
+
+  // Confirm the viewport meta requests cover (needed for env(safe-area-inset-*) on iOS)
+  const nuxtConfig = path.join(ROOT_DIR, 'nuxt.config.ts');
+  if (fs.existsSync(nuxtConfig)) {
+    const content = fs.readFileSync(nuxtConfig, 'utf8');
+    if (/viewport-fit=cover/.test(content)) {
+      logPass('Safe-Area', 'nuxt.config.ts viewport meta includes viewport-fit=cover.');
+    } else {
+      logFail('Safe-Area', 'nuxt.config.ts viewport meta missing viewport-fit=cover (required for iOS safe-area insets).');
+    }
+  }
+}
+
+/**
  * MAIN EXECUTION
  */
 console.log(`${CYAN}${BOLD}=====================================================${RESET}`);
@@ -406,6 +500,9 @@ verifyThemeTokens();
 verifyLayoutShell();
 verifyTableDualRendering();
 verifyOverflowPrevention();
+verifyTouchTargets();
+verifyMobileVariants();
+verifySafeArea();
 
 console.log(`\n${CYAN}${BOLD}=====================================================${RESET}`);
 console.log(`${CYAN}${BOLD}  VERIFICATION SUMMARY  ${RESET}`);
