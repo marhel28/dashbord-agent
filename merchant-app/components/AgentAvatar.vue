@@ -1,29 +1,25 @@
 <template>
-  <div class="agent-avatar-container" :class="[`state-${state}`, { speaking: isSpeaking }]">
+  <div class="agent-avatar-root" :class="[`state-${state}`, { speaking: isSpeaking }]">
     <!-- Glow ring when speaking -->
-    <div v-if="isSpeaking" class="speaking-ring"></div>
+    <div v-if="isSpeaking" class="avatar-glow"></div>
 
-    <!-- Avatar frame -->
-    <div class="avatar-frame-wrapper">
+    <!-- Avatar image (single img, no stacking = no blink) -->
+    <div class="avatar-box">
       <img
-        v-for="(frame, idx) in frames"
-        :key="idx"
-        :src="frame"
+        :src="currentFrame"
         alt="AI Agent"
-        class="avatar-frame"
-        :class="{ active: idx === frameIndex }"
+        class="avatar-img"
         draggable="false"
-        @error="onImageError"
       />
     </div>
 
-    <!-- Sound wave indicator -->
-    <div v-if="isSpeaking" class="sound-waves">
-      <span v-for="i in 5" :key="i" class="wave-bar" :style="{ animationDelay: `${i * 0.1}s` }" />
+    <!-- Sound wave bars -->
+    <div v-if="isSpeaking" class="voice-bars">
+      <span v-for="i in 5" :key="i" class="vbar" :style="{ animationDelay: `${i * 0.08}s` }" />
     </div>
 
     <!-- State label -->
-    <div v-if="showLabel" class="state-label" :style="{ color: stateColor }">
+    <div v-if="showLabel" class="avatar-label" :style="{ color: stateColor }">
       {{ stateLabel }}
     </div>
   </div>
@@ -42,8 +38,7 @@ const props = withDefaults(defineProps<{
   showLabel: false,
 })
 
-// ── Frame mapping (all 20 animation frames) ──────────────────────
-// Paths are relative to /public/ folder (served at root)
+// ── All 20 animation frames (paths relative to /public/) ─────────
 
 const FRAMES: Record<string, string[]> = {
   idle: ['/agent-avatar/Senyum.png'],
@@ -80,18 +75,18 @@ const FRAMES: Record<string, string[]> = {
 
 const SPEED: Record<string, number> = {
   idle: 0,
-  talking: 100,
-  explaining: 120,
-  thinking: 200,
-  muttering: 150,
-  realization: 150,
+  talking: 90,
+  explaining: 110,
+  thinking: 180,
+  muttering: 130,
+  realization: 140,
   sad: 0,
 }
 
 // ── Animation state ──────────────────────────────────────────────
 
 const frameIndex = ref(0)
-let interval: ReturnType<typeof setInterval> | null = null
+let timer: ReturnType<typeof setInterval> | null = null
 
 const frames = computed(() => FRAMES[props.state] || FRAMES.idle)
 
@@ -101,20 +96,20 @@ const currentFrame = computed(() => {
 })
 
 const stateColor = computed(() => {
-  const colors: Record<string, string> = {
-    idle: 'var(--wp-text-secondary)',
-    talking: 'var(--wp-gold)',
+  const c: Record<string, string> = {
+    idle: '#64748B',
+    talking: '#D4A843',
     explaining: '#3B82F6',
-    thinking: 'var(--wp-warning)',
+    thinking: '#D97706',
     muttering: '#8B5CF6',
-    realization: 'var(--wp-success)',
-    sad: 'var(--wp-error)',
+    realization: '#059669',
+    sad: '#DC2626',
   }
-  return colors[props.state] || 'var(--wp-text-secondary)'
+  return c[props.state] || '#64748B'
 })
 
 const stateLabel = computed(() => {
-  const labels: Record<string, string> = {
+  const l: Record<string, string> = {
     idle: 'Siap membantu',
     talking: 'Berbicara...',
     explaining: 'Menjelaskan...',
@@ -123,58 +118,35 @@ const stateLabel = computed(() => {
     realization: 'Ada insight!',
     sad: 'Terjadi masalah',
   }
-  return labels[props.state] || ''
+  return l[props.state] || ''
 })
 
-function onImageError(e: Event) {
-  const img = e.target as HTMLImageElement
-  img.style.display = 'none'
+// ── Animation loop (hard switch, no fade = no blink) ─────────────
+
+function startLoop() {
+  stopLoop()
+  const ms = SPEED[props.state] || 0
+  if (ms <= 0) { frameIndex.value = 0; return }
+  timer = setInterval(() => {
+    frameIndex.value = (frameIndex.value + 1) % frames.value.length
+  }, ms)
 }
 
-// ── Animation loop ───────────────────────────────────────────────
-
-function startAnimation() {
-  stopAnimation()
-  const speed = SPEED[props.state] || 0
-  if (speed <= 0) {
-    frameIndex.value = 0
-    return
-  }
-  interval = setInterval(() => {
-    const f = frames.value
-    frameIndex.value = (frameIndex.value + 1) % f.length
-  }, speed)
-}
-
-function stopAnimation() {
-  if (interval) {
-    clearInterval(interval)
-    interval = null
-  }
+function stopLoop() {
+  if (timer) { clearInterval(timer); timer = null }
 }
 
 watch(() => props.state, () => {
   frameIndex.value = 0
-  const speed = SPEED[props.state] || 0
-  if (speed > 0) {
-    startAnimation()
-  } else {
-    stopAnimation()
-  }
+  if (SPEED[props.state] > 0) startLoop(); else stopLoop()
 }, { immediate: true })
 
-onMounted(() => {
-  const speed = SPEED[props.state] || 0
-  if (speed > 0) startAnimation()
-})
-
-onUnmounted(() => {
-  stopAnimation()
-})
+onMounted(() => { if (SPEED[props.state] > 0) startLoop() })
+onUnmounted(() => stopLoop())
 </script>
 
 <style scoped>
-.agent-avatar-container {
+.agent-avatar-root {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -182,100 +154,87 @@ onUnmounted(() => {
   gap: 6px;
 }
 
-.avatar-frame-wrapper {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--wp-gold-light), var(--wp-gold-dark));
-  box-shadow: 0 4px 20px rgba(212, 168, 67, 0.3);
-  animation: avatar-breathe 3s ease-in-out infinite;
-  flex-shrink: 0;
-}
-
-.avatar-frame {
+/* ── Glow ring (speaking) ──────────────────────────────────────── */
+.avatar-glow {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  opacity: 0;
-  transition: opacity 0.06s ease;
-}
-
-.avatar-frame.active {
-  opacity: 1;
-}
-
-/* Speaking ring */
-.speaking-ring {
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  right: -3px;
-  bottom: -3px;
-  border-radius: 50%;
-  border: 2px solid var(--wp-gold);
-  animation: pulse-ring 1.5s ease-out infinite;
+  inset: -6px;
+  border-radius: 20px;
+  border: 2px solid #D4A843;
+  animation: glow-pulse 1.4s ease-out infinite;
   pointer-events: none;
   z-index: 2;
 }
 
-/* Sound waves */
-.sound-waves {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  height: 16px;
+/* ── Image container (rounded rect, NOT circle) ────────────────── */
+.avatar-box {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  animation: avatar-breathe 3s ease-in-out infinite;
+  flex-shrink: 0;
+  position: relative;
 }
 
-.wave-bar {
+/* Speaking = faster breathe + gold border + glow */
+.speaking .avatar-box {
+  animation: avatar-breathe 1.2s ease-in-out infinite;
+  border-color: #D4A843;
+  box-shadow: 0 4px 24px rgba(212,168,67,0.35);
+}
+
+/* ── Image (fills container, no transparency issues) ───────────── */
+.avatar-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%; /* focus on face area */
+  /* NO transition = NO blink */
+}
+
+/* ── Voice bars ────────────────────────────────────────────────── */
+.voice-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+}
+
+.vbar {
   width: 3px;
   height: 100%;
-  background: var(--wp-gold);
+  background: #D4A843;
   border-radius: 2px;
-  animation: sound-wave 0.8s ease-in-out infinite;
+  animation: vbar-wave 0.7s ease-in-out infinite;
   transform-origin: bottom;
 }
 
-/* State label */
-.state-label {
+/* ── Label ─────────────────────────────────────────────────────── */
+.avatar-label {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  animation: fadeIn 0.3s ease;
   white-space: nowrap;
 }
 
-/* ── Animations ────────────────────────────────────────────────── */
-
+/* ── Keyframes ─────────────────────────────────────────────────── */
 @keyframes avatar-breathe {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  50%      { transform: scale(1.03); }
 }
 
-@keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.12); opacity: 0; }
+@keyframes glow-pulse {
+  0%   { transform: scale(1);    opacity: 0.8; }
+  100% { transform: scale(1.10); opacity: 0;   }
 }
 
-@keyframes sound-wave {
-  0%, 100% { transform: scaleY(0.3); }
-  50% { transform: scaleY(1); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Speaking state boosts breathing */
-.speaking .avatar-frame-wrapper {
-  animation: avatar-breathe 1.5s ease-in-out infinite;
-  box-shadow: 0 4px 30px rgba(212, 168, 67, 0.5);
+@keyframes vbar-wave {
+  0%, 100% { transform: scaleY(0.25); }
+  50%      { transform: scaleY(1);    }
 }
 </style>
