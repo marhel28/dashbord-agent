@@ -16,7 +16,7 @@
     <div v-if="categories.length > 0" class="flex gap-2 overflow-x-auto pb-3 mb-3 scrollbar-hide">
       <button
         @click="selectedCategory = ''"
-        class="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition whitespace-nowrap"
+        class="shrink-0 px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition whitespace-nowrap flex items-center justify-center"
         :style="selectedCategory === ''
           ? 'background: var(--wp-navy); color: white;'
           : 'background: white; color: var(--wp-text-secondary); border: 1px solid var(--wp-border);'"
@@ -27,7 +27,7 @@
         v-for="cat in categories"
         :key="cat"
         @click="selectedCategory = cat"
-        class="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition whitespace-nowrap"
+        class="shrink-0 px-4 py-2.5 min-h-[44px] rounded-full text-xs font-bold transition whitespace-nowrap flex items-center justify-center"
         :style="selectedCategory === cat
           ? 'background: var(--wp-navy); color: white;'
           : 'background: white; color: var(--wp-text-secondary); border: 1px solid var(--wp-border);'"

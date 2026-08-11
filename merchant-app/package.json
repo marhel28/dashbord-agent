@@ -7,7 +7,11 @@
     "build": "node ./node_modules/nuxt/bin/nuxt.mjs build",
     "generate": "node ./node_modules/nuxt/bin/nuxt.mjs generate",
     "preview": "node ./node_modules/nuxt/bin/nuxt.mjs preview",
-    "postinstall": "node ./node_modules/nuxt/bin/nuxt.mjs prepare"
+    "postinstall": "node ./node_modules/nuxt/bin/nuxt.mjs prepare",
+    "test:responsive": "node scripts/verify-responsive.mjs",
+    "test:typecheck": "nuxi typecheck",
+    "test:build": "nuxt build",
+    "test": "npm run test:responsive && npm run test:build"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.14.0",

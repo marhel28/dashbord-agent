@@ -8,11 +8,11 @@
           Performa penjualan detail dengan analisis pendapatan, profit & tren.
         </p>
       </div>
-      <div class="inline-flex p-1 rounded-xl border" style="background: var(--wp-bg); border-color: var(--wp-border);">
+      <div class="inline-flex flex-wrap p-1 rounded-xl border" style="background: var(--wp-bg); border-color: var(--wp-border);">
         <button
           v-for="p in periods" :key="p.value"
           @click="setPeriod(p.value)"
-          :class="['px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200',
+          :class="['px-3.5 py-2.5 min-h-[44px] text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center',
             period === p.value ? 'text-white shadow-sm' : 'hover:text-slate-700']"
           :style="period === p.value
             ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;'
@@ -22,11 +22,11 @@
     </div>
     
     <!-- Custom Date Range Picker -->
-    <div v-if="period === 'custom'" class="flex items-center gap-2 animate-fade-in-up">
-      <input type="date" v-model="localStartDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
+    <div v-if="period === 'custom'" class="flex flex-wrap items-center gap-2 animate-fade-in-up">
+      <input type="date" v-model="localStartDate" class="px-3 py-2.5 min-h-[44px] text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
       <span class="text-xs text-slate-500">-</span>
-      <input type="date" v-model="localEndDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
-      <button @click="applyCustomDate" class="px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
+      <input type="date" v-model="localEndDate" class="px-3 py-2.5 min-h-[44px] text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
+      <button @click="applyCustomDate" class="px-4 py-2.5 min-h-[44px] text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
     </div>
 
     <!-- ═══════════ LOADING STATE ═══════════ -->
@@ -142,7 +142,8 @@
             {{ data.recent_sales.length }} data
           </span>
         </div>
-        <div class="overflow-x-auto">
+        <!-- Desktop Table View (Width >= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
@@ -182,6 +183,55 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Cards View (Width < 768px) -->
+        <div class="block md:hidden space-y-3">
+          <div
+            v-for="sale in data.recent_sales"
+            :key="sale.uuid"
+            class="p-4 bg-[var(--wp-surface)] border border-[var(--wp-border)] rounded-xl space-y-2.5 shadow-sm"
+          >
+            <div class="flex items-center justify-between border-b pb-2" style="border-color: var(--wp-border);">
+              <span class="font-bold font-mono text-xs" style="color: var(--wp-navy);">
+                {{ sale.invoice_number }}
+              </span>
+              <span class="text-[10px] font-mono" style="color: var(--wp-text-secondary);">
+                {{ formatDate(sale.created_at) }}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between py-1">
+              <div>
+                <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Pelanggan</span>
+                <span class="text-xs font-semibold" style="color: var(--wp-text);">
+                  {{ sale.customer_name || 'Pelanggan Umum' }}
+                </span>
+              </div>
+              <div class="text-right">
+                <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Total Penjualan</span>
+                <span class="font-bold font-mono text-base" style="color: var(--wp-text);">
+                  {{ formatRupiah(sale.total) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--wp-border);">
+              <span class="px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase tracking-wider"
+                :style="sale.payment_method === 'QRIS'
+                  ? { background: 'rgba(15,26,46,0.06)', color: 'var(--wp-navy)', borderColor: 'rgba(15,26,46,0.15)' }
+                  : { background: 'rgba(212,168,67,0.08)', color: 'var(--wp-gold-dark)', borderColor: 'rgba(212,168,67,0.20)' }">
+                {{ sale.payment_method || '—' }}
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-[9px] font-bold border inline-flex items-center gap-1 uppercase tracking-wider"
+                :style="sale.status === 'PAID'
+                  ? { background: '#F0FDF4', color: '#059669', borderColor: '#DCFCE7' }
+                  : { background: '#FFFBEB', color: '#D97706', borderColor: '#FDE68A' }">
+                <span class="w-1.5 h-1.5 rounded-full" :style="{ background: sale.status === 'PAID' ? '#059669' : '#D97706' }"></span>
+                {{ sale.status }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </template>

@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen font-sans flex flex-col lg:flex-row text-slate-900" style="background-color: var(--wp-bg, #F4F6F9);">
+  <div class="min-h-screen font-sans flex flex-col md:flex-row text-slate-900" style="background-color: var(--wp-bg, #F4F6F9);">
     <!-- ── Mobile Header Bar ── -->
-    <header class="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-[var(--wp-border)] shrink-0 sticky top-0 z-[var(--wp-z-sticky)]">
+    <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-[var(--wp-border)] shrink-0 sticky top-0 z-[var(--wp-z-sticky)] pt-safe" style="background: var(--wp-surface);">
       <div class="flex items-center gap-2">
         <img :src="logoSrc" class="w-8 h-8 object-contain" alt="Nahkoeda Logo" />
         <div>
@@ -26,8 +26,8 @@
       </div>
     </header>
 
-    <!-- ── Sidebar (Large Devices) ── -->
-    <aside class="w-64 bg-white border-r border-[var(--wp-border)] p-0 flex flex-col justify-between hidden lg:flex shrink-0 sticky top-0 h-screen overflow-y-auto custom-scrollbar">
+    <!-- ── Sidebar (Desktop Devices >= 768px) ── -->
+    <aside class="w-64 bg-white border-r border-[var(--wp-border)] p-0 flex flex-col justify-between hidden md:flex shrink-0 sticky top-0 h-screen overflow-y-auto custom-scrollbar">
       <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--wp-gold)] via-[var(--wp-gold-light)] to-[var(--wp-gold-dark)] opacity-80"></div>
 
       <div class="p-6 pl-7">
@@ -172,8 +172,8 @@
     </aside>
 
     <!-- ── Main Area ── -->
-    <div class="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
-      <header class="h-16 bg-white/80 backdrop-blur-md border-b border-[var(--wp-border)] px-8 items-center justify-between shrink-0 sticky top-0 z-[var(--wp-z-sticky)] hidden lg:flex">
+    <div class="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
+      <header class="h-16 bg-white/80 backdrop-blur-md border-b border-[var(--wp-border)] px-8 items-center justify-between shrink-0 sticky top-0 z-[var(--wp-z-sticky)] hidden md:flex">
         <!-- Global Search -->
         <GlobalSearch />
         <div class="flex items-center gap-4">
@@ -200,7 +200,7 @@
         </div>
       </header>
 
-      <main class="flex-1 overflow-y-auto p-4 sm:p-8">
+      <main class="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 md:pb-6" :style="{ paddingBottom: 'calc(6rem + var(--wp-safe-area-bottom))' }">
         <slot />
       </main>
     </div>
@@ -210,7 +210,7 @@
       ref="telegramButton"
       @mousedown="startDrag"
       @touchstart="startDrag"
-      class="fixed z-[999] flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group cursor-move select-none"
+      class="fixed z-[999] flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group cursor-move select-none bottom-20 md:bottom-6"
       :style="{
         borderRadius: '9999px',
         boxShadow: '0 4px 16px rgba(38, 165, 228, 0.4)',
@@ -234,44 +234,8 @@
       </a>
     </div>
 
-    <!-- ── Bottom Navigation Bar (Mobile Devices only) ── -->
-    <nav class="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[var(--wp-border)] flex items-center justify-around px-2 z-[var(--wp-z-sticky)]">
-      <NuxtLink to="/" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Beranda</span>
-      </NuxtLink>
-      <NuxtLink to="/chat" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:sparkles" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Asisten AI</span>
-      </NuxtLink>
-      <NuxtLink to="/dompet" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:wallet" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Dompet</span>
-      </NuxtLink>
-      <NuxtLink to="/inventory" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:archive-box" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Stok</span>
-      </NuxtLink>
-      <NuxtLink to="/notifikasi" exact-active-class="mobile-nav-active" class="mobile-nav-link relative">
-        <Icon name="heroicons:bell" class="w-5 h-5" />
-        <span v-if="unreadCount > 0" class="absolute top-1 right-1/4 translate-x-1/2 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-bold text-white shadow" style="background: var(--wp-navy);">
-          {{ unreadCount > 9 ? '9+' : unreadCount }}
-        </span>
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Notif</span>
-      </NuxtLink>
-      <NuxtLink to="/konektor" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:share" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Profil</span>
-      </NuxtLink>
-      <NuxtLink to="/sales-report" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:chart-bar" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Laporan</span>
-      </NuxtLink>
-      <NuxtLink to="/konektor" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:share" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Profil</span>
-      </NuxtLink>
-    </nav>
+    <!-- ── Mobile Bottom Navigation Bar (< 768px) ── -->
+    <MobileBottomNav @logout="handleLogout" :show-crm="showCrm" :is-expert="isExpert" />
 
     <!-- ── Toast Notifications ── -->
     <div class="fixed top-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">

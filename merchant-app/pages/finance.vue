@@ -1,26 +1,28 @@
 <template>
   <div class="space-y-6 animate-fade-in">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Keuangan & Arus Kas</h1>
-        <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Keuangan & Arus Kas</h1>
+        <p class="text-xs sm:text-sm mt-1" style="color: var(--wp-text-secondary);">
           Pantau kesehatan finansial toko Anda. Pilih rentang waktu.
         </p>
       </div>
-      <div class="flex items-center gap-2">
-        <input type="date" v-model="startDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
-        <span class="text-xs text-slate-500">-</span>
-        <input type="date" v-model="endDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
-        <button @click="loadData" class="px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-1.5 flex-1 sm:flex-none">
+          <input type="date" v-model="startDate" class="px-3 py-2.5 min-h-[44px] text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white flex-1 sm:w-auto" style="border-color: var(--wp-border); color: var(--wp-text);" />
+          <span class="text-xs text-slate-500">-</span>
+          <input type="date" v-model="endDate" class="px-3 py-2.5 min-h-[44px] text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white flex-1 sm:w-auto" style="border-color: var(--wp-border); color: var(--wp-text);" />
+        </div>
+        <button @click="loadData" class="px-4 py-2.5 min-h-[44px] text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
       </div>
-      <div class="flex gap-2">
-        <button @click="downloadPdf" :disabled="downloadingPdf" class="px-4 py-2 text-xs font-bold rounded-lg transition-all shadow-sm flex items-center gap-2 border bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50" style="border-color: var(--wp-border);">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button @click="downloadPdf" :disabled="downloadingPdf" class="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2 border bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50" style="border-color: var(--wp-border);">
           <Icon v-if="downloadingPdf" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
           <Icon v-else name="heroicons:document-arrow-down" class="w-4 h-4" />
           {{ downloadingPdf ? 'Menyiapkan...' : 'Unduh Laporan (PDF)' }}
         </button>
-        <button @click="showExpenseModal = true" class="px-4 py-2 text-xs font-bold rounded-lg transition-all shadow-sm flex items-center gap-2" style="background: linear-gradient(135deg, var(--wp-navy), #1e293b); color: white;">
+        <button @click="showExpenseModal = true" class="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--wp-navy), #1e293b); color: white;">
           <Icon name="heroicons:plus" class="w-4 h-4" /> Catat Pengeluaran
         </button>
       </div>
@@ -89,20 +91,20 @@
             <div v-if="expenses.length === 0" class="text-center py-10 text-xs text-slate-400 font-medium">
               Belum ada pengeluaran dicatat.
             </div>
-            <div v-for="exp in expenses" :key="exp.uuid" class="flex items-center justify-between p-3 rounded-xl border bg-slate-50" style="border-color: var(--wp-border);">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-white shadow-sm text-slate-400">
+            <div v-for="exp in expenses" :key="exp.uuid" class="flex items-center justify-between p-3 rounded-xl border bg-slate-50 gap-3" style="border-color: var(--wp-border);">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-white shadow-sm text-slate-400 shrink-0">
                   <Icon v-if="exp.category === 'OPERATIONAL'" name="heroicons:bolt" class="w-4 h-4" />
                   <Icon v-else-if="exp.category === 'SALARY'" name="heroicons:user-group" class="w-4 h-4" />
                   <Icon v-else-if="exp.category === 'MAINTENANCE'" name="heroicons:wrench" class="w-4 h-4" />
                   <Icon v-else name="heroicons:document" class="w-4 h-4" />
                 </div>
-                <div>
-                  <p class="text-[11px] font-bold text-slate-800">{{ exp.description }}</p>
-                  <p class="text-[9px] font-semibold text-slate-400">{{ formatDate(exp.expense_date) }} &bull; {{ exp.category }}</p>
+                <div class="min-w-0 flex-1">
+                  <p class="text-[11px] font-bold text-slate-800 truncate">{{ exp.description }}</p>
+                  <p class="text-[9px] font-semibold text-slate-400 truncate">{{ formatDate(exp.expense_date) }} &bull; {{ exp.category }}</p>
                 </div>
               </div>
-              <span class="text-xs font-black text-rose-600">-{{ formatRupiah(exp.amount) }}</span>
+              <span class="text-xs font-black text-rose-600 shrink-0">-{{ formatRupiah(exp.amount) }}</span>
             </div>
           </div>
         </div>

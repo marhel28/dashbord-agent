@@ -65,21 +65,21 @@
           <div
             v-for="txn in performance.recent_transactions"
             :key="txn.uuid"
-            class="flex items-center justify-between py-3"
+            class="flex items-center justify-between py-3.5 gap-3"
           >
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
               <div
-                class="w-8 h-8 rounded-lg flex items-center justify-center"
+                class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                 :style="txn.type === 'CREDIT' ? 'background: rgba(5,150,105,0.1);' : 'background: rgba(239,68,68,0.1);'"
               >
                 <Icon
                   :name="txn.type === 'CREDIT' ? 'heroicons:arrow-down' : 'heroicons:arrow-up'"
-                  class="w-4 h-4"
+                  class="w-4.5 h-4.5"
                   :style="txn.type === 'CREDIT' ? 'color: #059669;' : 'color: #EF4444;'"
                 />
               </div>
-              <div>
-                <p class="text-xs font-bold" style="color: var(--wp-text);">
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-bold truncate" style="color: var(--wp-text);">
                   {{ txn.description || (txn.type === 'CREDIT' ? 'Pendapatan' : 'Penarikan') }}
                 </p>
                 <p class="text-[10px]" style="color: var(--wp-text-secondary);">
@@ -88,7 +88,7 @@
               </div>
             </div>
             <span
-              class="text-sm font-bold font-mono"
+              class="text-xs sm:text-sm font-bold font-mono shrink-0"
               :style="txn.type === 'CREDIT' ? 'color: #059669;' : 'color: #EF4444;'"
             >
               {{ txn.type === 'CREDIT' ? '+' : '-' }}Rp {{ formatRupiah(txn.amount) }}

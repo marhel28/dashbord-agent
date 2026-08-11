@@ -6,7 +6,7 @@
         <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Semua pemberitahuan dan pembaruan sistem</p>
       </div>
       <div v-if="notifications.length > 0">
-        <button @click="markAllAsRead" class="px-4 py-2 text-xs font-bold text-[var(--wp-navy)] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition rounded shadow-sm flex items-center gap-2">
+        <button @click="markAllAsRead" class="w-full sm:w-auto px-4 py-2.5 min-h-[44px] text-xs font-bold text-[var(--wp-navy)] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition rounded shadow-sm flex items-center justify-center gap-2">
           <Icon name="heroicons:check-badge" class="w-4 h-4" />
           <span>Tandai Semua Dibaca</span>
         </button>
@@ -28,20 +28,20 @@
         v-for="notif in notifications" 
         :key="notif.id"
         @click="markAsRead(notif.id)"
-        class="bg-white dark:bg-slate-800 border rounded shadow-sm p-4 md:p-5 flex gap-4 transition hover:shadow cursor-pointer relative overflow-hidden"
+        class="bg-white dark:bg-slate-800 border rounded shadow-sm p-4 md:p-5 flex gap-4 transition hover:shadow cursor-pointer relative overflow-hidden active:scale-[0.99]"
         :class="[notif.read ? 'border-[var(--wp-border)] opacity-80' : 'border-l-4 border-l-[var(--wp-navy)] border-[var(--wp-border)]']"
       >
         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="[notif.type === 'NEW_TRANSACTION' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600']">
           <Icon :name="notif.type === 'NEW_TRANSACTION' ? 'heroicons:shopping-cart' : 'heroicons:banknotes'" class="w-5 h-5" />
         </div>
         <div class="flex-1 min-w-0 pr-6">
-          <div class="flex justify-between items-start mb-1">
-            <h4 class="text-sm font-bold text-slate-800 dark:text-white" :class="{'opacity-75': notif.read}">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-1 gap-0.5 sm:gap-2">
+            <h4 class="text-sm font-bold text-slate-800 dark:text-white truncate" :class="{'opacity-75': notif.read}">
               {{ notif.title }}
             </h4>
-            <span class="text-[9px] font-bold text-slate-400 whitespace-nowrap">{{ formatDate(notif.date) }}</span>
+            <span class="text-[9px] font-bold text-slate-400 whitespace-nowrap shrink-0">{{ formatDate(notif.date) }}</span>
           </div>
-          <p class="text-xs text-slate-600 dark:text-slate-400" :class="{'opacity-75': notif.read}">
+          <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed" :class="{'opacity-75': notif.read}">
             {{ notif.message }}
           </p>
         </div>

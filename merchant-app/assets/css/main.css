@@ -39,6 +39,13 @@
   --wp-z-sticky:    200;
   --wp-z-modal:     300;
   --wp-z-toast:     400;
+
+  /* ── Mobile-native tokens ── */
+  --wp-touch-target: 44px;
+  --wp-radius-mobile: 16px; /* opts out of the crisp 6px override for mobile surfaces */
+  --wp-bottom-nav-height: 64px; /* h-16 */
+  --wp-safe-area-top: env(safe-area-inset-top, 0px);
+  --wp-safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Dark Mode Token Overrides ── */
@@ -52,7 +59,9 @@
   --wp-gold-light:  #FDE047;
   --wp-gold-dark:   #D4A843;
   --wp-navy:        #FFFFFF; /* Invert navy representation to white for high contrast titles */
-  
+
+  /* Mobile tokens inherit light values (touch target / radius / nav height / safe-area are unitless or env()) */
+
   color-scheme: dark;
 }
 
@@ -178,6 +187,30 @@
   border-radius: 4px !important;
 }
 
+/* ── Mobile Surface Opt-Out ──
+   The global radius override (6px) keeps desktop crisp, but mobile surfaces
+   (sheets, cards) need larger radii for a native feel. Apply .mobile-surface
+   to opt a component OUT of the 6px override — scoped so desktop is untouched. */
+.mobile-surface {
+  border-radius: var(--wp-radius-mobile) !important;
+}
+
+/* ── Safe-Area Helpers ──
+   Requires viewport-fit=cover in nuxt.config for env() to be non-zero on iOS. */
+.pb-safe {
+  padding-bottom: max(1rem, var(--wp-safe-area-bottom));
+}
+.pt-safe {
+  padding-top: var(--wp-safe-area-top);
+}
+.px-safe-left  { padding-left: env(safe-area-inset-left, 0px); }
+.px-safe-right { padding-right: env(safe-area-inset-right, 0px); }
+
+/* ── Momentum Scrolling for mobile scroll containers ── */
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── Reset + Base ── */
 body {
   font-family: var(--wp-font);
@@ -201,6 +234,14 @@ body {
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.4; }
+}
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes sheetSlideDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
 }
 
 /* ── Voice / AI Assistant Animations ── */

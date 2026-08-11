@@ -99,17 +99,17 @@
               </div>
             </div>
 
-            <div class="flex gap-2 mt-3">
+            <div class="flex gap-2.5 mt-3">
               <button
                 @click="continueSale(sale)"
-                class="flex-1 py-2 rounded-lg text-xs font-bold text-white transition hover:opacity-90"
+                class="flex-1 py-2.5 min-h-[44px] rounded-lg text-xs font-bold text-white transition hover:opacity-90 flex items-center justify-center"
                 style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));"
               >
                 Lanjutkan
               </button>
               <button
                 @click="cancelSale(sale.uuid)"
-                class="px-4 py-2 rounded-lg text-xs font-bold border border-[var(--wp-border)] transition hover:bg-slate-50"
+                class="px-4 py-2.5 min-h-[44px] rounded-lg text-xs font-bold border border-[var(--wp-border)] transition hover:bg-slate-50 flex items-center justify-center"
                 style="color: var(--wp-text-secondary);"
               >
                 Hapus

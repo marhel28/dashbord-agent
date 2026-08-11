@@ -8,15 +8,15 @@
           Total: {{ stocks.length }} produk aktif · Lacak level stok, harga & kategori.
         </p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap sm:flex-nowrap items-center gap-3">
         <!-- Search with Manticore suggestions -->
-        <div class="relative">
-          <Icon name="heroicons:magnifying-glass" class="absolute left-3 top-3 w-4 h-4 z-10" style="color: var(--wp-text-secondary);" />
+        <div class="relative flex-1 sm:flex-none">
+          <Icon name="heroicons:magnifying-glass" class="absolute left-3 top-3.5 w-4 h-4 z-10" style="color: var(--wp-text-secondary);" />
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Cari produk…"
-            class="w-64 pl-9 pr-4 py-2 text-xs transition border outline-none font-medium"
+            class="w-full sm:w-64 pl-9 pr-4 py-2.5 min-h-[44px] text-xs transition border outline-none font-medium"
             style="background: #FFFFFF; border-color: var(--wp-navy); color: var(--wp-text); border-radius: 0px;"
             @input="onSearchInput"
             @keydown.escape="suggestions = []"
@@ -32,7 +32,7 @@
             <button
               v-for="s in suggestions" :key="s.uuid"
               @click="selectSuggestion(s)"
-              class="w-full text-left px-3 py-2 transition hover:bg-slate-50 flex items-center justify-between border-b last:border-0"
+              class="w-full text-left px-3 py-2.5 min-h-[44px] transition hover:bg-slate-50 flex items-center justify-between border-b last:border-0"
               style="border-color: var(--wp-border);"
             >
               <div class="min-w-0 flex-1">
@@ -43,13 +43,13 @@
             </button>
           </div>
           <!-- Searching indicator -->
-          <div v-if="searching" class="absolute right-3 top-2.5 z-10">
+          <div v-if="searching" class="absolute right-3 top-3.5 z-10">
             <div class="w-4 h-4 border-2 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold); border-radius: 0px;"></div>
           </div>
         </div>
         <button
           @click="openCreateModal"
-          class="px-4 py-2.5 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition hover:opacity-90"
+          class="px-4 py-2.5 min-h-[44px] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition hover:opacity-90 shrink-0"
           style="background: var(--wp-navy); border-radius: 0px;"
         >
           <Icon name="heroicons:plus" class="w-4 h-4" />
@@ -115,15 +115,15 @@
         <button
           v-for="f in categoryFilters" :key="f.value"
           @click="activeCategoryFilter = f.value"
-          class="px-3 py-1.5 text-[10px] font-bold transition-all border uppercase tracking-wider"
+          class="px-3.5 py-2.5 min-h-[44px] text-[10px] font-bold transition-all border uppercase tracking-wider flex items-center justify-center"
           :style="activeCategoryFilter === f.value
             ? 'background: var(--wp-navy); border-color: var(--wp-navy); color: white; border-radius: 0px;'
             : 'background: #FFFFFF; border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: 0px;'"
         >{{ f.label }}</button>
       </div>
 
-      <!-- Table -->
-      <div class="overflow-x-auto mt-2">
+      <!-- Desktop Table View (Width >= 768px) -->
+      <div class="hidden md:block overflow-x-auto mt-2">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
@@ -187,10 +187,10 @@
               </td>
               <td class="py-4 text-right">
                 <div class="flex items-center justify-end gap-1">
-                  <button @click="openEditModal(item)" class="p-2 border transition hover:bg-slate-50" style="border-color: var(--wp-border); border-radius: 0px;" title="Edit">
+                  <button @click="openEditModal(item)" class="p-2 border transition hover:bg-slate-50 min-h-[44px] min-w-[44px] flex items-center justify-center" style="border-color: var(--wp-border); border-radius: 0px;" title="Edit">
                     <Icon name="heroicons:pencil-square" class="w-4 h-4" style="color: var(--wp-text);" />
                   </button>
-                  <button @click="confirmDelete(item)" class="p-2 border transition hover:bg-red-50" style="border-color: #FECACA; border-radius: 0px;" title="Delete">
+                  <button @click="confirmDelete(item)" class="p-2 border transition hover:bg-red-50 min-h-[44px] min-w-[44px] flex items-center justify-center" style="border-color: #FECACA; border-radius: 0px;" title="Delete">
                     <Icon name="heroicons:trash" class="w-4 h-4" style="color: #DC2626;" />
                   </button>
                 </div>
@@ -198,6 +198,97 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Cards View (Width < 768px) -->
+      <div class="block md:hidden space-y-3 mt-4">
+        <!-- Select All Control -->
+        <div class="flex items-center justify-between p-3 bg-slate-50 border" style="border-color: var(--wp-border);">
+          <label class="flex items-center gap-2.5 cursor-pointer min-h-[44px]">
+            <input
+              type="checkbox"
+              :checked="selectAll"
+              @change="selectAll = ($event.target as HTMLInputElement).checked"
+              class="w-5 h-5 accent-[var(--wp-gold)]"
+            />
+            <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--wp-navy);">Pilih Semua ({{ filteredStocks.length }})</span>
+          </label>
+          <span v-if="selectedUuids.length > 0" class="text-xs font-bold font-mono" style="color: var(--wp-gold);">
+            {{ selectedUuids.length }} terpilih
+          </span>
+        </div>
+
+        <!-- Stacked Product Cards -->
+        <div
+          v-for="item in filteredStocks"
+          :key="item.uuid"
+          class="p-4 bg-[var(--wp-surface)] border border-[var(--wp-border)] space-y-3 relative shadow-sm"
+        >
+          <!-- Top Row: Checkbox, Thumbnail, Name, SKU -->
+          <div class="flex items-start gap-3">
+            <label class="min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0 cursor-pointer -ml-2">
+              <input
+                type="checkbox"
+                :checked="selectedUuids.includes(item.uuid)"
+                @change="toggleSelect(item.uuid)"
+                class="w-5 h-5 accent-[var(--wp-gold)]"
+              />
+            </label>
+            <div class="w-12 h-12 border bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden" style="border-color: var(--wp-border);">
+              <img v-if="item.photo_url" :src="item.photo_url" :alt="item.product_name" class="w-full h-full object-cover" />
+              <Icon v-else name="heroicons:photo" class="w-6 h-6 text-slate-300" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <h4 class="font-bold text-sm leading-snug truncate" style="color: var(--wp-text);">{{ item.product_name }}</h4>
+              <p class="text-[11px] font-mono mt-0.5" style="color: var(--wp-text-secondary);">SKU: {{ item.sku || '—' }}</p>
+            </div>
+          </div>
+
+          <!-- Category & Status Pills -->
+          <div class="flex items-center justify-between gap-2 pt-1">
+            <span class="px-2 py-0.5 text-[9px] font-bold border uppercase tracking-wider"
+              style="background: rgba(15,26,46,0.04); color: var(--wp-navy); border-color: var(--wp-border);">
+              {{ item.category || 'Tanpa Kategori' }}
+            </span>
+            <span class="px-2.5 py-0.5 text-[9px] font-bold border inline-flex items-center gap-1 uppercase tracking-wider"
+              :style="statusBadge(item)">
+              <span class="w-1.5 h-1.5" :style="{ background: statusBadge(item).color }"></span>
+              {{ statusLabel(item) }}
+            </span>
+          </div>
+
+          <!-- Metrics Grid: Stock, Price, Cost Price -->
+          <div class="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 border" style="border-color: var(--wp-border);">
+            <div>
+              <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Stok Tersedia</span>
+              <span class="font-bold font-mono text-sm" style="color: var(--wp-text);">{{ item.stock_quantity }} {{ item.unit }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Harga Jual</span>
+              <span class="font-bold font-mono text-sm" style="color: var(--wp-navy);">{{ formatRupiah(item.price) }}</span>
+              <span v-if="item.cost_price" class="text-[10px] font-mono block text-slate-400">Modal: {{ formatRupiah(item.cost_price) }}</span>
+            </div>
+          </div>
+
+          <!-- Card Actions Footer with 44px touch targets -->
+          <div class="flex items-center gap-2 pt-2 border-t" style="border-color: var(--wp-border);">
+            <button
+              @click="openEditModal(item)"
+              class="flex-1 min-h-[44px] px-3 border border-[var(--wp-border)] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-slate-50"
+              style="color: var(--wp-text);"
+            >
+              <Icon name="heroicons:pencil-square" class="w-4 h-4 text-slate-500" />
+              <span>Edit</span>
+            </button>
+            <button
+              @click="confirmDelete(item)"
+              class="min-h-[44px] px-4 border border-red-200 text-red-600 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-red-50"
+            >
+              <Icon name="heroicons:trash" class="w-4 h-4" />
+              <span>Hapus</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Footer -->
@@ -485,6 +576,73 @@
           </div>
         </div>
       </div>
+    <!-- ═══════════ FLOATING BATCH ACTION BAR ═══════════ -->
+    <Teleport to="body">
+      <Transition name="slide-up">
+        <div
+          v-if="selectedUuids.length > 0"
+          class="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-[var(--wp-z-sticky)] p-4 shadow-xl flex items-center justify-between border border-[var(--wp-gold)]"
+          style="background: var(--wp-navy); color: white; border-radius: 4px;"
+        >
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-[var(--wp-gold)] text-white text-xs font-black flex items-center justify-center">
+              {{ selectedUuids.length }}
+            </span>
+            <span class="text-xs font-bold uppercase tracking-wider">Produk Terpilih</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              @click="selectedUuids = []"
+              class="min-h-[44px] px-3 py-2 text-xs font-bold text-slate-300 hover:text-white"
+            >
+              Batal
+            </button>
+            <button
+              @click="confirmBatchDelete"
+              class="min-h-[44px] px-4 py-2 bg-red-600 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1 rounded"
+            >
+              <Icon name="heroicons:trash" class="w-4 h-4" />
+              <span>Hapus</span>
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ═══════════ BATCH DELETE CONFIRMATION ═══════════ -->
+    <Teleport to="body">
+      <div
+        v-if="showBatchDeleteConfirm"
+        class="fixed inset-0 z-[var(--wp-z-modal)] flex items-center justify-center px-4"
+        style="background: rgba(15,26,46,0.5);"
+        @click.self="showBatchDeleteConfirm = false"
+      >
+        <div class="bg-white p-6 max-w-sm w-full animate-fade-in-up text-center border" style="border-color: var(--wp-navy); border-radius: 0px;">
+          <div class="w-12 h-12 mx-auto flex items-center justify-center mb-4" style="background: #FEF2F2;">
+            <Icon name="heroicons:exclamation-triangle" class="w-6 h-6" style="color: #DC2626;" />
+          </div>
+          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-text);">Hapus {{ selectedUuids.length }} Produk?</h3>
+          <p class="text-xs mt-2" style="color: var(--wp-text-secondary);">
+            Apakah Anda yakin ingin menghapus {{ selectedUuids.length }} produk terpilih? Tindakan ini tidak dapat dibatalkan.
+          </p>
+          <div class="flex gap-3 mt-6">
+            <button
+              @click="showBatchDeleteConfirm = false"
+              class="flex-1 py-2 border font-bold text-xs uppercase tracking-wider transition"
+              style="border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: 0px;"
+            >Batal</button>
+            <button
+              @click="doBatchDelete"
+              :disabled="deleting"
+              class="flex-1 py-2 text-white font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2"
+              style="background: #DC2626; border-radius: 0px;"
+            >
+              <Icon v-if="deleting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+              <span>Hapus Semua</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </Teleport>
   </div>
 </template>
@@ -535,6 +693,10 @@ const activeCategoryFilter = ref('all')
 const saving = ref(false)
 const deleting = ref(false)
 
+// Multi-select & Batch Actions State
+const selectedUuids = ref<string[]>([])
+const showBatchDeleteConfirm = ref(false)
+
 // Manticore suggestions
 interface Suggestion {
   uuid: string
@@ -574,6 +736,48 @@ const formErrors = ref<Record<string, string>>({})
 const imagePreview = ref<string>('')
 const uploadingImage = ref(false)
 const uploadError = ref<string>('')
+
+// ── Multi-select & Batch Actions ──
+const selectAll = computed({
+  get: () => filteredStocks.value.length > 0 && selectedUuids.value.length === filteredStocks.value.length,
+  set: (val: boolean) => {
+    if (val) {
+      selectedUuids.value = filteredStocks.value.map(s => s.uuid)
+    } else {
+      selectedUuids.value = []
+    }
+  }
+})
+
+const toggleSelect = (uuid: string) => {
+  const idx = selectedUuids.value.indexOf(uuid)
+  if (idx > -1) {
+    selectedUuids.value.splice(idx, 1)
+  } else {
+    selectedUuids.value.push(uuid)
+  }
+}
+
+const confirmBatchDelete = () => {
+  if (selectedUuids.value.length > 0) {
+    showBatchDeleteConfirm.value = true
+  }
+}
+
+const doBatchDelete = async () => {
+  if (selectedUuids.value.length === 0) return
+  deleting.value = true
+  try {
+    await Promise.all(selectedUuids.value.map(uuid => api.delete(`/stocks/${uuid}`)))
+    selectedUuids.value = []
+    showBatchDeleteConfirm.value = false
+    await fetchStocks()
+  } catch (err: any) {
+    // error handled silently
+  } finally {
+    deleting.value = false
+  }
+}
 
 // ── Computed ──
 const categoryFilters = computed(() => {

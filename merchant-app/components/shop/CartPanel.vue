@@ -121,8 +121,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useCart, type CartItem } from '~/composables/useCart'
+import { useViewport } from '~/composables/useViewport'
 
 const props = defineProps<{
   isOpen: boolean
@@ -138,11 +139,9 @@ const items = computed(() => cart.items.value)
 const totalItems = computed(() => cart.totalItems.value)
 const subtotal = computed(() => cart.subtotal.value)
 
-const isMobile = ref(false)
-
-onMounted(() => {
-  isMobile.value = window.innerWidth < 1024
-})
+// Migrated from the old `window.innerWidth < 1024` one-shot to the reactive
+// useViewport composable, and aligned to the app's locked `md:` (768px) breakpoint.
+const { isMobile } = useViewport()
 
 const setQuantity = (uuid: string, qty: number) => {
   cart.setQuantity(uuid, qty)

@@ -201,49 +201,98 @@
             <NuxtLink to="/inventory" class="inline-block mt-3 text-xs font-bold" style="color: var(--wp-gold);">Tambahkan produk pertama anda →</NuxtLink>
           </div>
 
-          <!-- Table -->
-          <div v-else class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-                  <th class="py-4 pr-4">Nama Produk</th>
-                  <th class="py-4 pr-4">Kategori</th>
-                  <th class="py-4 pr-4">Level Stok</th>
-                  <th class="py-4 pr-4 text-center">Status</th>
-                  <th class="py-4 text-right">Harga</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
-                <tr v-for="item in displayStocks" :key="item.uuid" class="transition-colors hover:bg-slate-50/50">
-                  <td class="py-4 pr-4 font-bold" style="color: var(--wp-text);">{{ item.product_name }}</td>
-                  <td class="py-4 pr-4 font-medium" style="color: var(--wp-text-secondary);">{{ item.category || '—' }}</td>
-                  <td class="py-4 pr-4">
-                    <div class="flex items-center gap-3">
-                      <span class="w-8 font-bold text-sm font-mono" style="color: var(--wp-text);">{{ item.stock_quantity }}</span>
-                      <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background: #E2E8F0;">
-                        <div class="h-full rounded-full transition-all duration-700 ease-out"
-                          :style="{
-                            width: stockPercentage(item) + '%',
-                            background: stockBarColor(item),
-                          }"
-                        ></div>
+          <!-- Table & Mobile Cards -->
+          <template v-else>
+            <!-- Desktop Table View (Width >= 768px) -->
+            <div class="hidden md:block overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
+                    <th class="py-4 pr-4">Nama Produk</th>
+                    <th class="py-4 pr-4">Kategori</th>
+                    <th class="py-4 pr-4">Level Stok</th>
+                    <th class="py-4 pr-4 text-center">Status</th>
+                    <th class="py-4 text-right">Harga</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
+                  <tr v-for="item in displayStocks" :key="item.uuid" class="transition-colors hover:bg-slate-50/50">
+                    <td class="py-4 pr-4 font-bold" style="color: var(--wp-text);">{{ item.product_name }}</td>
+                    <td class="py-4 pr-4 font-medium" style="color: var(--wp-text-secondary);">{{ item.category || '—' }}</td>
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center gap-3">
+                        <span class="w-8 font-bold text-sm font-mono" style="color: var(--wp-text);">{{ item.stock_quantity }}</span>
+                        <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background: #E2E8F0;">
+                          <div class="h-full rounded-full transition-all duration-700 ease-out"
+                            :style="{
+                              width: stockPercentage(item) + '%',
+                              background: stockBarColor(item),
+                            }"
+                          ></div>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="py-4 pr-4 text-center">
-                    <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border inline-flex items-center gap-1"
-                      :style="stockBadgeStyle(item)">
-                      <span class="w-1.5 h-1.5 rounded-full" :style="{ background: stockBadgeStyle(item).color }"></span>
-                      {{ stockStatus(item).label }}
+                    </td>
+                    <td class="py-4 pr-4 text-center">
+                      <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border inline-flex items-center gap-1"
+                        :style="stockBadgeStyle(item)">
+                        <span class="w-1.5 h-1.5 rounded-full" :style="{ background: stockBadgeStyle(item).color }"></span>
+                        {{ stockStatus(item).label }}
+                      </span>
+                    </td>
+                    <td class="py-4 text-right font-bold font-mono" style="color: var(--wp-text);">
+                      {{ formatRupiah(item.price) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mobile Cards View (Width < 768px) -->
+            <div class="block md:hidden space-y-3">
+              <div
+                v-for="item in displayStocks"
+                :key="item.uuid"
+                class="p-4 border rounded-xl shadow-sm bg-[var(--wp-surface)] border-[var(--wp-border)] space-y-3"
+              >
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="font-bold text-sm truncate" style="color: var(--wp-text);">{{ item.product_name }}</h4>
+                    <span class="inline-block mt-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border rounded"
+                      style="background: rgba(15,26,46,0.04); color: var(--wp-navy); border-color: var(--wp-border);">
+                      {{ item.category || 'Tanpa Kategori' }}
                     </span>
-                  </td>
-                  <td class="py-4 text-right font-bold font-mono" style="color: var(--wp-text);">
+                  </div>
+                  <span class="text-sm font-bold font-mono shrink-0" style="color: var(--wp-text);">
                     {{ formatRupiah(item.price) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  </span>
+                </div>
+
+                <!-- Stock level bar -->
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-[10px] font-bold uppercase" style="color: var(--wp-text-secondary);">Stok Tersedia</span>
+                    <span class="font-bold font-mono" style="color: var(--wp-text);">{{ item.stock_quantity }} items</span>
+                  </div>
+                  <div class="h-2 rounded-full overflow-hidden bg-slate-100 border" style="border-color: var(--wp-border);">
+                    <div class="h-full rounded-full transition-all duration-500"
+                      :style="{ width: stockPercentage(item) + '%', background: stockBarColor(item) }">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Status badge footer -->
+                <div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--wp-border);">
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border inline-flex items-center gap-1.5" :style="stockBadgeStyle(item)">
+                    <span class="w-2 h-2 rounded-full" :style="{ background: stockBadgeStyle(item).color }"></span>
+                    {{ stockStatus(item).label }}
+                  </span>
+                  <NuxtLink to="/inventory" class="min-h-[44px] px-3 inline-flex items-center justify-center text-xs font-bold" style="color: var(--wp-gold);">
+                    Detail →
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </template>

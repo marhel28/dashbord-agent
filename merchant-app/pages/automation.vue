@@ -54,10 +54,10 @@
             :key="tpl.label"
             @click="onQuickAdd(tpl)"
             :disabled="creatingReminder"
-            class="inline-flex items-center gap-2 px-3.5 py-2 text-[10px] font-bold rounded-lg border transition hover:shadow-sm disabled:opacity-50"
+            class="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-lg border transition hover:shadow-sm disabled:opacity-50 active:scale-95"
             style="border-color: var(--wp-border); color: var(--wp-text); background: var(--wp-bg);"
           >
-            <Icon :name="tpl.icon" class="w-3.5 h-3.5" style="color: var(--wp-gold);" />
+            <Icon :name="tpl.icon" class="w-4 h-4" style="color: var(--wp-gold);" />
             {{ tpl.label }}
           </button>
         </div>
@@ -69,7 +69,7 @@
           <span class="font-bold" style="color: var(--wp-text);">{{ reminders.length }}</span> pengingat aktif
         </p>
         <button @click="openCreateModal()"
-                class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg text-white transition hover:shadow-md"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-lg text-white transition hover:shadow-md"
                 style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
           <Icon name="heroicons:plus" class="w-4 h-4" />
           Buat Pengingat
@@ -131,17 +131,17 @@
             <!-- action group -->
             <div class="flex items-center gap-1 shrink-0">
               <button @click="openEditModal(r)"
-                      class="w-7 h-7 rounded-lg flex items-center justify-center transition hover:bg-slate-100"
+                      class="w-10 h-10 min-w-[40px] min-h-[40px] rounded-lg flex items-center justify-center transition hover:bg-slate-100 active:bg-slate-200"
                       style="color: var(--wp-text-secondary);"
                       title="Edit">
-                <Icon name="heroicons:pencil" class="w-3.5 h-3.5" />
+                <Icon name="heroicons:pencil" class="w-4 h-4" />
               </button>
               <button @click="onDeleteReminder(r.reminder_id)"
                       :disabled="!r.reminder_id"
-                      class="w-7 h-7 rounded-lg flex items-center justify-center transition hover:bg-red-50 disabled:opacity-40"
+                      class="w-10 h-10 min-w-[40px] min-h-[40px] rounded-lg flex items-center justify-center transition hover:bg-red-50 active:bg-red-100 disabled:opacity-40"
                       style="color: #DC2626;"
                       title="Hapus">
-                <Icon name="heroicons:trash" class="w-3.5 h-3.5" />
+                <Icon name="heroicons:trash" class="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -155,11 +155,11 @@
           <button
             @click="onTriggerReminder(r.reminder_id)"
             :disabled="isReminderTriggering(r.reminder_id) || !r.reminder_id"
-            class="w-full py-2 text-[10px] font-bold rounded-lg transition flex items-center justify-center gap-1.5 disabled:opacity-50"
-            style="background: rgba(5,150,105,0.08); color: #059669;"
+            class="w-full py-2.5 min-h-[44px] text-xs font-bold rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
+            style="background: rgba(5,150,105,0.1); color: #059669;"
           >
-            <Icon v-if="isReminderTriggering(r.reminder_id)" name="heroicons:arrow-path" class="w-3.5 h-3.5 animate-spin" />
-            <Icon v-else name="heroicons:play" class="w-3.5 h-3.5" />
+            <Icon v-if="isReminderTriggering(r.reminder_id)" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
+            <Icon v-else name="heroicons:play" class="w-4 h-4" />
             {{ isReminderTriggering(r.reminder_id) ? 'Menjalankan...' : 'Jalankan Sekarang' }}
           </button>
         </div>

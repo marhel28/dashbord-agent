@@ -1,19 +1,21 @@
 <template>
   <div class="h-full flex flex-col space-y-4">
     <!-- Header -->
-    <div class="flex-shrink-0 flex items-center justify-between border-b pb-3" style="border-color: var(--wp-border);">
+    <div class="flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 gap-3" style="border-color: var(--wp-border);">
       <div>
         <h1 class="text-xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Kecerdasan Bisnis</h1>
-        <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
+        <p class="text-xs font-semibold mt-0.5" style="color: var(--wp-text-secondary);">
           Insight operasional toko. Pilih rentang waktu analisis.
         </p>
       </div>
       
-      <div class="flex items-center gap-2">
-        <input type="date" v-model="startDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
-        <span class="text-xs text-slate-500">-</span>
-        <input type="date" v-model="endDate" class="px-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500" style="border-color: var(--wp-border); color: var(--wp-text);" />
-        <button @click="loadData" class="px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-1.5 flex-1 sm:flex-none">
+          <input type="date" v-model="startDate" class="px-3 py-2.5 min-h-[44px] sm:py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white flex-1 sm:w-auto" style="border-color: var(--wp-border); color: var(--wp-text);" />
+          <span class="text-xs text-slate-500">-</span>
+          <input type="date" v-model="endDate" class="px-3 py-2.5 min-h-[44px] sm:py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white flex-1 sm:w-auto" style="border-color: var(--wp-border); color: var(--wp-text);" />
+        </div>
+        <button @click="loadData" class="px-4 py-2.5 min-h-[44px] text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
       </div>
     </div>
 

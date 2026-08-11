@@ -194,6 +194,9 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  alias: ['/copilot']
+})
 import { ref, nextTick, onMounted } from 'vue'
 import { api } from '~/utils/api'
 import AgentAvatar from '~/components/AgentAvatar.vue'
