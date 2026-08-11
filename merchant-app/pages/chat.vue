@@ -37,7 +37,7 @@
       </div>
 
       <!-- Messages Area -->
-      <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8 relative z-10 custom-scrollbar scroll-smooth">
+      <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 sm:p-8 relative z-10 custom-scrollbar scroll-smooth">
 
         <!-- Empty State / Welcome -->
         <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-full max-w-lg mx-auto text-center animate-fade-in-up">
@@ -64,71 +64,77 @@
           </div>
         </div>
 
-        <!-- Chat Bubbles -->
-        <div v-for="(msg, i) in messages" :key="i" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-          <div :class="['flex gap-4 max-w-[85%] sm:max-w-[75%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+        <TransitionGroup name="chat-list" tag="div" class="space-y-8 flex flex-col w-full min-h-full justify-end">
+          <!-- Chat Bubbles -->
+          <div v-for="(msg, i) in messages" :key="'msg-'+i" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
+            <div :class="['flex gap-4 max-w-[85%] sm:max-w-[75%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
 
-            <!-- Avatar -->
-            <div class="shrink-0 hidden sm:block">
-              <div v-if="msg.role === 'agent'" class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm overflow-hidden" style="background: var(--wp-navy);">
-                <Icon name="heroicons:sparkles" class="w-4 h-4 text-amber-300" />
-              </div>
-              <div v-else class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-                <Icon name="heroicons:user" class="w-4 h-4 text-white;" />
-              </div>
-            </div>
-
-            <!-- Bubble Content -->
-            <div class="flex flex-col gap-1.5">
-              <div class="flex items-center gap-2 px-1" :class="[msg.role === 'user' ? 'justify-end' : 'justify-start']">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest" :style="{ color: msg.role === 'user' ? 'var(--wp-text-secondary)' : 'var(--wp-navy)' }">
-                  {{ msg.role === 'user' ? 'Anda' : 'Nahkoeda AI' }}
-                </span>
-                <span class="text-[9px] font-semibold text-slate-400">{{ msg.time }}</span>
-                <!-- Audio indicator for agent messages -->
-                <button
-                  v-if="msg.role === 'agent' && msg.audioUrl"
-                  @click="playAudio(msg.audioUrl)"
-                  class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1"
-                  style="background: #FEF3C7; color: #D97706;"
-                  title="Putar suara"
-                >
-                  <Icon name="heroicons:speaker-wave" class="w-3 h-3" />
-                </button>
+              <!-- Avatar -->
+              <div class="shrink-0 hidden sm:block">
+                <div v-if="msg.role === 'agent'" class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm overflow-hidden" style="background: var(--wp-navy);">
+                  <Icon name="heroicons:sparkles" class="w-4 h-4 text-amber-300" />
+                </div>
+                <div v-else class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
+                  <Icon name="heroicons:user" class="w-4 h-4 text-white;" />
+                </div>
               </div>
 
-              <div
-                :class="['p-4 sm:p-5 text-sm leading-relaxed whitespace-pre-wrap shadow-sm',
-                  msg.role === 'user'
-                    ? 'rounded-3xl rounded-tr-sm text-white'
-                    : 'rounded-3xl rounded-tl-sm border text-slate-800 bg-white']"
-                :style="msg.role === 'user'
-                  ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));'
-                  : 'border-color: var(--wp-border);'"
-              >{{ msg.content }}</div>
-            </div>
-          </div>
-        </div>
+              <!-- Bubble Content -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center gap-2 px-1" :class="[msg.role === 'user' ? 'justify-end' : 'justify-start']">
+                  <span class="text-[10px] font-extrabold uppercase tracking-widest" :style="{ color: msg.role === 'user' ? 'var(--wp-text-secondary)' : 'var(--wp-navy)' }">
+                    {{ msg.role === 'user' ? 'Anda' : 'Nahkoeda AI' }}
+                  </span>
+                  <span class="text-[9px] font-semibold text-slate-400">{{ msg.time }}</span>
+                  <!-- Audio indicator for agent messages -->
+                  <button
+                    v-if="msg.role === 'agent' && msg.audioUrl"
+                    @click="playAudio(msg.audioUrl)"
+                    class="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1"
+                    style="background: #FEF3C7; color: #D97706;"
+                    title="Putar suara"
+                  >
+                    <Icon name="heroicons:speaker-wave" class="w-3 h-3" />
+                  </button>
+                </div>
 
-        <!-- Typing Indicator (with avatar state) -->
-        <div v-if="isSending" class="flex w-full justify-start animate-fade-in">
-          <div class="flex gap-4 max-w-[85%] sm:max-w-[75%] flex-row">
-            <div class="shrink-0 hidden sm:block">
-              <div class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style="background: var(--wp-navy);">
-                <Icon name="heroicons:sparkles" class="w-4 h-4 text-amber-300 animate-pulse" />
-              </div>
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <div class="flex items-center gap-2 px-1 justify-start">
-                <span class="text-[10px] font-extrabold uppercase tracking-widest" style="color: var(--wp-navy);">Nahkoeda AI</span>
-              </div>
-              <div class="p-4 sm:p-5 rounded-3xl rounded-tl-sm border bg-white flex items-center gap-2 h-14" style="border-color: var(--wp-border);">
-                <AgentAvatar state="thinking" :is-speaking="false" :show-label="false" />
-                <span class="text-[10px] font-bold text-slate-400 ml-2">Sedang berpikir...</span>
+                <div
+                  :class="['p-4 sm:p-5 text-sm leading-relaxed whitespace-pre-wrap shadow-sm message-bubble',
+                    msg.role === 'user'
+                      ? 'rounded-3xl rounded-tr-sm text-white'
+                      : 'rounded-3xl rounded-tl-sm border text-slate-800 bg-white agent-msg']"
+                  :style="msg.role === 'user'
+                    ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));'
+                    : 'border-color: var(--wp-border);'"
+                ><span class="msg-text">{{ msg.content }}</span></div>
               </div>
             </div>
           </div>
-        </div>
+
+          <!-- Typing Indicator (with avatar state) -->
+          <div v-if="isSending" key="typing-indicator" class="flex w-full justify-start">
+            <div class="flex gap-4 max-w-[85%] sm:max-w-[75%] flex-row">
+              <div class="shrink-0 hidden sm:block">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style="background: var(--wp-navy);">
+                  <Icon name="heroicons:sparkles" class="w-4 h-4 text-amber-300 animate-pulse" />
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center gap-2 px-1 justify-start">
+                  <span class="text-[10px] font-extrabold uppercase tracking-widest" style="color: var(--wp-navy);">Nahkoeda AI</span>
+                </div>
+                <div class="p-4 sm:p-5 rounded-3xl rounded-tl-sm border bg-white flex items-center gap-3 h-14" style="border-color: var(--wp-border);">
+                  <AgentAvatar state="thinking" :is-speaking="false" :show-label="false" />
+                  <div class="flex gap-1">
+                    <span class="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 0ms;"></span>
+                    <span class="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 150ms;"></span>
+                    <span class="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 300ms;"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TransitionGroup>
       </div>
 
       <!-- Input Area -->
@@ -285,5 +291,57 @@ onMounted(() => {
 }
 textarea.custom-scrollbar::-webkit-scrollbar {
   width: 4px;
+}
+
+/* Chat List Transitions */
+.chat-list-move,
+.chat-list-enter-active,
+.chat-list-leave-active {
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.chat-list-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+
+.chat-list-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+/* Ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.chat-list-leave-active {
+  position: absolute;
+}
+
+/* Agent text reveal animation */
+@keyframes text-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.agent-msg .msg-text {
+  display: inline-block;
+  animation: text-reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Message Bubble Entry */
+@keyframes bubble-pop {
+  0% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.message-bubble {
+  animation: bubble-pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 </style>
