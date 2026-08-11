@@ -89,7 +89,7 @@ const menus = [
   { name: 'Stok Barang (Inventory)', path: '/inventory', icon: 'heroicons:archive-box' },
   { name: 'Laporan Penjualan', path: '/sales-report', icon: 'heroicons:chart-bar' },
   { name: 'Keuangan (Finance)', path: '/finance', icon: 'heroicons:banknotes' },
-  { name: 'Toko AI / Skill Market', path: '/skill-marketplace', icon: 'heroicons:building-storefront' },
+  { name: 'Dompet / Wallet', path: '/dompet', icon: 'heroicons:wallet' },
   { name: 'Chat AI Asisten', path: '/chat', icon: 'heroicons:sparkles' },
   { name: 'Pengaturan (Settings)', path: '/settings', icon: 'heroicons:cog-6-tooth' },
   { name: 'Bantuan (Help / FAQ)', path: '/help', icon: 'heroicons:question-mark-circle' },

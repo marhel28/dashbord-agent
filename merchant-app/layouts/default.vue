@@ -65,9 +65,9 @@
               <Icon name="heroicons:sparkles" class="w-5 h-5" />
               <span>Asisten AI</span>
             </NuxtLink>
-            <NuxtLink to="/skill-marketplace" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:building-storefront" class="w-5 h-5" />
-              <span>Skill Marketplace</span>
+            <NuxtLink to="/dompet" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:wallet" class="w-5 h-5" />
+              <span>Dompet</span>
             </NuxtLink>
             <NuxtLink to="/knowledge-base" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:book-open" class="w-5 h-5" />
@@ -244,9 +244,9 @@
         <Icon name="heroicons:sparkles" class="w-5 h-5" />
         <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Asisten AI</span>
       </NuxtLink>
-      <NuxtLink to="/skill-marketplace" exact-active-class="mobile-nav-active" class="mobile-nav-link">
-        <Icon name="heroicons:building-storefront" class="w-5 h-5" />
-        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Market</span>
+      <NuxtLink to="/dompet" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+        <Icon name="heroicons:wallet" class="w-5 h-5" />
+        <span class="text-[9px] mt-0.5 font-bold uppercase tracking-wider">Dompet</span>
       </NuxtLink>
       <NuxtLink to="/inventory" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:archive-box" class="w-5 h-5" />

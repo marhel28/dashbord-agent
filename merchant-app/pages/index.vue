@@ -45,7 +45,7 @@
     <!-- ═══════════ DASHBOARD CONTENT ═══════════ -->
     <template v-else>
       <!-- ── KPI Row ── -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 stagger-children">
         <div
           v-for="card in kpiCards" :key="card.label"
           class="bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md relative overflow-hidden group"
@@ -101,6 +101,43 @@
         <!-- Quick Actions -->
         <div class="space-y-4">
           <h3 class="text-base font-bold" style="color: var(--wp-text);">Aksi Cepat</h3>
+          <!-- Buka Toko -->
+          <NuxtLink
+            :to="userUuid ? `/shop/${userUuid}` : '#'"
+            class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group relative overflow-hidden"
+            style="border-color: var(--wp-border);"
+          >
+            <div class="absolute top-0 left-0 right-0 h-1 rounded-t" style="background: linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light));"></div>
+            <div class="flex items-start gap-4">
+              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.05)); border-color: var(--wp-border);">
+                <Icon name="heroicons:building-storefront" class="w-5 h-5" style="color: var(--wp-gold);" />
+              </div>
+              <div class="flex-1">
+                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-gold);">Toko Offline</h4>
+                <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Buka Toko</p>
+                <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Layani pelanggan di counter — cari, keranjang, bayar.</p>
+              </div>
+            </div>
+            <div class="text-right mt-3">
+              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">BUKA TOKO →</span>
+            </div>
+          </NuxtLink>
+          <!-- Dompet -->
+          <NuxtLink to="/dompet" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
+            <div class="flex items-start gap-4">
+              <div class="p-2.5 rounded-xl border transition group-hover:border-[#059669]" style="background: rgba(5,150,105,0.06); border-color: var(--wp-border);">
+                <Icon name="heroicons:wallet" class="w-5 h-5" style="color: #059669;" />
+              </div>
+              <div class="flex-1">
+                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: #059669;">Dompet</h4>
+                <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Lihat Penghasilan</p>
+                <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Saldo, riwayat transaksi & performa dompet.</p>
+              </div>
+            </div>
+            <div class="text-right mt-3">
+              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: #059669;">LIHAT →</span>
+            </div>
+          </NuxtLink>
           <NuxtLink to="/chat" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
             <div class="flex items-start gap-4">
               <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
@@ -226,6 +263,8 @@ import {
 } from 'echarts/components'
 import { api } from '~/utils/api'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { useAuth } from '~/composables/useAuth'
+import { useWallet } from '~/composables/useWallet'
 
 use([CanvasRenderer, LineChart, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent])
 
@@ -234,6 +273,11 @@ const {
   period, data: analyticsData, loading: analyticsLoading, error: analyticsError,
   setPeriod, fetchAnalytics: fetchAnalyticsData, formatRupiah, formatCompact,
 } = useAnalytics()
+
+const { user } = useAuth()
+const { wallet, fetchWallet } = useWallet()
+
+const userUuid = computed(() => user.value?.uuid || '')
 
 interface StockItem {
   uuid: string
@@ -273,7 +317,7 @@ const fetchStocks = async () => {
 }
 
 const loadAll = async () => {
-  await Promise.all([fetchAnalyticsData(), fetchStocks()])
+  await Promise.all([fetchAnalyticsData(), fetchStocks(), fetchWallet()])
 }
 
 // ── KPI Cards ──
@@ -308,6 +352,13 @@ const kpiCards = computed(() => {
       change: 0,
       icon: 'heroicons:archive-box',
       accent: 'linear-gradient(90deg, #8B5CF6, #A78BFA)',
+    },
+    {
+      label: 'Saldo Dompet',
+      value: wallet.value ? formatRupiah(wallet.value.balance) : '—',
+      change: 0,
+      icon: 'heroicons:wallet',
+      accent: 'linear-gradient(90deg, #059669, #34D399)',
     },
   ]
 })
