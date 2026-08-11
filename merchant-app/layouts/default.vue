@@ -75,7 +75,7 @@
             </NuxtLink>
             <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:user-group" class="w-5 h-5" />
-              <span>Agen AI</span>
+              <span>Toko</span>
             </NuxtLink>
             <NuxtLink to="/memory" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:cpu-chip" class="w-5 h-5" />
@@ -117,11 +117,11 @@
               <Icon name="heroicons:light-bulb" class="w-5 h-5" />
               <span>Keputusan</span>
             </NuxtLink>
-            <NuxtLink to="/operations" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink v-if="isExpert" to="/operations" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:cog" class="w-5 h-5" />
               <span>Operasional</span>
             </NuxtLink>
-            <NuxtLink to="/team" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink v-if="isExpert" to="/team" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:user-plus" class="w-5 h-5" />
               <span>Tim</span>
             </NuxtLink>
@@ -141,7 +141,7 @@
               <Icon name="heroicons:document-text" class="w-5 h-5" />
               <span>Dokumen</span>
             </NuxtLink>
-            <NuxtLink to="/monitoring" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink v-if="isExpert" to="/monitoring" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:computer-desktop" class="w-5 h-5" />
               <span>Monitoring</span>
             </NuxtLink>
@@ -305,6 +305,16 @@ const showCrm = computed(() => {
   // Hide CRM for Warung Kecil, but show for Toko Kelontong, Distributor, Toko Online, Grosir
   return user.value.store_type && user.value.store_type !== 'Warung Kecil';
 })
+
+// Store mode: 'basic' hides Tim, Operasional, Monitoring. 'expert' shows all.
+const storeMode = ref<'basic' | 'expert'>('basic')
+onMounted(() => {
+  const saved = localStorage.getItem('store_mode')
+  if (saved === 'basic' || saved === 'expert') {
+    storeMode.value = saved
+  }
+})
+const isExpert = computed(() => storeMode.value === 'expert')
 
 // Draggable Telegram Floating Button logic
 const position = reactive({

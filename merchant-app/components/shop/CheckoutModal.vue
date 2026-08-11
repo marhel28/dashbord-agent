@@ -172,13 +172,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { api } from '~/utils/api'
 import { useCart, type CartItem } from '~/composables/useCart'
 
 const props = defineProps<{
   items: CartItem[]
   subtotal: number
+  existingSale?: any | null
 }>()
 
 const emit = defineEmits<{
@@ -195,6 +196,18 @@ const creating = ref(false)
 const saleData = ref<any>(null)
 const qrisData = ref<any>(null)
 
+// If continuing an existing sale, pre-fill and skip creation
+onMounted(() => {
+  if (props.existingSale) {
+    saleData.value = props.existingSale
+    customerName.value = props.existingSale.customer_name || ''
+    paymentMethod.value = props.existingSale.payment_method || ''
+    if (paymentMethod.value) {
+      state.value = 'awaiting_payment'
+    }
+  }
+})
+
 const paymentMethods = [
   { value: 'CASH', label: 'Tunai', icon: 'heroicons:banknotes' },
   { value: 'TRANSFER', label: 'Transfer', icon: 'heroicons:building-library' },
@@ -207,8 +220,24 @@ const formatPrice = (price: number) => {
 
 const createOrder = async () => {
   if (!paymentMethod.value) return
-  creating.value = true
 
+  // If continuing an existing sale, just update payment method and proceed
+  if (props.existingSale) {
+    saleData.value = props.existingSale
+    if (paymentMethod.value === 'QRIS') {
+      try {
+        const qris = await api.post(`/payment/midtrans/create/${saleData.value.uuid}`)
+        qrisData.value = qris
+      } catch (qrisErr) {
+        console.warn('QRIS creation failed:', qrisErr)
+        qrisData.value = null
+      }
+    }
+    state.value = 'awaiting_payment'
+    return
+  }
+
+  creating.value = true
   try {
     // Create the sale
     const salePayload = {

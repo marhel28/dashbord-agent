@@ -4,7 +4,7 @@
       <div class="border-b pb-4" style="border-color: var(--wp-navy);">
         <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Memory Center</h1>
         <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
-          Pusat kendali ingatan seluruh Agen AI Copilot Anda.
+          Pusat kendali ingatan seluruh Toko Copilot Anda.
         </p>
       </div>
       <button @click="fetchAllMemories" class="px-5 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">

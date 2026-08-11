@@ -3,7 +3,7 @@
     <!-- ═══════════ HEADER ═══════════ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Agen AI</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Toko</h1>
         <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">
           {{ agents.length }} agen spesialis — masing-masing memiliki ingatan tentang bisnis Anda.
         </p>
