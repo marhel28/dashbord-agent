@@ -61,18 +61,18 @@ async function sendMessage(text: string) {
 
     if (res.status === 'success') {
       const reply = res.data.reply || 'Maaf, tidak ada respons.'
-      const audioUrl = res.data.audio_url
+      const audioData = res.data.audio  // base64 data:audio/ogg;base64,...
 
       messages.value.push({
         role: 'agent',
         content: reply,
-        audioUrl,
+        audioUrl: audioData,  // store base64 directly
         time: formatTime(),
       })
 
       // Play audio if voice mode and audio available
-      if (voiceMode.value && audioUrl) {
-        await playAudio(audioUrl)
+      if (voiceMode.value && audioData) {
+        await playAudio(audioData)
       } else {
         agentState.value = 'idle'
       }
@@ -96,27 +96,54 @@ async function sendMessage(text: string) {
   }
 }
 
-async function playAudio(audioUrl: string) {
+async function playAudio(audioData: string) {
   return new Promise<void>((resolve) => {
     isSpeaking.value = true
     agentState.value = 'talking'
 
-    const audio = new Audio(audioUrl)
-    audio.onended = () => {
+    try {
+      // audioData is already a base64 data URL: "data:audio/ogg;base64,..."
+      const audio = new Audio(audioData)
+
+      audio.onended = () => {
+        isSpeaking.value = false
+        agentState.value = 'idle'
+        resolve()
+      }
+      audio.onerror = () => {
+        console.warn('[AI Assistant] Audio playback error')
+        isSpeaking.value = false
+        agentState.value = 'idle'
+        resolve()
+      }
+
+      // Ensure audio is loaded before playing
+      audio.oncanplaythrough = () => {
+        audio.play().catch((err) => {
+          console.warn('[AI Assistant] Play failed:', err?.message)
+          isSpeaking.value = false
+          agentState.value = 'idle'
+          resolve()
+        })
+      }
+
+      // Fallback: try to play even if oncanplaythrough doesn't fire
+      setTimeout(() => {
+        if (isSpeaking.value) {
+          audio.play().catch(() => {
+            isSpeaking.value = false
+            agentState.value = 'idle'
+            resolve()
+          })
+        }
+      }, 500)
+
+    } catch (e) {
+      console.warn('[AI Assistant] Audio setup failed:', e)
       isSpeaking.value = false
       agentState.value = 'idle'
       resolve()
     }
-    audio.onerror = () => {
-      isSpeaking.value = false
-      agentState.value = 'idle'
-      resolve()
-    }
-    audio.play().catch(() => {
-      isSpeaking.value = false
-      agentState.value = 'idle'
-      resolve()
-    })
   })
 }
 

@@ -6,10 +6,14 @@
     <!-- Avatar frame -->
     <div class="avatar-frame-wrapper">
       <img
-        :src="currentFrame"
+        v-for="(frame, idx) in frames"
+        :key="idx"
+        :src="frame"
         alt="AI Agent"
         class="avatar-frame"
+        :class="{ active: idx === frameIndex }"
         draggable="false"
+        @error="onImageError"
       />
     </div>
 
@@ -39,38 +43,39 @@ const props = withDefaults(defineProps<{
 })
 
 // ── Frame mapping (all 20 animation frames) ──────────────────────
+// Paths are relative to /public/ folder (served at root)
 
 const FRAMES: Record<string, string[]> = {
-  idle: ['/assets/image agentic/Senyum.png'],
+  idle: ['/agent-avatar/Senyum.png'],
   talking: [
-    '/assets/image agentic/TT 1.png',
-    '/assets/image agentic/TT 2.png',
-    '/assets/image agentic/TT 3.png',
-    '/assets/image agentic/TT 4.png',
-    '/assets/image agentic/TT 5.png',
+    '/agent-avatar/TT 1.png',
+    '/agent-avatar/TT 2.png',
+    '/agent-avatar/TT 3.png',
+    '/agent-avatar/TT 4.png',
+    '/agent-avatar/TT 5.png',
   ],
   explaining: [
-    '/assets/image agentic/Menjelaskan  1.png',
-    '/assets/image agentic/menjelaskan 2.png',
-    '/assets/image agentic/menjelaskan 3.png',
+    '/agent-avatar/Menjelaskan  1.png',
+    '/agent-avatar/menjelaskan 2.png',
+    '/agent-avatar/menjelaskan 3.png',
   ],
   thinking: [
-    '/assets/image agentic/Bingung.png',
-    '/assets/image agentic/Bingung 2.png',
+    '/agent-avatar/Bingung.png',
+    '/agent-avatar/Bingung 2.png',
   ],
   muttering: [
-    '/assets/image agentic/Mutung  1.png',
-    '/assets/image agentic/Mutung 2.png',
-    '/assets/image agentic/Mutung 3.png',
-    '/assets/image agentic/Mutung 4.png',
-    '/assets/image agentic/Mutung 5.png',
+    '/agent-avatar/Mutung  1.png',
+    '/agent-avatar/Mutung 2.png',
+    '/agent-avatar/Mutung 3.png',
+    '/agent-avatar/Mutung 4.png',
+    '/agent-avatar/Mutung 5.png',
   ],
   realization: [
-    '/assets/image agentic/AHA.png',
-    '/assets/image agentic/AHA 2.png',
-    '/assets/image agentic/AHA 3.png',
+    '/agent-avatar/AHA.png',
+    '/agent-avatar/AHA 2.png',
+    '/agent-avatar/AHA 3.png',
   ],
-  sad: ['/assets/image agentic/sedikit sedih.png'],
+  sad: ['/agent-avatar/sedikit sedih.png'],
 }
 
 const SPEED: Record<string, number> = {
@@ -88,9 +93,11 @@ const SPEED: Record<string, number> = {
 const frameIndex = ref(0)
 let interval: ReturnType<typeof setInterval> | null = null
 
+const frames = computed(() => FRAMES[props.state] || FRAMES.idle)
+
 const currentFrame = computed(() => {
-  const frames = FRAMES[props.state] || FRAMES.idle
-  return frames[frameIndex.value % frames.length]
+  const f = frames.value
+  return f[frameIndex.value % f.length]
 })
 
 const stateColor = computed(() => {
@@ -119,6 +126,11 @@ const stateLabel = computed(() => {
   return labels[props.state] || ''
 })
 
+function onImageError(e: Event) {
+  const img = e.target as HTMLImageElement
+  img.style.display = 'none'
+}
+
 // ── Animation loop ───────────────────────────────────────────────
 
 function startAnimation() {
@@ -129,8 +141,8 @@ function startAnimation() {
     return
   }
   interval = setInterval(() => {
-    const frames = FRAMES[props.state] || FRAMES.idle
-    frameIndex.value = (frameIndex.value + 1) % frames.length
+    const f = frames.value
+    frameIndex.value = (frameIndex.value + 1) % f.length
   }, speed)
 }
 
@@ -167,45 +179,57 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .avatar-frame-wrapper {
-  width: 120px;
-  height: 120px;
+  position: relative;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, var(--wp-gold-light), var(--wp-gold-dark));
   box-shadow: 0 4px 20px rgba(212, 168, 67, 0.3);
   animation: avatar-breathe 3s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 .avatar-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.08s ease;
+  object-position: center top;
+  opacity: 0;
+  transition: opacity 0.06s ease;
+}
+
+.avatar-frame.active {
+  opacity: 1;
 }
 
 /* Speaking ring */
 .speaking-ring {
   position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
   border-radius: 50%;
-  border: 3px solid var(--wp-gold);
+  border: 2px solid var(--wp-gold);
   animation: pulse-ring 1.5s ease-out infinite;
   pointer-events: none;
+  z-index: 2;
 }
 
 /* Sound waves */
 .sound-waves {
   display: flex;
   align-items: center;
-  gap: 3px;
-  height: 20px;
+  gap: 2px;
+  height: 16px;
 }
 
 .wave-bar {
@@ -219,23 +243,24 @@ onUnmounted(() => {
 
 /* State label */
 .state-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   animation: fadeIn 0.3s ease;
+  white-space: nowrap;
 }
 
 /* ── Animations ────────────────────────────────────────────────── */
 
 @keyframes avatar-breathe {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+  50% { transform: scale(1.04); }
 }
 
 @keyframes pulse-ring {
   0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(1.12); opacity: 0; }
 }
 
 @keyframes sound-wave {
@@ -251,5 +276,6 @@ onUnmounted(() => {
 /* Speaking state boosts breathing */
 .speaking .avatar-frame-wrapper {
   animation: avatar-breathe 1.5s ease-in-out infinite;
+  box-shadow: 0 4px 30px rgba(212, 168, 67, 0.5);
 }
 </style>
