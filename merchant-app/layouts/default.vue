@@ -69,9 +69,13 @@
               <Icon name="heroicons:building-storefront" class="w-5 h-5" />
               <span>Skill Marketplace</span>
             </NuxtLink>
-            <NuxtLink to="/chat" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink to="/knowledge-base" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:book-open" class="w-5 h-5" />
               <span>Knowledge Base</span>
+            </NuxtLink>
+            <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
+              <Icon name="heroicons:user-group" class="w-5 h-5" />
+              <span>Agen AI</span>
             </NuxtLink>
             <NuxtLink to="/memory" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:cpu-chip" class="w-5 h-5" />
