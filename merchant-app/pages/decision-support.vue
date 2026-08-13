@@ -360,6 +360,7 @@ const {
 
 function onTabChange(tab: string) {
   if (tab === 'riwayat') loadHistory()
+  if (tab === 'insight' && !insight.value) fetchInsight()
 }
 
 function handleAction(rec: Recommendation, cta: { label: string; action: string }) {

@@ -171,7 +171,16 @@ async function fetchRecommendations() {
   try {
     const res = await api.get('/agentic/decision-support/recommendations')
     if (res.status === 'success') {
-      data.value = res.data
+      const rawData = res.data
+      if (Array.isArray(rawData)) {
+        data.value = { total: rawData.length, recommendations: rawData }
+      } else if (rawData && Array.isArray(rawData.recommendations)) {
+        data.value = rawData
+      } else if (rawData && rawData.data && Array.isArray(rawData.data.recommendations)) {
+        data.value = rawData.data
+      } else {
+        data.value = { total: 0, recommendations: [] }
+      }
     } else {
       error.value = res.message ?? 'Gagal memuat rekomendasi.'
     }
@@ -199,7 +208,14 @@ async function fetchInsight() {
   try {
     const res = await api.get('/agentic/decision-support/insights')
     if (res.status === 'success') {
-      insight.value = res.data
+      const rawData = res.data
+      if (rawData && rawData.insight) {
+        insight.value = rawData
+      } else if (rawData && rawData.data && rawData.data.insight) {
+        insight.value = rawData.data
+      } else {
+        insight.value = rawData
+      }
     } else {
       // Backend returned {status: "error", message: "..."} with HTTP 200
       insightError.value = res.message ?? 'Gagal membuat insight AI.'
