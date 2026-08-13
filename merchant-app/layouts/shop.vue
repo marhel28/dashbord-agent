@@ -8,7 +8,7 @@
       </div>
       <NuxtLink
         v-if="isAuthed"
-        to="/"
+        to="/dashboard"
         class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
         style="color: var(--wp-text-secondary);"
       >

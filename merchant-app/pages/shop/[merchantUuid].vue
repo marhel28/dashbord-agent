@@ -9,7 +9,7 @@
     <div v-else-if="error" class="text-center py-20 px-4">
       <Icon name="heroicons:exclamation-triangle" class="w-12 h-12 mx-auto text-amber-400" />
       <p class="text-sm font-bold mt-3" style="color: var(--wp-text);">{{ error }}</p>
-      <NuxtLink to="/" class="text-xs font-bold mt-3 inline-block" style="color: var(--wp-gold);">
+      <NuxtLink to="/dashboard" class="text-xs font-bold mt-3 inline-block" style="color: var(--wp-gold);">
         Kembali ke Dashboard
       </NuxtLink>
     </div>
