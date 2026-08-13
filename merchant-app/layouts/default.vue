@@ -3,10 +3,10 @@
     <!-- ── Mobile Header Bar ── -->
     <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-[var(--wp-border)] shrink-0 sticky top-0 z-[var(--wp-z-sticky)] pt-safe" style="background: var(--wp-surface);">
       <div class="flex items-center gap-2">
-        <img :src="logoSrc" class="w-8 h-8 object-contain" alt="Nahkoeda Logo" />
+        <img :src="logoSrc" class="w-8 h-8 object-contain" alt="Nahkoda AI Logo" />
         <div>
-          <span class="font-black text-sm tracking-tight block leading-none" style="color: var(--wp-navy);">Nahkoeda</span>
-          <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Agentic AI Bot</span>
+          <span class="font-black text-sm tracking-tight block leading-none" style="color: var(--wp-navy);">Nahkoda AI</span>
+          <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Business Copilot</span>
         </div>
       </div>
       
@@ -32,10 +32,10 @@
 
       <div class="p-6 pl-7">
         <div class="flex items-center gap-3 mb-2">
-          <img :src="logoSrc" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
+          <img :src="logoSrc" class="w-10 h-10 object-contain shrink-0" alt="Nahkoda AI Logo" />
           <div>
-            <h2 class="font-black text-lg tracking-tight leading-none" style="color: var(--wp-navy);">Nahkoeda</h2>
-            <p class="text-[7px] font-extrabold uppercase tracking-wider mt-1 text-slate-400">Agentic AI Bot untuk Membantu Warung</p>
+            <h2 class="font-black text-lg tracking-tight leading-none" style="color: var(--wp-navy);">Nahkoda AI</h2>
+            <p class="text-[7px] font-extrabold uppercase tracking-wider mt-1 text-slate-400">Business Copilot untuk Membantu Merchant & Warung</p>
           </div>
         </div>
 
@@ -54,7 +54,7 @@
         </NuxtLink>
 
         <nav class="mt-6 space-y-1">
-          <NuxtLink to="/" exact-active-class="nav-active" class="nav-link">
+          <NuxtLink to="/dashboard" exact-active-class="nav-active" class="nav-link">
             <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
             <span>Beranda</span>
           </NuxtLink>

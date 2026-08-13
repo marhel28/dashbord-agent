@@ -1,712 +1,1136 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+
+definePageMeta({ layout: 'auth' })
+
+const colorMode = useColorMode()
+
+const logoSrc = computed(() => {
+  return '/logo_lightmode.png'
+})
+
+// Interactive Copilot Simulator state
+const activeTab = ref<'inventory' | 'finance' | 'sales' | 'marketing'>('inventory')
+const simulatorQuery = ref('')
+const isSimulating = ref(false)
+const simOutput = ref<string | null>(null)
+
+const simulatorPresets = {
+  inventory: [
+    "Cek stok Minyak Goreng Bimoli 2L, apakah perlu restock hari ini?",
+    "Prediksi stok mana yang akan habis dalam 3 hari ke depan?",
+    "Buatkan draf order otomatis ke distributor Indofood."
+  ],
+  finance: [
+    "Berapa total omzet bersih dan profit margin minggu ini?",
+    "Analisis pengeluaran terbanyak toko bulan ini.",
+    "Bantu hitung arus kas untuk rencana bayar supplier besok."
+  ],
+  sales: [
+    "Produk apa yang paling laris dipasangkan dengan Kopi Kapal Api?",
+    "Tampilkan ringkasan penjualan harian per kategori.",
+    "Berapa rata-rata nilai keranjang pembeli di warung saya?"
+  ],
+  marketing: [
+    "Buatkan pesan promo WhatsApp untuk produk sembako diskon akhir pekan.",
+    "Rekomendasikan strategi bundel paket sembako hemat.",
+    "Buatkan kupon promo otomatis untuk pelanggan setia."
+  ]
+}
+
+const runSimulation = (queryText: string) => {
+  simulatorQuery.value = queryText
+  isSimulating.value = true
+  simOutput.value = null
+
+  setTimeout(() => {
+    isSimulating.value = false
+    if (activeTab.value === 'inventory') {
+      simOutput.value = `📦 **Analisis Stok Real-time Nahkoda AI:**\n- Stok Bimoli 2L tersisa **4 pouch** (Batas aman: 10 pouch).\n- **Rekomendasi:** Lakukan pemesanan **12 pouch** hari ini.\n- Pemasok terbaik: *PT Indofood Sukses (Estimasi tiba besok 10.00 WIB)*.\n\n👉 *Draf nota pesanan telah disiapkan di menu Stok Barang.*`
+    } else if (activeTab.value === 'finance') {
+      simOutput.value = `💰 **Laporan Arus Kas & Margin:**\n- Total Omzet Minggu Ini: **Rp 14.850.000** (+18% vs minggu lalu).\n- Profit Margin Bersih: **21.4%**.\n- Cashflow aman untuk membayar tagihan supplier sebesar **Rp 4.200.000** besok.`
+    } else if (activeTab.value === 'sales') {
+      simOutput.value = `📊 **Analisis Penjualan & Cross-Selling:**\n- Kopi Kapal Api paling sering dibeli bersama **Gula Pasir Gulaku 1kg** (84% transaksi berbarengan).\n- **Saran Copilot:** Letakkan rak Gula Pasir tepat di samping rak Kopi untuk meningkatkan keterbelian.`
+    } else {
+      simOutput.value = `Draft Promo WhatsApp siap dikirim:\n"🎉 *PROMO JUMAT BERKAH WARUNG MAKMUR!* 🎉\nDapatkan gratis Gula Pasir 500g setiap pembelian Minyak Goreng 2L + beras 5kg. Khusus 20 pembeli pertama!"`
+    }
+  }, 900)
+}
+
+const features = [
+  {
+    icon: 'heroicons:sparkles',
+    title: 'Asisten Bisnis Otomatis (Agentic Copilot)',
+    desc: 'Bukan sekadar chat biasa! Nahkoda AI secara aktif menganalisis data toko Anda dan memberikan saran keputusan bisnis presisi.'
+  },
+  {
+    icon: 'heroicons:archive-box',
+    title: 'Manajemen Stok & Prediksi Kehabisan',
+    desc: 'Pantau persediaan barang, dapatkan alert sebelum stok habis, serta rekap otomatis kebutuhan restock mingguan.'
+  },
+  {
+    icon: 'heroicons:banknotes',
+    title: 'Laporan Keuangan & Omzet Real-time',
+    desc: 'Catat transaksi bulanan, hitung keuntungan bersih, dan pantau arus kas tanpa perlu pencatatan manual yang rumit.'
+  },
+  {
+    icon: 'heroicons:paper-airplane',
+    title: 'Integrasi Langsung via Telegram Bot',
+    desc: 'Kelola seluruh operasional warung langsung dari HP Anda via Telegram Bot tanpa harus selalu membuka laptop.'
+  },
+  {
+    icon: 'heroicons:user-group',
+    title: 'Analisis Pelanggan & Rekomendasi Promo',
+    desc: 'Pahami kebiasaan belanja pelanggan warung Anda dan buat kampanye promosi yang efektif meningkatkan omzet.'
+  },
+  {
+    icon: 'heroicons:shield-check',
+    title: 'Keamanan Data Berstandar Tinggi',
+    desc: 'Seluruh data transaksi dan informasi warung Anda terenkripsi aman dengan sistem privasi berlapis.'
+  }
+]
+
+const faqs = ref([
+  {
+    q: "Apa itu Nahkoda AI Business Copilot?",
+    a: "Nahkoda AI adalah asisten kecerdasan buatan terpadu (Agentic AI) yang dirancang khusus untuk pemilik toko, warung, dan UMKM dalam mengelola stok, keuangan, penjualan, serta keputusan bisnis secara cerdas.",
+    open: true
+  },
+  {
+    q: "Apakah saya bisa menghubungkan Nahkoda AI dengan Telegram?",
+    a: "Ya! Nahkoda AI dilengkapi dengan Telegram Bot bawaan yang memungkinkan Anda melakukan cek stok, input penjualan, hingga minta rekomendasi bisnis secara instan melalui chat Telegram.",
+    open: false
+  },
+  {
+    q: "Apakah platform ini cocok untuk warung kecil atau toko kelontong?",
+    a: "Sangat cocok. Nahkoda AI mendukung mode 'Warung Kecil' sederhana hingga mode 'Expert' untuk distributor dan toko ritel dengan ribuan SKU barang.",
+    open: false
+  },
+  {
+    q: "Bagaimana cara mulai menggunakannya?",
+    a: "Cukup mendaftar akun merchant secara gratis, masukkan informasi nama toko Anda, dan Nahkoda AI siap menjadi asisten bisnis digital Anda!",
+    open: false
+  }
+])
+</script>
+
 <template>
-  <div class="space-y-6 animate-fade-in">
-    <!-- ═══════════ HEADER + PERIOD TOGGLE ═══════════ -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
-      <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Ringkasan Beranda</h1>
-        <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">Pantau operasional harian, performa penjualan & kesehatan stok.</p>
-      </div>
-      <div class="inline-flex p-1 rounded-xl border" style="background: var(--wp-bg); border-color: var(--wp-border);">
-        <button
-          v-for="p in periods" :key="p.value"
-          @click="setPeriod(p.value)"
-          :class="['px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200',
-            period === p.value ? 'text-white shadow-sm' : 'hover:text-slate-700']"
-          :style="period === p.value
-            ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;'
-            : 'color: var(--wp-text-secondary);'"
-        >{{ p.label }}</button>
-      </div>
+  <div class="landing-root">
+    <!-- Ambient Clean Light Background -->
+    <div class="ambient-layer" aria-hidden="true">
+      <div class="ambient-orb orb-1"></div>
+      <div class="ambient-orb orb-2"></div>
+      <div class="ambient-grid"></div>
     </div>
 
-    <!-- ═══════════ LOADING ═══════════ -->
-    <div v-if="pageLoading" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-3">
-        <div class="w-10 h-10 mx-auto rounded-full border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold);"></div>
-        <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Memuat beranda…</p>
-      </div>
-    </div>
-
-    <!-- ═══════════ ERROR ═══════════ -->
-    <div v-else-if="pageError" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-4 max-w-sm">
-        <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style="background: #FEF2F2;">
-          <Icon name="heroicons:exclamation-triangle" class="w-8 h-8" style="color: #DC2626;" />
-        </div>
-        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Gagal memuat beranda</h3>
-        <p class="text-sm" style="color: var(--wp-text-secondary);">{{ pageError }}</p>
-        <button @click="loadAll" class="px-6 py-2.5 text-white text-xs font-bold rounded-xl shadow-sm transition"
-          style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          Coba Lagi
-        </button>
-      </div>
-    </div>
-
-    <!-- ═══════════ DASHBOARD CONTENT ═══════════ -->
-    <template v-else>
-      <!-- ── KPI Row ── -->
-      <!-- Desktop KPI Grid (>= 768px): unchanged 5-column layout -->
-      <div class="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4 stagger-children">
-        <div
-          v-for="card in kpiCards" :key="card.label"
-          class="bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md relative overflow-hidden group"
-          style="border-color: var(--wp-border);"
-        >
-          <div class="absolute top-0 left-4 right-4 h-0.5 rounded-b" :style="{ background: card.accent }"></div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ card.label }}</span>
-            <Icon :name="card.icon" class="w-4 h-4" style="color: var(--wp-gold);" />
-          </div>
-          <p class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-text); font-variant-numeric: tabular-nums;">
-            {{ card.value }}
-          </p>
-          <p class="text-[11px] font-semibold mt-1.5 flex items-center gap-1"
-            :style="{ color: card.change >= 0 ? 'var(--wp-success)' : 'var(--wp-error)' }">
-            <Icon :name="card.change >= 0 ? 'heroicons:arrow-trending-up' : 'heroicons:arrow-trending-down'" class="w-3.5 h-3.5" />
-            {{ card.change >= 0 ? '+' : '' }}{{ card.change }}%
-            <span class="font-medium ml-0.5" style="color: var(--wp-text-secondary);">vs sblm</span>
-          </p>
-        </div>
-      </div>
-
-      <!-- Mobile KPI Strip (< 768px): horizontal snap-scroll strip for native app feel -->
-      <div class="md:hidden -mx-4">
-        <div class="flex gap-3 overflow-x-auto momentum-scroll snap-x snap-mandatory px-4 pb-2">
-          <div
-            v-for="card in kpiCards" :key="card.label"
-            class="snap-start shrink-0 w-[46%] bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm relative overflow-hidden"
-          >
-            <div class="absolute top-0 left-4 right-4 h-0.5 rounded-b" :style="{ background: card.accent }"></div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[9px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ card.label }}</span>
-              <Icon :name="card.icon" class="w-4 h-4" style="color: var(--wp-gold);" />
-            </div>
-            <p class="text-xl font-extrabold tracking-tight truncate" style="color: var(--wp-text); font-variant-numeric: tabular-nums;">
-              {{ card.value }}
-            </p>
-            <p class="text-[10px] font-semibold mt-1 flex items-center gap-1"
-              :style="{ color: card.change >= 0 ? 'var(--wp-success)' : 'var(--wp-error)' }">
-              <Icon :name="card.change >= 0 ? 'heroicons:arrow-trending-up' : 'heroicons:arrow-trending-down'" class="w-3 h-3" />
-              {{ card.change >= 0 ? '+' : '' }}{{ card.change }}%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Row 1: Sales Trend (2/3) + Inventory Overview (1/3) ── -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Sales Trend Chart -->
-        <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Tren Penjualan</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Ringkasan pendapatan</p>
-          <VChart v-if="trendOption" :option="trendOption" autoresize class="h-48 md:h-56" />
-          <div v-else class="h-48 md:h-56 flex items-center justify-center" style="color: var(--wp-text-secondary);">
-            <p class="text-xs">Belum ada data penjualan untuk periode ini.</p>
+    <!-- Navigation Header -->
+    <header class="landing-nav animate-fade-in">
+      <div class="nav-container">
+        <div class="brand-block">
+          <img :src="logoSrc" class="w-9 h-9 object-contain shrink-0" alt="Nahkoda Logo" />
+          <div class="brand-text">
+            <span class="brand-name">Nahkoda</span>
+            <span class="brand-tag">Business Copilot</span>
           </div>
         </div>
 
-        <!-- Inventory Overview -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md flex flex-col" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Ringkasan Stok</h2>
-          <p class="text-xs mb-2" style="color: var(--wp-text-secondary);">Berdasarkan kategori</p>
-          <div v-if="categoryDonutOption" class="flex-1">
-            <VChart :option="categoryDonutOption" autoresize class="h-40 md:h-44" />
-          </div>
-          <div v-else class="flex-1 flex items-center justify-center" style="color: var(--wp-text-secondary);">
-            <p class="text-xs">Belum ada produk di inventaris.</p>
-          </div>
-          <NuxtLink to="/inventory" class="text-[10px] font-bold flex items-center gap-1 mt-2 transition hover:underline" style="color: var(--wp-gold);">
-            Kelola Stok <span>→</span>
+        <nav class="nav-links">
+          <a href="#features" class="nav-item">Fitur Utama</a>
+          <a href="#simulator" class="nav-item">Demo Copilot</a>
+          <a href="#faq" class="nav-item">FAQ</a>
+        </nav>
+
+        <div class="nav-actions">
+          <NuxtLink to="/login" class="btn-ghost">Masuk</NuxtLink>
+          <NuxtLink to="/register" class="btn-primary-sm">Daftar Merchant</NuxtLink>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-container">
+        <h1 class="hero-title animate-fade-in-up">
+          Kelola Warung & Toko Lebih Cerdas Bersama <span class="gold-gradient-text">Nahkoda AI Business Copilot</span>
+        </h1>
+
+        <p class="hero-subtitle animate-fade-in-up">
+          Platform otonom untuk pemilik usaha UMKM. Pantau stok barang, analisis arus kas, otomatisasi pembelian supplier, dan rasakan kemudahan mengelola toko dalam satu genggaman.
+        </p>
+
+        <div class="hero-ctas animate-fade-in-up">
+          <NuxtLink to="/register" class="btn-hero-primary">
+            <span>Mulai Gratis Sekarang</span>
+            <Icon name="heroicons:arrow-right" class="w-5 h-5" />
+          </NuxtLink>
+          <NuxtLink to="/login" class="btn-hero-secondary">
+            <Icon name="heroicons:arrow-left-on-rectangle" class="w-5 h-5" />
+            <span>Masuk ke Merchant App</span>
           </NuxtLink>
         </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-strip animate-fade-in-up">
+          <div class="trust-item">
+            <Icon name="heroicons:check-badge-solid" class="w-4 h-4 text-[#B8922E]" />
+            <span>Terhubung Telegram Bot</span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item">
+            <Icon name="heroicons:bolt-solid" class="w-4 h-4 text-[#B8922E]" />
+            <span>Analisis Real-time</span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item">
+            <Icon name="heroicons:shield-check-solid" class="w-4 h-4 text-[#B8922E]" />
+            <span>Data Terenkripsi SSL</span>
+          </div>
+        </div>
+
+        <!-- Phone Image Showcase (Clean) -->
+        <div class="hero-app-mockup animate-fade-in-up mt-10">
+          <div class="mockup-frame">
+            <img src="/cardids.webp" alt="Nahkoda AI Merchant App Interface" class="mockup-image" />
+          </div>
+        </div>
       </div>
+    </section>
 
-      <!-- ── Row 2: Quick Actions (1/3) + Stock Table (2/3) ── -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Quick Actions -->
-        <div>
-          <h3 class="text-base font-bold mb-3 hidden md:block" style="color: var(--wp-text);">Aksi Cepat</h3>
+    <!-- Live Interactive Copilot Simulator Section -->
+    <section id="simulator" class="simulator-section">
+      <div class="section-container">
+        <div class="section-header text-center">
+          <span class="section-kicker">Interactive Live Demo</span>
+          <h2 class="section-title">Uji Kecerdasan <span class="gold-gradient-text">Nahkoda AI Copilot</span></h2>
+          <p class="section-desc">Pilih modul bisnis di bawah dan lihat bagaimana Nahkoda AI memproses keputusan toko Anda secara instan.</p>
+        </div>
 
-          <!-- Mobile: horizontal scroll strip of action cards -->
-          <div class="md:hidden -mx-4">
-            <div class="flex gap-3 overflow-x-auto momentum-scroll px-4 pb-2">
-              <NuxtLink
-                :to="userUuid ? `/shop/${userUuid}` : '#'"
-                class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group relative overflow-hidden"
+        <div class="simulator-box">
+          <!-- Module Tabs -->
+          <div class="sim-tabs">
+            <button 
+              @click="activeTab = 'inventory'"
+              :class="['sim-tab-btn', activeTab === 'inventory' ? 'active' : '']"
+            >
+              <Icon name="heroicons:archive-box" class="w-4 h-4" />
+              <span>Stok & Restock</span>
+            </button>
+            <button 
+              @click="activeTab = 'finance'"
+              :class="['sim-tab-btn', activeTab === 'finance' ? 'active' : '']"
+            >
+              <Icon name="heroicons:banknotes" class="w-4 h-4" />
+              <span>Keuangan & Omzet</span>
+            </button>
+            <button 
+              @click="activeTab = 'sales'"
+              :class="['sim-tab-btn', activeTab === 'sales' ? 'active' : '']"
+            >
+              <Icon name="heroicons:chart-bar" class="w-4 h-4" />
+              <span>Penjualan & Produk</span>
+            </button>
+            <button 
+              @click="activeTab = 'marketing'"
+              :class="['sim-tab-btn', activeTab === 'marketing' ? 'active' : '']"
+            >
+              <Icon name="heroicons:megaphone" class="w-4 h-4" />
+              <span>Pemasaran & Promo</span>
+            </button>
+          </div>
+
+          <!-- Simulator Body -->
+          <div class="sim-content">
+            <div class="sim-preset-label">Contoh pertanyaan cepat ke Copilot:</div>
+            <div class="sim-presets">
+              <button 
+                v-for="(p, idx) in simulatorPresets[activeTab]" 
+                :key="idx" 
+                @click="runSimulation(p)"
+                class="preset-chip"
               >
-                <div class="absolute top-0 left-0 right-0 h-1 rounded-b" style="background: linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light));"></div>
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.05)); border-color: var(--wp-border);">
-                    <Icon name="heroicons:building-storefront" class="w-5 h-5" style="color: var(--wp-gold);" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-gold);">Toko Offline</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Buka Toko</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Layani pelanggan di counter.</p>
-                  </div>
+                "{{ p }}"
+              </button>
+            </div>
+
+            <!-- Copilot Screen Output -->
+            <div class="sim-screen">
+              <div class="sim-screen-header">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                  <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                  <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
                 </div>
-              </NuxtLink>
-              <NuxtLink to="/dompet" class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group">
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: rgba(5,150,105,0.06); border-color: var(--wp-border);">
-                    <Icon name="heroicons:wallet" class="w-5 h-5" style="color: #059669;" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: #059669;">Dompet</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Lihat Penghasilan</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Saldo & riwayat transaksi.</p>
-                  </div>
+                <div class="text-[11px] font-mono text-slate-500">Nahkoda AI Assistant Console</div>
+              </div>
+
+              <div class="sim-screen-body">
+                <div v-if="simulatorQuery" class="sim-user-msg">
+                  <Icon name="heroicons:user-circle" class="w-5 h-5 text-slate-400 shrink-0" />
+                  <span>{{ simulatorQuery }}</span>
                 </div>
-              </NuxtLink>
-              <NuxtLink to="/chat" class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group">
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                    <Icon name="heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Asisten AI</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Chat AI</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Keuangan, stok & pemasaran.</p>
-                  </div>
+
+                <div v-if="isSimulating" class="sim-loading">
+                  <div class="w-5 h-5 border-2 border-[#B8922E] border-t-transparent rounded-full animate-spin"></div>
+                  <span>Nahkoda AI sedang menganalisis data merchant...</span>
                 </div>
-              </NuxtLink>
-              <NuxtLink to="/sales-report" class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group">
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                    <Icon name="heroicons:chart-bar" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Laporan</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Penjualan</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Analitik & ekspor laporan.</p>
-                  </div>
+
+                <div v-else-if="simOutput" class="sim-ai-msg">
+                  <img :src="logoSrc" class="w-6 h-6 object-contain shrink-0" alt="Logo" />
+                  <div class="sim-ai-text" v-html="simOutput.replace(/\n/g, '<br/>')"></div>
                 </div>
-              </NuxtLink>
+
+                <div v-else class="sim-placeholder">
+                  <Icon name="heroicons:sparkles" class="w-8 h-8 text-[#B8922E]/40 mb-2" />
+                  <p class="text-sm text-slate-500">Klik salah satu tombol preset pertanyaan di atas untuk melihat respon cerdas Nahkoda AI.</p>
+                </div>
+              </div>
             </div>
           </div>
-
-          <!-- Desktop: vertical stacked list -->
-          <div class="hidden md:block space-y-4">
-          <!-- Buka Toko -->
-          <NuxtLink
-            :to="userUuid ? `/shop/${userUuid}` : '#'"
-            class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group relative overflow-hidden"
-            style="border-color: var(--wp-border);"
-          >
-            <div class="absolute top-0 left-0 right-0 h-1 rounded-t" style="background: linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light));"></div>
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.05)); border-color: var(--wp-border);">
-                <Icon name="heroicons:building-storefront" class="w-5 h-5" style="color: var(--wp-gold);" />
-              </div>
-              <div class="flex-1">
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-gold);">Toko Offline</h4>
-                <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Buka Toko</p>
-                <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Layani pelanggan di counter — cari, keranjang, bayar.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">BUKA TOKO →</span>
-            </div>
-          </NuxtLink>
-          <!-- Dompet -->
-          <NuxtLink to="/dompet" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[#059669]" style="background: rgba(5,150,105,0.06); border-color: var(--wp-border);">
-                <Icon name="heroicons:wallet" class="w-5 h-5" style="color: #059669;" />
-              </div>
-              <div class="flex-1">
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: #059669;">Dompet</h4>
-                <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Lihat Penghasilan</p>
-                <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Saldo, riwayat transaksi & performa dompet.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: #059669;">LIHAT →</span>
-            </div>
-          </NuxtLink>
-          <NuxtLink to="/chat" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                <Icon name="heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-              </div>
-              <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Asisten AI</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Chat dengan asisten AI — keuangan, stok, pemasaran & riset.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">MULAI →</span>
-            </div>
-          </NuxtLink>
-          <NuxtLink to="/tambah-skill" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                <Icon name="heroicons:plus-circle" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-              </div>
-              <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Tambah Skill</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Tambahkan kemampuan operasional baru ke staf Anda.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">KELOLA →</span>
-            </div>
-          </NuxtLink>
-          <NuxtLink to="/sales-report" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                <Icon name="heroicons:chart-bar" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-              </div>
-              <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Laporan Penjualan</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Lihat analitik detail, tren & ekspor laporan.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">ANALISA →</span>
-            </div>
-          </NuxtLink>
-          </div><!-- end desktop quick actions -->
-        </div><!-- end quick actions column -->
-
-        <!-- Inventory Table -->
-        <div class="xl:col-span-2 bg-white rounded-2xl border p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <div class="flex items-center justify-between pb-4 border-b" style="border-color: var(--wp-border);">
-            <div>
-              <h2 class="text-base font-bold" style="color: var(--wp-text);">Manajemen Stok</h2>
-              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ stocks.length }} produk dilacak</p>
-            </div>
-            <NuxtLink to="/inventory" class="text-xs font-bold flex items-center gap-1 transition hover:underline" style="color: var(--wp-gold);">
-              Lihat Semua <span class="text-[10px]">→</span>
-            </NuxtLink>
-          </div>
-
-          <!-- Empty inventory -->
-          <div v-if="stocks.length === 0" class="py-12 text-center">
-            <Icon name="heroicons:archive-box" class="w-10 h-10 mx-auto mb-3" style="color: var(--wp-border);" />
-            <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Tidak ada produk di inventaris</p>
-            <NuxtLink to="/inventory" class="inline-block mt-3 text-xs font-bold" style="color: var(--wp-gold);">Tambahkan produk pertama anda →</NuxtLink>
-          </div>
-
-          <!-- Table & Mobile Cards -->
-          <template v-else>
-            <!-- Desktop Table View (Width >= 768px) -->
-            <div class="hidden md:block overflow-x-auto">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-                    <th class="py-4 pr-4">Nama Produk</th>
-                    <th class="py-4 pr-4">Kategori</th>
-                    <th class="py-4 pr-4">Level Stok</th>
-                    <th class="py-4 pr-4 text-center">Status</th>
-                    <th class="py-4 text-right">Harga</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
-                  <tr v-for="item in displayStocks" :key="item.uuid" class="transition-colors hover:bg-slate-50/50">
-                    <td class="py-4 pr-4 font-bold" style="color: var(--wp-text);">{{ item.product_name }}</td>
-                    <td class="py-4 pr-4 font-medium" style="color: var(--wp-text-secondary);">{{ item.category || '—' }}</td>
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center gap-3">
-                        <span class="w-8 font-bold text-sm font-mono" style="color: var(--wp-text);">{{ item.stock_quantity }}</span>
-                        <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background: #E2E8F0;">
-                          <div class="h-full rounded-full transition-all duration-700 ease-out"
-                            :style="{
-                              width: stockPercentage(item) + '%',
-                              background: stockBarColor(item),
-                            }"
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 pr-4 text-center">
-                      <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border inline-flex items-center gap-1"
-                        :style="stockBadgeStyle(item)">
-                        <span class="w-1.5 h-1.5 rounded-full" :style="{ background: stockBadgeStyle(item).color }"></span>
-                        {{ stockStatus(item).label }}
-                      </span>
-                    </td>
-                    <td class="py-4 text-right font-bold font-mono" style="color: var(--wp-text);">
-                      {{ formatRupiah(item.price) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Mobile Cards View (Width < 768px) -->
-            <div class="block md:hidden space-y-3">
-              <div
-                v-for="item in displayStocks"
-                :key="item.uuid"
-                class="p-4 border rounded-xl shadow-sm bg-[var(--wp-surface)] border-[var(--wp-border)] space-y-3"
-              >
-                <div class="flex items-start justify-between gap-2">
-                  <div class="min-w-0 flex-1">
-                    <h4 class="font-bold text-sm truncate" style="color: var(--wp-text);">{{ item.product_name }}</h4>
-                    <span class="inline-block mt-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border rounded"
-                      style="background: rgba(15,26,46,0.04); color: var(--wp-navy); border-color: var(--wp-border);">
-                      {{ item.category || 'Tanpa Kategori' }}
-                    </span>
-                  </div>
-                  <span class="text-sm font-bold font-mono shrink-0" style="color: var(--wp-text);">
-                    {{ formatRupiah(item.price) }}
-                  </span>
-                </div>
-
-                <!-- Stock level bar -->
-                <div class="space-y-1">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-[10px] font-bold uppercase" style="color: var(--wp-text-secondary);">Stok Tersedia</span>
-                    <span class="font-bold font-mono" style="color: var(--wp-text);">{{ item.stock_quantity }} items</span>
-                  </div>
-                  <div class="h-2 rounded-full overflow-hidden bg-slate-100 border" style="border-color: var(--wp-border);">
-                    <div class="h-full rounded-full transition-all duration-500"
-                      :style="{ width: stockPercentage(item) + '%', background: stockBarColor(item) }">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Status badge footer -->
-                <div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--wp-border);">
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border inline-flex items-center gap-1.5" :style="stockBadgeStyle(item)">
-                    <span class="w-2 h-2 rounded-full" :style="{ background: stockBadgeStyle(item).color }"></span>
-                    {{ stockStatus(item).label }}
-                  </span>
-                  <NuxtLink to="/inventory" class="min-h-[44px] px-3 inline-flex items-center justify-center text-xs font-bold" style="color: var(--wp-gold);">
-                    Detail →
-                  </NuxtLink>
-                </div>
-              </div>
-            </div>
-          </template>
         </div>
       </div>
-    </template>
+    </section>
+
+    <!-- Features Grid Section -->
+    <section id="features" class="features-section">
+      <div class="section-container">
+        <div class="section-header text-center">
+          <span class="section-kicker">Fitur Unggulan</span>
+          <h2 class="section-title">Semua yang Dibutuhkan Warung & Toko Modern</h2>
+          <p class="section-desc">Dirancang khusus untuk mempermudah operasional harian merchant tanpa kerumitan teknis.</p>
+        </div>
+
+        <div class="features-grid">
+          <div v-for="(f, i) in features" :key="i" class="feature-card">
+            <div class="feature-icon-box">
+              <Icon :name="f.icon" class="w-6 h-6 text-[#B8922E]" />
+            </div>
+            <h3 class="feature-card-title">{{ f.title }}</h3>
+            <p class="feature-card-desc">{{ f.desc }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+      <div class="section-container">
+        <div class="section-header text-center">
+          <span class="section-kicker">Pertanyaan Umum</span>
+          <h2 class="section-title">Masih Punya Pertanyaan?</h2>
+        </div>
+
+        <div class="faq-list">
+          <div 
+            v-for="(item, idx) in faqs" 
+            :key="idx" 
+            class="faq-item"
+            @click="item.open = !item.open"
+          >
+            <div class="faq-question">
+              <span>{{ item.q }}</span>
+              <Icon :name="item.open ? 'heroicons:chevron-up' : 'heroicons:chevron-down'" class="w-5 h-5 text-[#B8922E]" />
+            </div>
+            <div v-if="item.open" class="faq-answer">
+              {{ item.a }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action Banner -->
+    <section class="cta-banner-section">
+      <div class="cta-box">
+        <h2 class="cta-title">Siap Mentransformasi Toko Anda Bersama Nahkoda AI?</h2>
+        <p class="cta-desc">Bergabunglah dengan ribuan merchant dan pemilik warung pintar yang telah melipatgandakan efisiensi bisnis mereka.</p>
+        <div class="cta-actions">
+          <NuxtLink to="/register" class="btn-hero-primary">
+            <span>Daftar Merchant Sekarang</span>
+            <Icon name="heroicons:arrow-right" class="w-5 h-5" />
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- Professional Landing Footer -->
+    <footer class="landing-footer">
+      <div class="footer-container">
+        <div class="footer-top-grid">
+          <!-- Column 1: Brand & Tagline -->
+          <div class="footer-col brand-col">
+            <div class="flex items-center gap-2 mb-3">
+              <img :src="logoSrc" class="w-8 h-8 object-contain shrink-0" alt="Nahkoda AI Logo" />
+              <span class="font-extrabold text-xl text-[#0F1A2E] tracking-tight">Nahkoda <span class="gold-gradient-text">AI</span></span>
+            </div>
+            <p class="footer-desc">
+              Platform Business Copilot otonom pertama di Indonesia untuk otomatisasi persediaan stok, analisis arus kas, serta keputusan bisnis merchant & warung pintar.
+            </p>
+            <div class="footer-badges">
+              <div class="tech-badge">
+                <Icon name="heroicons:shield-check" class="w-4 h-4 text-[#B8922E]" />
+                <span>Enterprise Grade Security</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Navigasi Produk -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">Produk & Solusi</h4>
+            <ul class="footer-links">
+              <li><a href="#simulator" class="footer-link">Copilot Simulator</a></li>
+              <li><a href="#features" class="footer-link">Manajemen Stok & Restock</a></li>
+              <li><a href="#features" class="footer-link">Laporan Arus Kas & Margin</a></li>
+              <li><a href="#features" class="footer-link">Integrasi Telegram Bot</a></li>
+              <li><NuxtLink to="/skill-marketplace" class="footer-link">Skill Marketplace</NuxtLink></li>
+            </ul>
+          </div>
+
+          <!-- Column 3: Ekosistem & Akun -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">Akses Merchant</h4>
+            <ul class="footer-links">
+              <li><NuxtLink to="/login" class="footer-link">Masuk Merchant App</NuxtLink></li>
+              <li><NuxtLink to="/register" class="footer-link">Daftar Akun Merchant</NuxtLink></li>
+              <li><NuxtLink to="/sales-report" class="footer-link">Ringkasan Penjualan</NuxtLink></li>
+              <li><NuxtLink to="/konektor" class="footer-link">Integrasi Saluran POS</NuxtLink></li>
+            </ul>
+          </div>
+
+          <!-- Column 4: Dukungan & Bantuan -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">Pusat Bantuan</h4>
+            <ul class="footer-links">
+              <li><a href="#faq" class="footer-link">Pertanyaan Umum (FAQ)</a></li>
+              <li><NuxtLink to="/help" class="footer-link">Dokumentasi & Panduan</NuxtLink></li>
+              <li><a href="https://t.me/" target="_blank" rel="noopener" class="footer-link flex items-center gap-1.5">
+                <Icon name="heroicons:paper-airplane" class="w-4 h-4 text-[#0088cc]" />
+                <span>Bantuan via Telegram</span>
+              </a></li>
+              <li><span class="footer-text-muted">Jam Operasional: 24/7 AI System</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom-bar">
+          <p class="footer-copy">© 2026 Nahkoda AI Business Copilot · Hak Cipta Dilindungi Undang-Undang.</p>
+          <div class="footer-legal-links">
+            <span class="legal-item">Privasi & Keamanan</span>
+            <span class="legal-dot">•</span>
+            <span class="legal-item">Syarat & Ketentuan</span>
+            <span class="legal-dot">•</span>
+            <span class="legal-item">Standar UMKM Digital</span>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import VChart from 'vue-echarts'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { LineChart, BarChart, PieChart } from 'echarts/charts'
-import {
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
-  VisualMapComponent,
-  DataZoomComponent,
-  MarkLineComponent,
-} from 'echarts/components'
-import { api } from '~/utils/api'
-import { useAnalytics } from '~/composables/useAnalytics'
-import { useAuth } from '~/composables/useAuth'
-import { useWallet } from '~/composables/useWallet'
-
-use([
-  CanvasRenderer,
-  LineChart,
-  BarChart,
-  PieChart,
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
-  VisualMapComponent,
-  DataZoomComponent,
-  MarkLineComponent,
-])
-
-// ── Data ──
-const {
-  period, data: analyticsData, loading: analyticsLoading, error: analyticsError,
-  setPeriod, fetchAnalytics: fetchAnalyticsData, formatRupiah, formatCompact,
-} = useAnalytics()
-
-const { user } = useAuth()
-const { wallet, fetchWallet } = useWallet()
-
-const userUuid = computed(() => user.value?.uuid || '')
-
-interface StockItem {
-  uuid: string
-  product_name: string
-  category: string | null
-  stock_quantity: number
-  min_stock: number
-  price: number
-  is_active: boolean
-}
-const stocks = ref<StockItem[]>([])
-const stocksLoading = ref(false)
-const stocksError = ref<string | null>(null)
-
-const pageLoading = computed(() => analyticsLoading.value || stocksLoading.value)
-const pageError = computed(() => analyticsError.value || stocksError.value)
-
-const periods = [
-  { label: 'Hari Ini', value: 'today' as const },
-  { label: 'Minggu Ini', value: 'week' as const },
-  { label: 'Bulan Ini', value: 'month' as const },
-  { label: 'Tahun Ini', value: 'year' as const },
-]
-
-// ── Fetch stocks ──
-const fetchStocks = async () => {
-  stocksLoading.value = true
-  stocksError.value = null
-  try {
-    const result = await api.get('/stocks/')
-    stocks.value = (result || []) as StockItem[]
-  } catch (err: any) {
-    stocksError.value = err.message || 'Failed to fetch inventory'
-  } finally {
-    stocksLoading.value = false
-  }
-}
-
-const loadAll = async () => {
-  await Promise.all([fetchAnalyticsData(), fetchStocks(), fetchWallet()])
-}
-
-// ── KPI Cards ──
-const kpiCards = computed(() => {
-  const k = analyticsData.value?.kpi
-  const activeProducts = stocks.value.filter(s => s.is_active).length
-  return [
-    {
-      label: 'Total Pendapatan',
-      value: k ? formatRupiah(k.total_revenue) : '—',
-      change: k?.revenue_change_pct ?? 0,
-      icon: 'heroicons:banknotes',
-      accent: 'linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light))',
-    },
-    {
-      label: 'Laba Kotor',
-      value: k ? formatRupiah(k.total_profit) : '—',
-      change: k?.profit_change_pct ?? 0,
-      icon: 'heroicons:arrow-trending-up',
-      accent: 'linear-gradient(90deg, var(--wp-success), #34D399)',
-    },
-    {
-      label: 'Transaksi',
-      value: k ? k.total_transactions.toLocaleString('id-ID') : '0',
-      change: k?.transactions_change_pct ?? 0,
-      icon: 'heroicons:document-text',
-      accent: 'linear-gradient(90deg, var(--wp-navy), #3B5998)',
-    },
-    {
-      label: 'Produk Aktif',
-      value: `${activeProducts}`,
-      change: 0,
-      icon: 'heroicons:archive-box',
-      accent: 'linear-gradient(90deg, #8B5CF6, #A78BFA)',
-    },
-    {
-      label: 'Saldo Dompet',
-      value: wallet.value ? formatRupiah(wallet.value.balance) : '—',
-      change: 0,
-      icon: 'heroicons:wallet',
-      accent: 'linear-gradient(90deg, #059669, #34D399)',
-    },
-  ]
-})
-
-// ── ECharts: Sales Trend (Area Pieces with visualMap & dataZoom) ──
-const trendOption = computed(() => {
-  const trend = analyticsData.value?.trend
-  if (!trend || trend.length === 0) return null
-
-  const dates = trend.map((t: any) => t.date)
-  const revenues = trend.map((t: any) => t.revenue)
-  const maxRevenue = Math.max(...revenues, 100000)
-
-  // Define piece zones matching merchant brand tone
-  const p1 = Math.round(maxRevenue * 0.35)
-  const p2 = Math.round(maxRevenue * 0.70)
-
-  return {
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: '#ffffff',
-      borderColor: '#E2E8F0',
-      borderWidth: 1,
-      borderRadius: 10,
-      padding: [8, 12],
-      textStyle: { color: '#1E293B', fontSize: 12, fontFamily: 'var(--wp-font)' },
-      formatter: (params: any) => {
-        const p = params[0]
-        const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
-        return `<b style="color:#0F1A2E">${p.axisValue}</b><br/><span style="color:#D4A843">●</span> <span style="color:#64748B">Pendapatan:</span> <b>${val}</b>`
-      },
-    },
-    grid: { left: 12, right: 24, top: 12, bottom: 45, containLabel: true },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: dates,
-      axisLine: { lineStyle: { color: '#E2E8F0' } },
-      axisTick: { show: false },
-      axisLabel: { color: '#64748B', fontSize: 10, fontWeight: 600 },
-    },
-    yAxis: {
-      type: 'value',
-      axisLabel: {
-        color: '#64748B',
-        fontSize: 10,
-        fontWeight: 600,
-        formatter: (v: number) => formatCompact(v),
-      },
-      splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
-    },
-    visualMap: {
-      type: 'piecewise',
-      show: false,
-      dimension: 1,
-      seriesIndex: 0,
-      pieces: [
-        { lte: p1, color: 'rgba(212, 168, 67, 0.45)' },
-        { gt: p1, lte: p2, color: 'rgba(184, 146, 46, 0.75)' },
-        { gt: p2, color: 'rgba(15, 26, 46, 0.90)' },
-      ],
-    },
-    dataZoom: [
-      {
-        type: 'inside',
-        start: 0,
-        end: 100,
-        zoomOnMouseWheel: true,
-        moveOnMouseMove: true,
-      },
-      {
-        type: 'slider',
-        start: 0,
-        end: 100,
-        height: 18,
-        bottom: 6,
-        borderColor: '#E2E8F0',
-        backgroundColor: '#F8FAFC',
-        fillerColor: 'rgba(212,168,67,0.18)',
-        handleStyle: { color: '#D4A843', borderColor: '#B8922E' },
-        textStyle: { color: '#64748B', fontSize: 9 },
-      },
-    ],
-    series: [
-      {
-        name: 'Pendapatan',
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        data: revenues,
-        lineStyle: { width: 2.5 },
-        markLine: {
-          symbol: ['none', 'none'],
-          label: { show: true, position: 'end', fontSize: 9, formatter: '{b}' },
-          data: [
-            { name: 'Standar', yAxis: p1, lineStyle: { color: '#D4A843', type: 'dashed' } },
-            { name: 'Tinggi', yAxis: p2, lineStyle: { color: '#0F1A2E', type: 'dashed' } },
-          ],
-        },
-        areaStyle: {},
-      },
-    ],
-  }
-})
-
-// ── ECharts: Category Donut (from inventory, not sales) ──
-const catPalette = ['#D4A843', '#0F1A2E', '#059669', '#D97706', '#3B82F6', '#8B5CF6', '#64748B', '#EC4899']
-const categoryDonutOption = computed(() => {
-  const active = stocks.value.filter(s => s.is_active)
-  if (active.length === 0) return null
-
-  // Aggregate stock count by category
-  const catMap: Record<string, number> = {}
-  for (const s of active) {
-    const cat = s.category || 'Tanpa Kategori'
-    catMap[cat] = (catMap[cat] || 0) + s.stock_quantity
-  }
-  const entries = Object.entries(catMap)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
-  const total = entries.reduce((sum, e) => sum + e.value, 0)
-
-  const top4 = entries.slice(0, 4)
-  const other = entries.slice(4).reduce((s, e) => s + e.value, 0)
-  const data = top4.map((e, i) => ({ value: e.value, name: e.name, itemStyle: { color: catPalette[i] } }))
-  if (other > 0) data.push({ value: other, name: 'Lainnya', itemStyle: { color: '#CBD5E1' } })
-
-  return {
-    tooltip: {
-      trigger: 'item',
-      backgroundColor: '#ffffff',
-      borderColor: '#E2E8F0',
-      borderWidth: 1,
-      borderRadius: 8,
-      padding: [6, 10],
-      textStyle: { color: '#1E293B', fontSize: 11, fontFamily: 'var(--wp-font)' },
-      formatter: (p: any) => `<b>${p.name}</b><br/>${p.value.toLocaleString('id-ID')} items (${p.percent}%)`,
-    },
-    legend: { show: false },
-    series: [{
-      type: 'pie',
-      radius: ['60%', '82%'],
-      center: ['50%', '50%'],
-      avoidLabelOverlap: false,
-      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
-      label: {
-        show: true,
-        position: 'outside',
-        formatter: (p: any) => `${p.name}  ${p.percent}%`,
-        fontSize: 9,
-        fontWeight: 600,
-        color: '#64748B',
-      },
-      emphasis: { scaleSize: 4 },
-      data,
-    }],
-  }
-})
-
-// ── Stock helpers ──
-const displayStocks = computed(() => stocks.value.filter(s => s.is_active).slice(0, 6))
-
-const stockPercentage = (item: StockItem) => {
-  const max = Math.max(item.stock_quantity, item.min_stock * 2, 100)
-  return Math.min(100, Math.round((item.stock_quantity / max) * 100))
-}
-
-const stockStatus = (item: StockItem) => {
-  if (item.stock_quantity === 0) return { label: 'Stok Habis', color: '#DC2626' }
-  if (item.stock_quantity <= item.min_stock) return { label: 'Stok Menipis', color: '#D97706' }
-  return { label: 'Tersedia', color: '#059669' }
-}
-
-const stockBarColor = (item: StockItem) => {
-  if (item.stock_quantity === 0) return 'linear-gradient(90deg, #EF4444, #DC2626)'
-  if (item.stock_quantity <= item.min_stock) return 'linear-gradient(90deg, #F59E0B, #D97706)'
-  return 'linear-gradient(90deg, var(--wp-gold), var(--wp-gold-dark))'
-}
-
-const stockBadgeStyle = (item: StockItem) => {
-  const status = stockStatus(item)
-  if (status.color === '#DC2626') return { background: '#FEF2F2', color: '#DC2626', borderColor: '#FECACA' }
-  if (status.color === '#D97706') return { background: '#FFFBEB', color: '#D97706', borderColor: '#FDE68A' }
-  return { background: '#F0FDF4', color: '#059669', borderColor: '#DCFCE7' }
-}
-
-// ── Init ──
-onMounted(() => {
-  loadAll()
-})
-</script>
-
 <style scoped>
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* ── Root & Ambient Layer (Clean Light Theme) ── */
+.landing-root {
+  min-height: 100dvh;
+  background: #F8FAFC;
+  color: #0F1A2E;
+  font-family: 'Fira Sans', system-ui, -apple-system, sans-serif;
+  position: relative;
+  overflow-x: hidden;
 }
-.animate-spin {
-  animation: spin 0.8s linear infinite;
+
+.ambient-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.45;
+}
+.orb-1 {
+  width: 600px; height: 600px;
+  top: -200px; left: -100px;
+  background: radial-gradient(circle, rgba(212, 168, 67, 0.25) 0%, transparent 70%);
+}
+.orb-2 {
+  width: 500px; height: 500px;
+  bottom: -150px; right: -100px;
+  background: radial-gradient(circle, rgba(226, 232, 240, 0.8) 0%, transparent 70%);
+}
+.ambient-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(15, 26, 46, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 26, 46, 0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* ── Typography & Gradients ── */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #B8922E 0%, #D4A843 50%, #B8922E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Header Nav ── */
+.landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border-b: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 1rem 0;
+}
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.brand-name {
+  font-weight: 800;
+  font-size: 1.125rem;
+  color: #0F1A2E;
+  display: block;
+  line-height: 1;
+}
+.brand-tag {
+  font-size: 0.7rem;
+  color: #B8922E;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
+.nav-item {
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-item:hover {
+  color: #B8922E;
+}
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.btn-ghost {
+  color: #0F1A2E;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  transition: opacity 0.15s;
+}
+.btn-ghost:hover {
+  opacity: 0.8;
+}
+.btn-primary-sm {
+  background: linear-gradient(135deg, #D4A843 0%, #B8922E 100%);
+  color: #FFFFFF;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(184,146,46,0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(184,146,46,0.35);
+}
+
+/* ── Hero Section ── */
+.hero-section {
+  position: relative;
+  z-index: 1;
+  padding: 5rem 1.5rem 4rem;
+  text-align: center;
+}
+.hero-container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 1rem;
+  border-radius: 9999px;
+  background: rgba(212, 168, 67, 0.12);
+  border: 1px solid rgba(184, 146, 46, 0.25);
+  color: #B8922E;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #0F1A2E;
+  margin-bottom: 1.25rem;
+}
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: #475569;
+  max-width: 720px;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+.hero-ctas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+  width: 100%;
+}
+.btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: linear-gradient(135deg, #D4A843 0%, #B8922E 100%);
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(184,146,46,0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(184,146,46,0.45);
+}
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F1A2E;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.875rem 1.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-hero-secondary:hover {
+  background: #F8FAFC;
+  border-color: #B8922E;
+}
+
+.trust-strip {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(15, 26, 46, 0.04);
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #334155;
+  font-weight: 600;
+}
+.trust-divider {
+  width: 1px;
+  height: 14px;
+  background: #E2E8F0;
+}
+
+/* ── Hero App Mockup Frame (Clean Phone Display) ── */
+.hero-app-mockup {
+  width: 100%;
+  max-width: 380px;
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: center;
+}
+.mockup-frame {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.mockup-image {
+  width: 100%;
+  height: auto;
+  max-height: 720px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── Section Shared ── */
+.section-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+.section-header {
+  margin-bottom: 3rem;
+}
+.section-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #B8922E;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.section-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0F1A2E;
+  margin-bottom: 0.75rem;
+}
+.section-desc {
+  font-size: 1rem;
+  color: #64748B;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Simulator Section ── */
+.simulator-section {
+  position: relative;
+  z-index: 1;
+}
+.simulator-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 26, 46, 0.08);
+}
+.sim-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #F1F5F9;
+  border-b: 1px solid #E2E8F0;
+}
+.sim-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  color: #64748B;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-bottom: 2px solid transparent;
+}
+.sim-tab-btn:hover {
+  color: #0F1A2E;
+  background: rgba(255,255,255,0.5);
+}
+.sim-tab-btn.active {
+  color: #B8922E;
+  border-bottom-color: #B8922E;
+  background: #FFFFFF;
+}
+
+.sim-content {
+  padding: 2rem;
+}
+.sim-preset-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748B;
+  margin-bottom: 0.75rem;
+}
+.sim-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.preset-chip {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.preset-chip:hover {
+  border-color: #B8922E;
+  color: #B8922E;
+  background: rgba(212, 168, 67, 0.08);
+}
+
+.sim-screen {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.sim-screen-header {
+  background: #E2E8F0;
+  padding: 0.625rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sim-screen-body {
+  padding: 1.5rem;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sim-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.sim-user-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #E2E8F0;
+  padding: 0.625rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1E293B;
+  margin-bottom: 1rem;
+}
+.sim-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #B8922E;
+  font-weight: 600;
+}
+.sim-ai-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(15, 26, 46, 0.04);
+}
+.sim-ai-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #1E293B;
+}
+
+/* ── Features Grid ── */
+.features-section {
+  position: relative;
+  z-index: 1;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.feature-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 2px 8px rgba(15, 26, 46, 0.03);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: #B8922E;
+  box-shadow: 0 8px 20px rgba(15, 26, 46, 0.08);
+}
+.feature-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(212, 168, 67, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+.feature-card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #0F1A2E;
+}
+.feature-card-desc {
+  font-size: 0.875rem;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+/* ── FAQ ── */
+.faq-section {
+  position: relative;
+  z-index: 1;
+}
+.faq-list {
+  max-width: 750px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.faq-item {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: border-color 0.15s;
+}
+.faq-item:hover {
+  border-color: #B8922E;
+}
+.faq-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #0F1A2E;
+}
+.faq-answer {
+  margin-top: 0.875rem;
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.6;
+  border-t: 1px solid #F1F5F9;
+  padding-top: 0.875rem;
+}
+
+/* ── CTA Banner ── */
+.cta-banner-section {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 1.5rem 5rem;
+}
+.cta-box {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #0F1A2E 0%, #1E293B 100%);
+  border-radius: 20px;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  color: #FFFFFF;
+  box-shadow: 0 15px 35px rgba(15, 26, 46, 0.15);
+}
+.cta-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: #FFFFFF;
+}
+.cta-desc {
+  font-size: 1.0625rem;
+  color: #94A3B8;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+.cta-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Footer ── */
+.landing-footer {
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  padding: 4rem 1.5rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.footer-top-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid #F1F5F9;
+}
+.brand-col {
+  max-width: 320px;
+}
+.footer-desc {
+  font-size: 0.875rem;
+  color: #64748B;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+.footer-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.tech-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+}
+.footer-col-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #0F1A2E;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.25rem;
+}
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.footer-link {
+  font-size: 0.875rem;
+  color: #64748B;
+  text-decoration: none;
+  transition: color 0.15s, transform 0.15s;
+  display: inline-block;
+}
+.footer-link:hover {
+  color: #B8922E;
+  transform: translateX(2px);
+}
+.footer-text-muted {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  font-style: italic;
+}
+.footer-bottom-bar {
+  padding-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.footer-copy {
+  font-size: 0.8125rem;
+  color: #64748B;
+}
+.footer-legal-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: #94A3B8;
+}
+.legal-item {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.legal-item:hover {
+  color: #475569;
+}
+.legal-dot {
+  color: #CBD5E1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sim-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .footer-top-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  .nav-links {
+    display: none;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .sim-tabs {
+    grid-template-columns: 1fr;
+  }
+  .hero-ctas {
+    flex-direction: column;
+  }
+  .trust-strip {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .trust-divider {
+    display: none;
+  }
+  .footer-top-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .footer-bottom-bar {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
 }
 </style>

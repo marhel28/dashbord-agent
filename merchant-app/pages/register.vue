@@ -77,11 +77,6 @@ const step2Valid = computed(() =>
 )
 
 const { register: doRegister, verifyEmail, login: doLogin } = useAuth()
-const colorMode = useColorMode()
-
-const logoSrc = computed(() => {
-  return colorMode.value === 'dark' ? '/logo_darkmode.png' : '/logo_lightmode.png'
-})
 
 const detectLocation = () => {
   if (!navigator.geolocation) {
@@ -116,7 +111,6 @@ const prevStep = () => {
 const formatCallbackError = (err: any): string => {
   if (typeof err === 'string') return err
   if (err instanceof Error) {
-    // If message contains JSON callback detail
     try {
       const parsed = JSON.parse(err.message)
       if (Array.isArray(parsed?.detail)) {
@@ -145,11 +139,8 @@ const handleRegister = async () => {
       try { await verifyEmail(data.verification_token) } catch { /* ignore verification error if auto verified */ }
     }
     
-    // Auto login after successful registration
     await doLogin(form.email, form.password)
-    
-    // Navigate straight to dashboard
-    await navigateTo('/')
+    await navigateTo('/dashboard')
   } catch (err: unknown) {
     errorMsg.value = formatCallbackError(err)
   } finally {
@@ -160,383 +151,458 @@ const handleRegister = async () => {
 
 <template>
   <div class="auth-root">
-    <!-- Ambient background -->
-    <div class="ambient-layer" aria-hidden="true">
-      <div class="ambient-orb orb-1"></div>
-      <div class="ambient-orb orb-2"></div>
-      <div class="ambient-orb orb-3"></div>
-      <div class="ambient-grid"></div>
-    </div>
+    <!-- Top Navigation Navbar -->
+    <header class="auth-nav">
+      <div class="nav-container">
+        <NuxtLink to="/" class="brand-block-nav">
+          <img src="/logo_lightmode.png" class="w-8 h-8 object-contain shrink-0" alt="Nahkoda Logo" />
+          <div class="brand-text-nav">
+            <span class="brand-name-nav">Nahkoda</span>
+            <span class="brand-tag-nav">Business Copilot</span>
+          </div>
+        </NuxtLink>
 
-    <div class="auth-card animate-fade-in-up">
-      <!-- Brand -->
-      <div class="brand-block">
-        <img :src="logoSrc" class="w-10 h-10 object-contain shrink-0" alt="Nahkoeda Logo" />
-        <div class="brand-text">
-          <span class="brand-name">Nahkoeda</span>
-          <span class="brand-sub">Agentic AI Bot untuk Membantu Warung</span>
-        </div>
+        <nav class="nav-links">
+          <NuxtLink to="/" class="nav-item">Beranda</NuxtLink>
+          <NuxtLink to="/login" class="nav-item">Masuk Merchant</NuxtLink>
+        </nav>
       </div>
+    </header>
 
-      <!-- Step indicator -->
-      <div class="steps-indicator" aria-label="Progress pendaftaran">
-        <div
-          v-for="s in totalSteps"
-          :key="s"
-          class="step-item"
-          :class="{
-            'step-item--done': s < currentStep || registered,
-            'step-item--active': s === currentStep && !registered
-          }"
-        >
-          <div class="step-dot">
-            <Icon v-if="s < currentStep || registered" name="heroicons:check-solid" class="step-check" />
-            <span v-else class="step-num">{{ s }}</span>
+    <main class="auth-main">
+      <div class="auth-card animate-fade-in-up">
+        <!-- Brand Header -->
+        <div class="brand-block">
+          <img src="/logo_lightmode.png" class="w-10 h-10 object-contain shrink-0" alt="Nahkoda AI Logo" />
+          <div class="brand-text">
+            <span class="brand-name">Nahkoda AI</span>
+            <span class="brand-sub">Business Copilot Merchant Platform</span>
           </div>
-          <span class="step-label">{{ s === 1 ? 'Data Akun' : 'Info Toko' }}</span>
         </div>
-        <div class="step-connector" :class="{ 'step-connector--done': currentStep > 1 || registered }"></div>
-      </div>
 
-      <!-- Messages -->
-      <Transition name="msg-slide">
-        <div v-if="errorMsg" class="error-banner" role="alert" aria-live="polite">
-          <Icon name="heroicons:exclamation-circle-solid" class="icon-msg" />
-          <span>{{ errorMsg }}</span>
-        </div>
-      </Transition>
-
-      <!-- ── SUCCESS STATE ── -->
-      <Transition name="msg-slide">
-        <div v-if="registered" class="success-state">
-          <div class="success-icon-wrap">
-            <div class="success-ring"></div>
-            <Icon name="heroicons:check-circle-solid" class="icon-success-big" />
-          </div>
-          <h2 class="success-title">Akun Berhasil Dibuat!</h2>
-          <p class="success-desc">Selamat bergabung di Warung Pintar. Silakan masuk dengan akun Anda.</p>
-          <NuxtLink to="/login" class="btn-goto-login" id="btn-goto-login">
-            <Icon name="heroicons:arrow-right-on-rectangle" class="icon-btn" />
-            <span>Masuk Sekarang</span>
-          </NuxtLink>
-        </div>
-      </Transition>
-
-      <!-- ── STEP 1: Data Akun ── -->
-      <Transition name="step-slide">
-        <form
-          v-if="!registered && currentStep === 1"
-          @submit.prevent="nextStep"
-          novalidate
-          class="reg-form"
-          key="step1"
-        >
-          <h2 class="form-section-title">Informasi Akun</h2>
-
-          <!-- Role Badge (Pedagang Only) -->
-          <div class="field-group">
-            <span class="field-label">Peran Akun</span>
-            <div class="role-card role-card--active" style="cursor: default;">
-              <Icon name="heroicons:building-storefront-solid" class="icon-role" />
-              <div class="flex-1">
-                <span class="role-name">Pedagang / Penjual</span>
-                <span class="role-desc">Pendaftaran akun khusus untuk Pemilik Toko & Pedagang</span>
-              </div>
-              <Icon name="heroicons:check-circle-solid" class="role-check" />
-            </div>
-          </div>
-
-          <!-- Name -->
-          <div class="field-group">
-            <label for="reg-name" class="field-label">Nama Lengkap <span class="required">*</span></label>
-            <div class="field-input-wrap">
-              <Icon name="heroicons:user" class="field-icon" aria-hidden="true" />
-              <input id="reg-name" v-model="form.name" type="text" required
-                autocomplete="name" placeholder="Budi Santoso"
-                class="field-input" />
-            </div>
-          </div>
-
-          <!-- Email -->
-          <div class="field-group">
-            <label for="reg-email" class="field-label">Email <span class="required">*</span></label>
-            <div class="field-input-wrap">
-              <Icon name="heroicons:envelope" class="field-icon" aria-hidden="true" />
-              <input id="reg-email" v-model="form.email" type="email" required
-                autocomplete="email" placeholder="budi@toko.com"
-                class="field-input" />
-            </div>
-          </div>
-
-          <!-- Password -->
-          <div class="field-group">
-            <label for="reg-password" class="field-label">Kata Sandi <span class="required">*</span></label>
-            <div class="field-input-wrap">
-              <Icon name="heroicons:lock-closed" class="field-icon" aria-hidden="true" />
-              <input id="reg-password" v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                autocomplete="new-password" required
-                placeholder="Minimal 8 karakter"
-                class="field-input field-input--pw" />
-              <button type="button" @click="showPassword = !showPassword" class="toggle-pw"
-                :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
-                <Icon :name="showPassword ? 'heroicons:eye-slash' : 'heroicons:eye'" class="icon-toggle" />
-              </button>
-            </div>
-            <!-- Password strength -->
-            <div class="pw-strength">
-              <div class="pw-bars">
-                <div class="pw-bar" :class="{ 'pw-bar--fill': form.password.length >= 8 }"></div>
-                <div class="pw-bar" :class="{ 'pw-bar--fill': form.password.length >= 10 && /[A-Z]/.test(form.password) }"></div>
-                <div class="pw-bar" :class="{ 'pw-bar--fill': form.password.length >= 12 && /[^a-zA-Z0-9]/.test(form.password) }"></div>
-              </div>
-              <span class="pw-hint">{{ form.password.length < 8 ? 'Min. 8 karakter' : 'Kata sandi valid' }}</span>
-            </div>
-          </div>
-
-          <!-- Phone -->
-          <div class="field-group">
-            <label for="reg-phone" class="field-label">Nomor Telepon <span class="required">*</span></label>
-            <div class="field-input-wrap">
-              <Icon name="heroicons:phone" class="field-icon" aria-hidden="true" />
-              <input id="reg-phone" v-model="form.phone_number" type="tel" required
-                autocomplete="tel" placeholder="08123456789"
-                class="field-input" />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            :disabled="!step1Valid"
-            class="btn-next"
-            id="btn-step1-next"
+        <!-- Step indicator -->
+        <div class="steps-indicator" aria-label="Progress pendaftaran">
+          <div
+            v-for="s in totalSteps"
+            :key="s"
+            class="step-item"
+            :class="{
+              'step-item--done': s < currentStep || registered,
+              'step-item--active': s === currentStep && !registered
+            }"
           >
-            <span>Lanjut ke Info Toko</span>
-            <Icon name="heroicons:arrow-right" class="icon-submit" />
-          </button>
-        </form>
-      </Transition>
+            <div class="step-dot">
+              <Icon v-if="s < currentStep || registered" name="heroicons:check-solid" class="step-check" />
+              <span v-else class="step-num">{{ s }}</span>
+            </div>
+            <span class="step-label">{{ s === 1 ? 'Data Akun' : 'Info Toko' }}</span>
+          </div>
+          <div class="step-connector" :class="{ 'step-connector--done': currentStep > 1 || registered }"></div>
+        </div>
 
-      <!-- ── STEP 2: Info Toko ── -->
-      <Transition name="step-slide">
-        <form
-          v-if="!registered && currentStep === 2"
-          @submit.prevent="handleRegister"
-          novalidate
-          class="reg-form"
-          key="step2"
-        >
-          <div class="form-section-header">
-            <button type="button" @click="prevStep" class="btn-back" aria-label="Kembali ke langkah sebelumnya">
-              <Icon name="heroicons:arrow-left" class="icon-back" />
+        <!-- Messages -->
+        <Transition name="msg-slide">
+          <div v-if="errorMsg" class="error-banner" role="alert" aria-live="polite">
+            <Icon name="heroicons:exclamation-circle-solid" class="icon-msg" />
+            <span>{{ errorMsg }}</span>
+          </div>
+        </Transition>
+
+        <!-- ── SUCCESS STATE ── -->
+        <Transition name="msg-slide">
+          <div v-if="registered" class="success-state">
+            <div class="success-icon-wrap">
+              <div class="success-ring"></div>
+              <Icon name="heroicons:check-circle-solid" class="icon-success-big" />
+            </div>
+            <h2 class="success-title">Akun Berhasil Dibuat!</h2>
+            <p class="success-desc">Selamat bergabung di Nahkoda AI. Silakan masuk dengan akun Anda.</p>
+            <NuxtLink to="/login" class="btn-goto-login" id="btn-goto-login">
+              <Icon name="heroicons:arrow-right-on-rectangle" class="icon-btn" />
+              <span>Masuk Sekarang</span>
+            </NuxtLink>
+          </div>
+        </Transition>
+
+        <!-- ── STEP 1: Data Akun ── -->
+        <Transition name="step-slide">
+          <form
+            v-if="!registered && currentStep === 1"
+            @submit.prevent="nextStep"
+            novalidate
+            class="reg-form"
+            key="step1"
+          >
+            <h2 class="form-section-title">Informasi Akun</h2>
+
+            <!-- Role Badge (Pedagang Only) -->
+            <div class="field-group">
+              <span class="field-label">Peran Akun</span>
+              <div class="role-card role-card--active" style="cursor: default;">
+                <Icon name="heroicons:building-storefront-solid" class="icon-role" />
+                <div class="flex-1">
+                  <span class="role-name">Pedagang / Penjual</span>
+                  <span class="role-desc">Pendaftaran akun khusus Pemilik Toko & Pedagang</span>
+                </div>
+                <Icon name="heroicons:check-circle-solid" class="role-check" />
+              </div>
+            </div>
+
+            <!-- Name -->
+            <div class="field-group">
+              <label for="reg-name" class="field-label">
+                Nama Lengkap <span class="required">*</span>
+              </label>
+              <div class="field-input-wrap">
+                <Icon name="heroicons:user" class="field-icon" aria-hidden="true" />
+                <input
+                  id="reg-name"
+                  v-model="form.name"
+                  type="text"
+                  required
+                  placeholder="Budi Santoso"
+                  class="field-input"
+                />
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="field-group">
+              <label for="reg-email" class="field-label">
+                Email Toko / Pemilik <span class="required">*</span>
+              </label>
+              <div class="field-input-wrap">
+                <Icon name="heroicons:envelope" class="field-icon" aria-hidden="true" />
+                <input
+                  id="reg-email"
+                  v-model="form.email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                  placeholder="budi@warungmakmur.com"
+                  class="field-input"
+                />
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="field-group">
+              <label for="reg-phone" class="field-label">
+                Nomor Telepon / WA <span class="required">*</span>
+              </label>
+              <div class="field-input-wrap">
+                <Icon name="heroicons:phone" class="field-icon" aria-hidden="true" />
+                <input
+                  id="reg-phone"
+                  v-model="form.phone_number"
+                  type="tel"
+                  autocomplete="tel"
+                  required
+                  placeholder="081234567890"
+                  class="field-input"
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="field-group">
+              <label for="reg-password" class="field-label">
+                Kata Sandi <span class="required">*</span>
+              </label>
+              <div class="field-input-wrap">
+                <Icon name="heroicons:lock-closed" class="field-icon" aria-hidden="true" />
+                <input
+                  id="reg-password"
+                  v-model="form.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  required
+                  placeholder="Minimal 8 karakter"
+                  class="field-input field-input--pw"
+                />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="toggle-pw"
+                  :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                >
+                  <Icon :name="showPassword ? 'heroicons:eye-slash' : 'heroicons:eye'" class="icon-toggle" />
+                </button>
+              </div>
+
+              <!-- Password strength bar -->
+              <div v-if="form.password" class="pw-strength">
+                <div class="pw-bars">
+                  <div
+                    v-for="b in 3"
+                    :key="b"
+                    class="pw-bar"
+                    :class="{
+                      'pw-bar--fill':
+                        (b === 1 && form.password.length >= 4) ||
+                        (b === 2 && form.password.length >= 8) ||
+                        (b === 3 && form.password.length >= 12 && /[A-Z]/.test(form.password))
+                    }"
+                  ></div>
+                </div>
+                <span class="pw-hint">
+                  {{
+                    form.password.length < 8
+                      ? 'Kurang kuat (min 8 char)'
+                      : form.password.length >= 12
+                      ? 'Kuat'
+                      : 'Cukup'
+                  }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Next Step Button -->
+            <button
+              type="submit"
+              :disabled="!step1Valid"
+              class="btn-next"
+              id="btn-reg-next"
+            >
+              <span>Lanjut: Informasi Toko</span>
+              <Icon name="heroicons:arrow-right" class="icon-submit" />
             </button>
-            <h2 class="form-section-title">Detail Toko</h2>
-          </div>
 
-          <!-- Store name -->
-          <div class="field-group">
-            <label for="reg-store" class="field-label">Nama Toko <span class="required">*</span></label>
-            <div class="field-input-wrap">
-              <Icon name="heroicons:building-storefront" class="field-icon" aria-hidden="true" />
-              <input id="reg-store" v-model="form.store_name" type="text" required
-                placeholder="Toko Kelontong Berkah"
-                class="field-input" />
-            </div>
-          </div>
+            <p class="login-prompt">
+              Sudah punya akun?
+              <NuxtLink to="/login" class="login-link">Masuk di sini</NuxtLink>
+            </p>
+          </form>
+        </Transition>
 
-          <!-- Store Category & Store Type -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="field-group">
-              <label for="reg-category" class="field-label">Kategori Toko</label>
-              <div class="field-input-wrap">
-                <Icon name="heroicons:tag" class="field-icon" aria-hidden="true" />
-                <select id="reg-category" v-model="form.category_store" class="field-input appearance-none">
-                  <option v-for="cat in storeCategories" :key="cat" :value="cat">{{ cat }}</option>
-                </select>
-                <Icon name="heroicons:chevron-down" class="field-icon-right" aria-hidden="true" />
-              </div>
-            </div>
-
-            <div class="field-group">
-              <label for="reg-type" class="field-label">Jenis Pedagang</label>
-              <div class="field-input-wrap">
-                <Icon name="heroicons:shopping-bag" class="field-icon" aria-hidden="true" />
-                <select id="reg-type" v-model="form.store_type" class="field-input appearance-none">
-                  <option v-for="st in storeTypes" :key="st" :value="st">{{ st }}</option>
-                </select>
-                <Icon name="heroicons:chevron-down" class="field-icon-right" aria-hidden="true" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Address -->
-          <div class="field-group">
-            <label for="reg-address" class="field-label">Alamat Lengkap <span class="required">*</span></label>
-            <textarea id="reg-address" v-model="form.address" required rows="2"
-              placeholder="Jl. Raya No. 8, Jakarta Selatan..."
-              class="field-textarea"></textarea>
-          </div>
-
-          <!-- GPS -->
-          <div class="field-group">
-            <div class="field-label-row">
-              <span class="field-label">Koordinat GPS</span>
-              <button type="button" @click="detectLocation" :disabled="detecting"
-                class="btn-locate"
-                :aria-label="detecting ? 'Mendeteksi lokasi...' : 'Deteksi lokasi otomatis'"
-                id="btn-detect-location">
-                <Icon :name="detecting ? 'heroicons:arrow-path' : 'heroicons:map-pin'"
-                  :class="['icon-locate', { 'animate-spin': detecting }]" />
-                <span>{{ detecting ? 'Mendeteksi...' : 'Deteksi otomatis' }}</span>
-              </button>
-            </div>
-            <div class="gps-inputs">
-              <div class="field-input-wrap">
-                <input v-model.number="form.latitude" type="number" step="0.000001"
-                  placeholder="Garis Lintang (Latitude)" class="field-input field-input--sm" aria-label="Garis Lintang" />
-              </div>
-              <div class="field-input-wrap">
-                <input v-model.number="form.longitude" type="number" step="0.000001"
-                  placeholder="Garis Bujur (Longitude)" class="field-input field-input--sm" aria-label="Garis Bujur" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div class="field-group">
-            <label for="reg-desc" class="field-label">Deskripsi Toko <span class="optional">(Opsional)</span></label>
-            <textarea id="reg-desc" v-model="form.description" rows="2"
-              placeholder="Menyediakan aneka sembako dan kebutuhan harian..."
-              class="field-textarea"></textarea>
-          </div>
-
-          <button
-            type="submit"
-            :disabled="loading || !step2Valid"
-            class="btn-submit"
-            :class="{ 'btn-submit--loading': loading }"
-            id="btn-register-submit"
+        <!-- ── STEP 2: Informasi Toko ── -->
+        <Transition name="step-slide">
+          <form
+            v-if="!registered && currentStep === 2"
+            @submit.prevent="handleRegister"
+            novalidate
+            class="reg-form"
+            key="step2"
           >
-            <span v-if="loading" class="spinner" aria-hidden="true"></span>
-            <Icon v-else name="heroicons:user-plus-solid" class="icon-submit" aria-hidden="true" />
-            <span>{{ loading ? 'Membuat akun...' : 'Buat Akun Sekarang' }}</span>
-          </button>
-        </form>
-      </Transition>
+            <div class="form-section-header">
+              <button type="button" @click="prevStep" class="btn-back" aria-label="Kembali ke langkah 1">
+                <Icon name="heroicons:arrow-left" class="icon-back" />
+              </button>
+              <h2 class="form-section-title">Informasi Toko / Usaha</h2>
+            </div>
 
-      <!-- Register link -->
-      <p v-if="!registered" class="login-prompt">
-        Sudah punya akun?
-        <NuxtLink to="/login" class="login-link">Masuk di sini</NuxtLink>
-      </p>
-    </div>
+            <!-- Store Name -->
+            <div class="field-group">
+              <label for="reg-store-name" class="field-label">
+                Nama Toko / Usaha <span class="required">*</span>
+              </label>
+              <div class="field-input-wrap">
+                <Icon name="heroicons:building-storefront" class="field-icon" aria-hidden="true" />
+                <input
+                  id="reg-store-name"
+                  v-model="form.store_name"
+                  type="text"
+                  required
+                  placeholder="Warung Sembako Makmur"
+                  class="field-input"
+                />
+              </div>
+            </div>
+
+            <!-- Store Type & Category row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="field-group">
+                <label for="reg-store-type" class="field-label">Tipe Usaha</label>
+                <select id="reg-store-type" v-model="form.store_type" class="field-input field-input--sm">
+                  <option v-for="t in storeTypes" :key="t" :value="t">{{ t }}</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="reg-category" class="field-label">Kategori Produk</label>
+                <select id="reg-category" v-model="form.category_store" class="field-input field-input--sm">
+                  <option v-for="c in storeCategories" :key="c" :value="c">{{ c }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Address -->
+            <div class="field-group">
+              <label for="reg-address" class="field-label">
+                Alamat Toko <span class="required">*</span>
+              </label>
+              <textarea
+                id="reg-address"
+                v-model="form.address"
+                rows="2"
+                required
+                placeholder="Jl. Merdeka No. 12, Kel. Menteng, Jakarta Pusat"
+                class="field-textarea"
+              ></textarea>
+            </div>
+
+            <!-- Location Coordinates (GPS) -->
+            <div class="field-group">
+              <div class="field-label-row">
+                <span class="field-label">Koordinat Lokasi (GPS) <span class="optional">(opsional)</span></span>
+                <button
+                  type="button"
+                  @click="detectLocation"
+                  :disabled="detecting"
+                  class="btn-locate"
+                >
+                  <Icon :name="detecting ? 'heroicons:arrow-path' : 'heroicons:map-pin'" class="icon-locate" :class="{ 'animate-spin': detecting }" />
+                  <span>{{ detecting ? 'Mendeteksi...' : 'Deteksi Lokasi Saya' }}</span>
+                </button>
+              </div>
+              <div class="gps-inputs">
+                <input
+                  v-model.number="form.latitude"
+                  type="number"
+                  step="any"
+                  placeholder="Latitude (-6.2000)"
+                  class="field-input field-input--sm"
+                />
+                <input
+                  v-model.number="form.longitude"
+                  type="number"
+                  step="any"
+                  placeholder="Longitude (106.8166)"
+                  class="field-input field-input--sm"
+                />
+              </div>
+            </div>
+
+            <!-- Description (Optional) -->
+            <div class="field-group">
+              <label for="reg-desc" class="field-label">
+                Deskripsi Toko <span class="optional">(opsional)</span>
+              </label>
+              <input
+                id="reg-desc"
+                v-model="form.description"
+                type="text"
+                placeholder="Menjual sembako murah, beras, minyak goreng..."
+                class="field-input field-input--sm"
+              />
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              :disabled="loading || !step2Valid"
+              class="btn-submit"
+              id="btn-reg-submit"
+            >
+              <span v-if="loading" class="spinner" aria-hidden="true"></span>
+              <Icon v-else name="heroicons:check-circle" class="icon-submit" aria-hidden="true" />
+              <span>{{ loading ? 'Mendaftarkan Akun...' : 'Daftarkan Akun Merchant' }}</span>
+            </button>
+          </form>
+        </Transition>
+      </div>
+    </main>
 
     <!-- Footer -->
     <footer class="auth-footer">
-      <p>© 2026 Warung Pintar · Platform UMKM Digital</p>
+      <p>© 2026 Nahkoda AI · Business Copilot Merchant Platform</p>
     </footer>
   </div>
 </template>
 
 <style scoped>
-/* ── Root ── */
+/* ── Root Clean White Theme ── */
 .auth-root {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  background: #060C14;
-  position: relative;
-  overflow: hidden;
+  background: #FFFFFF;
+  color: #0F1A2E;
   font-family: 'Inter', 'Fira Sans', system-ui, sans-serif;
 }
 
-/* ── Ambient background ── */
-.ambient-layer {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+/* ── Top Navbar ── */
+.auth-nav {
+  width: 100%;
+  border-bottom: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  padding: 1rem 0;
 }
-.ambient-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.3;
+.nav-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-.orb-1 {
-  width: 500px; height: 500px;
-  top: -200px; left: -120px;
-  background: radial-gradient(circle, #B8922E 0%, transparent 70%);
-  animation: orb-drift-1 14s ease-in-out infinite alternate;
+.brand-block-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
 }
-.orb-2 {
-  width: 350px; height: 350px;
-  bottom: -100px; right: -60px;
-  background: radial-gradient(circle, #1A3A5C 0%, transparent 70%);
-  animation: orb-drift-2 11s ease-in-out infinite alternate;
+.brand-text-nav {
+  display: flex;
+  flex-direction: column;
 }
-.orb-3 {
-  width: 250px; height: 250px;
-  top: 40%; right: 10%;
-  background: radial-gradient(circle, #0D2B1A 0%, transparent 70%);
-  opacity: 0.2;
+.brand-name-nav {
+  font-weight: 800;
+  font-size: 1.125rem;
+  color: #0F1A2E;
+  line-height: 1;
 }
-.ambient-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(212,168,67,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(212,168,67,0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
+.brand-tag-nav {
+  font-size: 0.7rem;
+  color: #B8922E;
+  font-weight: 600;
 }
-@keyframes orb-drift-1 {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(25px, 15px) scale(1.04); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
-@keyframes orb-drift-2 {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(-15px, -25px) scale(1.06); }
+.nav-item {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav-item:hover {
+  color: #B8922E;
 }
 
-/* ── Card ── */
+/* ── Main Layout ── */
+.auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+/* ── Card White Style ── */
 .auth-card {
-  position: relative;
-  z-index: 1;
   width: 100%;
-  max-width: 480px;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(212, 168, 67, 0.15);
+  max-width: 500px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 20px;
   padding: 2.25rem 2rem;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.04) inset,
-    0 24px 64px rgba(0,0,0,0.55),
-    0 0 80px rgba(184,146,46,0.06);
+  box-shadow: 0 10px 30px -5px rgba(15, 26, 46, 0.08), 0 0 1px rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
 
-/* ── Brand ── */
+/* ── Brand Card Header ── */
 .brand-block {
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  margin-bottom: 1.625rem;
+  margin-bottom: 1.5rem;
 }
-.brand-icon {
-  width: 44px; height: 44px;
-  border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #D4A843 0%, #B8922E 100%);
-  box-shadow: 0 4px 14px rgba(212,168,67,0.35);
-  flex-shrink: 0;
-}
-.icon-brand { width: 22px; height: 22px; color: white; }
-.brand-name { display: block; font-size: 1.0625rem; font-weight: 700; color: #F1F5F9; letter-spacing: -0.02em; line-height: 1.2; }
-.brand-sub  { display: block; font-size: 0.7rem; font-weight: 500; color: #94A3B8; margin-top: 2px; }
+.brand-name { display: block; font-size: 1.125rem; font-weight: 800; color: #0F1A2E; line-height: 1.2; }
+.brand-sub  { display: block; font-size: 0.75rem; font-weight: 500; color: #64748B; margin-top: 2px; }
 
 /* ── Steps ── */
 .steps-indicator {
@@ -549,14 +615,14 @@ const handleRegister = async () => {
 .step-connector {
   flex: 1;
   height: 2px;
-  background: rgba(100,116,139,0.25);
+  background: #E2E8F0;
   margin: 0 0.75rem;
   border-radius: 1px;
   transition: background 0.3s;
   position: relative;
   top: -10px;
 }
-.step-connector--done { background: #D4A843; }
+.step-connector--done { background: #B8922E; }
 .step-item {
   display: flex;
   flex-direction: column;
@@ -566,111 +632,50 @@ const handleRegister = async () => {
 .step-dot {
   width: 30px; height: 30px;
   border-radius: 50%;
-  border: 2px solid rgba(100,116,139,0.35);
+  border: 2px solid #CBD5E1;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
   color: #64748B;
-  background: rgba(15,23,42,0.6);
+  background: #F8FAFC;
   transition: all 0.25s;
 }
 .step-item--active .step-dot {
-  border-color: #D4A843;
-  color: #D4A843;
-  background: rgba(212,168,67,0.1);
-  box-shadow: 0 0 0 3px rgba(212,168,67,0.15);
+  border-color: #B8922E;
+  color: #B8922E;
+  background: rgba(184,146,46,0.1);
 }
 .step-item--done .step-dot {
-  border-color: #D4A843;
-  background: #D4A843;
-  color: #0F1A2E;
+  border-color: #B8922E;
+  background: #B8922E;
+  color: #FFFFFF;
 }
 .step-check { width: 14px; height: 14px; }
 .step-num { font-size: 0.75rem; font-weight: 700; }
-.step-label { font-size: 0.65rem; font-weight: 600; color: #475569; text-align: center; letter-spacing: 0.03em; white-space: nowrap; }
-.step-item--active .step-label { color: #D4A843; }
-.step-item--done .step-label { color: #94A3B8; }
+.step-label { font-size: 0.7rem; font-weight: 600; color: #64748B; text-align: center; white-space: nowrap; }
+.step-item--active .step-label { color: #B8922E; font-weight: 700; }
+.step-item--done .step-label { color: #0F1A2E; }
 
 /* ── Messages ── */
 .error-banner {
   display: flex; align-items: flex-start; gap: 0.625rem;
   padding: 0.875rem 1rem;
   border-radius: 10px;
-  background: rgba(220,38,38,0.12);
-  border: 1px solid rgba(220,38,38,0.3);
-  color: #FCA5A5;
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
   font-size: 0.8125rem;
   line-height: 1.5;
   margin-bottom: 1.25rem;
 }
 .icon-msg { width: 17px; height: 17px; flex-shrink: 0; margin-top: 1px; }
 
-.msg-slide-enter-active { animation: slide-in 0.25s ease-out; }
-.msg-slide-leave-active { animation: slide-out 0.2s ease-in; }
-@keyframes slide-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slide-out { from { opacity: 1; } to { opacity: 0; } }
-
-/* ── Success state ── */
-.success-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 1.5rem 0 0.5rem;
-  gap: 0.75rem;
-}
-.success-icon-wrap {
-  position: relative;
-  width: 72px; height: 72px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 0.5rem;
-}
-.success-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid #D4A843;
-  animation: success-ring 0.6s cubic-bezier(0.16,1,0.3,1) both;
-}
-@keyframes success-ring {
-  from { transform: scale(0.5); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-.icon-success-big {
-  width: 44px; height: 44px;
-  color: #D4A843;
-  animation: pop-in 0.4s 0.15s cubic-bezier(0.16,1,0.3,1) both;
-}
-@keyframes pop-in {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-.success-title { font-size: 1.375rem; font-weight: 700; color: #F1F5F9; letter-spacing: -0.02em; margin: 0; }
-.success-desc  { font-size: 0.875rem; color: #64748B; margin: 0; line-height: 1.6; max-width: 280px; }
-.btn-goto-login {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  margin-top: 0.75rem;
-  padding: 0.8rem 1.75rem;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #D4A843 0%, #B8922E 100%);
-  color: #0F1A2E;
-  font-size: 0.9rem;
-  font-weight: 700;
-  font-family: inherit;
-  text-decoration: none;
-  box-shadow: 0 4px 16px rgba(212,168,67,0.3);
-  transition: opacity 0.15s, transform 0.15s;
-}
-.btn-goto-login:hover { opacity: 0.9; transform: translateY(-1px); }
-
 /* ── Form & Fields ── */
 .reg-form { display: flex; flex-direction: column; gap: 1rem; }
 .form-section-title {
   font-size: 1rem;
-  font-weight: 700;
-  color: #E2E8F0;
+  font-weight: 800;
+  color: #0F1A2E;
   margin: 0 0 0.25rem;
   letter-spacing: -0.02em;
 }
@@ -681,117 +686,92 @@ const handleRegister = async () => {
   margin-bottom: 0;
 }
 .btn-back {
-  background: rgba(30,41,59,0.7);
-  border: 1px solid rgba(100,116,139,0.2);
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
   border-radius: 8px;
   padding: 0.5rem;
-  color: #94A3B8;
+  color: #475569;
   cursor: pointer;
   display: flex; align-items: center;
-  transition: all 0.15s;
 }
-.btn-back:hover { border-color: rgba(212,168,67,0.4); color: #D4A843; }
+.btn-back:hover { border-color: #B8922E; color: #B8922E; }
 .icon-back { width: 16px; height: 16px; }
 
 .field-group { display: flex; flex-direction: column; gap: 0.4375rem; }
-.field-label { font-size: 0.7rem; font-weight: 600; color: #94A3B8; letter-spacing: 0.06em; text-transform: uppercase; }
-.required { color: #D4A843; margin-left: 2px; }
-.optional { color: #475569; font-size: 0.65rem; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.field-label { font-size: 0.75rem; font-weight: 700; color: #475569; letter-spacing: 0.04em; text-transform: uppercase; }
+.required { color: #DC2626; margin-left: 2px; }
+.optional { color: #94A3B8; font-size: 0.7rem; font-weight: 400; text-transform: none; }
 .field-label-row { display: flex; justify-content: space-between; align-items: center; }
 .field-input-wrap { position: relative; }
 .field-icon {
   position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 16px; color: #475569; pointer-events: none;
-}
-.field-icon-right {
-  position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 16px; color: #475569; pointer-events: none;
+  width: 17px; height: 17px; color: #94A3B8; pointer-events: none;
 }
 .field-input {
   width: 100%;
-  background: rgba(30, 41, 59, 0.65);
-  border: 1px solid rgba(100,116,139,0.22);
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
   border-radius: 9px;
   padding: 0.7rem 1rem 0.7rem 2.625rem;
-  color: #F1F5F9;
+  color: #0F1A2E;
   font-size: 0.875rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
 }
-.field-input::placeholder { color: #475569; }
+.field-input::placeholder { color: #94A3B8; }
 .field-input:focus {
-  border-color: rgba(212,168,67,0.45);
-  background: rgba(30, 41, 59, 0.9);
-  box-shadow: 0 0 0 3px rgba(212,168,67,0.08);
+  border-color: #B8922E;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(184,146,46,0.15);
 }
 .field-input--pw { padding-right: 2.625rem; }
-.field-input--sm { padding-left: 1rem; font-size: 0.8rem; }
+.field-input--sm { padding-left: 1rem; font-size: 0.85rem; }
 .field-textarea {
   width: 100%;
-  background: rgba(30, 41, 59, 0.65);
-  border: 1px solid rgba(100,116,139,0.22);
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
   border-radius: 9px;
   padding: 0.7rem 1rem;
-  color: #F1F5F9;
+  color: #0F1A2E;
   font-size: 0.875rem;
   font-family: inherit;
   outline: none;
   resize: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
 }
-.field-textarea::placeholder { color: #475569; }
+.field-textarea::placeholder { color: #94A3B8; }
 .field-textarea:focus {
-  border-color: rgba(212,168,67,0.45);
-  box-shadow: 0 0 0 3px rgba(212,168,67,0.08);
+  border-color: #B8922E;
+  box-shadow: 0 0 0 3px rgba(184,146,46,0.15);
 }
 .toggle-pw {
   position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
-  background: none; border: none; padding: 0.25rem; color: #475569;
-  cursor: pointer; transition: color 0.15s; display: flex; align-items: center;
-  border-radius: 4px;
+  background: none; border: none; padding: 0.25rem; color: #94A3B8;
+  cursor: pointer; display: flex; align-items: center;
 }
-.toggle-pw:hover { color: #94A3B8; }
-.toggle-pw:focus-visible { outline: 2px solid #D4A843; outline-offset: 2px; }
+.toggle-pw:hover { color: #475569; }
 .icon-toggle { width: 16px; height: 16px; }
 
-/* ── Password strength ── */
-.pw-strength { display: flex; align-items: center; gap: 0.625rem; margin-top: 0.375rem; }
-.pw-bars { display: flex; gap: 3px; }
-.pw-bar {
-  width: 28px; height: 3px;
-  border-radius: 2px;
-  background: rgba(100,116,139,0.25);
-  transition: background 0.25s;
-}
-.pw-bar--fill { background: #D4A843; }
-.pw-hint { font-size: 0.68rem; color: #64748B; }
-
-/* ── Role picker ── */
-.role-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+/* ── Role card ── */
 .role-card {
   position: relative;
-  display: flex; flex-direction: column; align-items: flex-start;
-  gap: 2px;
+  display: flex; align-items: center;
+  gap: 0.75rem;
   padding: 0.875rem 1rem;
   border-radius: 10px;
-  border: 1px solid rgba(100,116,139,0.22);
-  background: rgba(30,41,59,0.5);
-  cursor: pointer;
-  transition: all 0.2s;
+  border: 1px solid #CBD5E1;
+  background: #F8FAFC;
 }
-.role-card:hover { border-color: rgba(212,168,67,0.3); background: rgba(30,41,59,0.7); }
 .role-card--active {
-  border-color: rgba(212,168,67,0.5);
-  background: rgba(212,168,67,0.08);
+  border-color: #B8922E;
+  background: rgba(184,146,46,0.06);
 }
-.icon-role { width: 20px; height: 20px; color: #64748B; margin-bottom: 4px; }
-.role-card--active .icon-role { color: #D4A843; }
-.role-name { font-size: 0.8125rem; font-weight: 700; color: #CBD5E1; }
-.role-desc  { font-size: 0.68rem; color: #64748B; }
-.role-check { position: absolute; top: 0.625rem; right: 0.625rem; width: 16px; height: 16px; color: #D4A843; }
+.icon-role { width: 22px; height: 22px; color: #B8922E; flex-shrink: 0; }
+.role-name { font-size: 0.875rem; font-weight: 700; color: #0F1A2E; display: block; }
+.role-desc  { font-size: 0.72rem; color: #64748B; display: block; }
+.role-check { width: 18px; height: 18px; color: #B8922E; flex-shrink: 0; }
 
 /* ── GPS inputs ── */
 .gps-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
@@ -799,16 +779,13 @@ const handleRegister = async () => {
   display: flex; align-items: center; gap: 0.375rem;
   padding: 0.3rem 0.75rem;
   border-radius: 7px;
-  border: 1px solid rgba(212,168,67,0.3);
-  background: rgba(212,168,67,0.08);
-  color: #D4A843;
-  font-size: 0.7rem; font-weight: 600; font-family: inherit;
+  border: 1px solid #B8922E;
+  background: rgba(184,146,46,0.08);
+  color: #B8922E;
+  font-size: 0.72rem; font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
 }
-.btn-locate:hover:not(:disabled) { background: rgba(212,168,67,0.15); }
-.btn-locate:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-locate:hover:not(:disabled) { background: rgba(184,146,46,0.15); }
 .icon-locate { width: 13px; height: 13px; }
 
 /* ── Buttons ── */
@@ -818,59 +795,39 @@ const handleRegister = async () => {
   padding: 0.825rem 1.5rem;
   border: none; border-radius: 10px;
   font-size: 0.875rem; font-weight: 700; font-family: inherit;
-  cursor: pointer; transition: all 0.2s;
+  cursor: pointer; transition: all 0.15s;
   background: linear-gradient(135deg, #D4A843 0%, #B8922E 100%);
-  color: #0F1A2E;
-  box-shadow: 0 4px 16px rgba(212,168,67,0.28);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(184,146,46,0.3);
   margin-top: 0.25rem;
-  position: relative;
 }
-.btn-next:disabled, .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
-.btn-next:not(:disabled):hover, .btn-submit:not(:disabled):hover { opacity: 0.92; transform: translateY(-1px); }
-.btn-next:not(:disabled):active, .btn-submit:not(:disabled):active { transform: scale(0.985); }
+.btn-next:disabled, .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+.btn-next:not(:disabled):hover, .btn-submit:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(184,146,46,0.4); }
+
 .icon-submit { width: 17px; height: 17px; }
 
-.spinner {
-  display: inline-block; width: 16px; height: 16px;
-  border: 2.5px solid rgba(15,26,46,0.3); border-top-color: #0F1A2E;
-  border-radius: 50%; animation: spin 0.65s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Step transition ── */
-.step-slide-enter-active { animation: step-in 0.3s cubic-bezier(0.16,1,0.3,1) both; }
-.step-slide-leave-active { animation: step-out 0.2s ease-in both; position: absolute; width: 100%; }
-@keyframes step-in { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes step-out { from { opacity: 1; } to { opacity: 0; } }
-
 /* ── Login prompt ── */
-.login-prompt { text-align: center; font-size: 0.8125rem; color: #64748B; margin: 1.25rem 0 0; }
-.login-link { color: #D4A843; font-weight: 700; text-decoration: none; margin-left: 0.25rem; transition: color 0.15s; }
-.login-link:hover { color: #E8C46A; }
+.login-prompt { text-align: center; font-size: 0.875rem; color: #64748B; margin: 1.25rem 0 0; }
+.login-link { color: #B8922E; font-weight: 700; text-decoration: none; margin-left: 0.25rem; }
+.login-link:hover { color: #8C6D1F; }
 
 /* ── Footer ── */
 .auth-footer {
-  position: relative; z-index: 1; margin-top: 1.5rem;
-  text-align: center; color: #1E293B; font-size: 0.68rem;
+  border-top: 1px solid #F1F5F9;
+  padding: 1.25rem;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 0.75rem;
 }
 
-/* ── Enter animation ── */
-.animate-fade-in-up { animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(22px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Responsive ── */
-@media (max-width: 520px) {
-  .auth-card { padding: 1.75rem 1.25rem; }
-  .role-picker { grid-template-columns: 1fr 1fr; }
-  .gps-inputs { grid-template-columns: 1fr 1fr; }
-}
-
-/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in-up, .orb-1, .orb-2, .orb-3 { animation: none; }
-  .btn-next, .btn-submit, .btn-locate, .field-input, .role-card { transition: none; }
+  .animate-fade-in-up { animation: none; }
+  .btn-next, .btn-submit, .field-input { transition: none; }
 }
 </style>

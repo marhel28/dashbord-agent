@@ -130,7 +130,7 @@ export const useAuth = () => {
       }
       token.value = null
       user.value = null
-      navigateTo('/login')
+      navigateTo('/')
     }
   }
 

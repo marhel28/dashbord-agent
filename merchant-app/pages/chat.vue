@@ -12,7 +12,7 @@
           <!-- Agent Avatar (animated) -->
           <AgentAvatar :state="agentState" :is-speaking="isSpeaking" :show-label="false" />
           <div>
-            <h2 class="text-sm font-black tracking-tight" style="color: var(--wp-navy);">Nahkoeda AI</h2>
+            <h2 class="text-sm font-black tracking-tight" style="color: var(--wp-navy);">Nahkoda AI Business Copilot</h2>
             <p class="text-[10px] font-bold" style="color: var(--wp-text-secondary);">
               {{ voiceMode ? '🎙️ Mode Suara' : '📝 Mode Teks' }}
             </p>

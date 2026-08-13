@@ -6,7 +6,7 @@
       :style="{ height: 'calc(var(--wp-bottom-nav-height) + var(--wp-safe-area-bottom))', paddingBottom: 'var(--wp-safe-area-bottom)' }"
     >
       <!-- 1. Beranda (Dashboard) -->
-      <NuxtLink to="/" exact-active-class="mobile-nav-active" class="mobile-nav-link">
+      <NuxtLink to="/dashboard" exact-active-class="mobile-nav-active" class="mobile-nav-link">
         <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
         <span class="mobile-nav-label">Beranda</span>
       </NuxtLink>
