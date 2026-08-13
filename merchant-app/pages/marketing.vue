@@ -57,23 +57,6 @@
     <!-- ═══ MAIN CONTENT ═══ -->
     <template v-else>
 
-      <!-- ═══ 1. KPI STRIP ═══ -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
-        <div v-for="(kpi, i) in displayKpis" :key="i"
-             class="bg-white border rounded-xl p-4 shadow-sm transition hover:shadow-md"
-             style="border-color: var(--wp-border);">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ kpi.label }}</span>
-            <div class="w-7 h-7 rounded-lg flex items-center justify-center" :style="{ background: kpi.color + '18' }">
-              <Icon :name="kpi.icon || 'heroicons:chart-bar'" class="w-3.5 h-3.5" :style="{ color: kpi.color }" />
-            </div>
-          </div>
-          <p class="text-xl font-black tracking-tight leading-none" style="color: var(--wp-text); font-variant-numeric: tabular-nums;">
-            {{ kpi.value }}
-          </p>
-        </div>
-      </div>
-
       <!-- ═══ 2. PRODUK REKOMENDASI AI ═══ -->
       <div class="bg-white border-2 rounded-xl shadow-sm"
            style="border-color: var(--wp-gold);">
@@ -86,8 +69,8 @@
               <Icon name="heroicons:fire" class="w-4.5 h-4.5 text-white" />
             </div>
             <div>
-              <h2 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-navy);">Rekomendasi Produk AI</h2>
-              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">Berdasarkan penjualan, stok, margin & tren pasar</p>
+              <h2 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-navy);">Saran Produk Pilihan</h2>
+              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">Produk potensial yang paling pas untuk dipromosikan hari ini agar penjualan makin laris</p>
             </div>
           </div>
           <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full"
