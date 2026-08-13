@@ -35,10 +35,10 @@
   --wp-shadow-lg:   0 8px 30px rgba(15, 26, 46, 0.10);
 
   /* ── Z-index scale ── */
-  --wp-z-dropdown:  100;
-  --wp-z-sticky:    200;
-  --wp-z-modal:     300;
-  --wp-z-toast:     400;
+  --wp-z-dropdown:  10;
+  --wp-z-sticky:    20;
+  --wp-z-modal:     50;
+  --wp-z-toast:     100;
 
   /* ── Mobile-native tokens ── */
   --wp-touch-target: 44px;

@@ -3,7 +3,7 @@
   <Transition name="fade">
     <div
       v-if="isOpen"
-      class="fixed inset-0 z-[var(--wp-z-modal)] bg-black/40"
+      class="fixed inset-0 z-50 bg-slate-900/60"
       @click="$emit('close')"
     ></div>
   </Transition>
@@ -12,7 +12,7 @@
   <Transition name="slide">
     <div
       v-if="isOpen"
-      class="fixed z-[var(--wp-z-modal)] flex flex-col"
+      class="fixed z-50 flex flex-col"
       :class="isMobile ? 'bottom-0 left-0 right-0 max-h-[70vh] rounded-t-2xl' : 'top-0 right-0 bottom-0 w-[380px] border-l border-[var(--wp-border)]'"
       style="background: white;"
     >

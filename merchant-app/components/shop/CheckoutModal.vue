@@ -1,6 +1,6 @@
 <template>
   <!-- Backdrop -->
-  <div class="fixed inset-0 z-[var(--wp-z-modal)] bg-black/50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in-up">
       <!-- State: Form -->
       <div v-if="state === 'form'" class="p-5">

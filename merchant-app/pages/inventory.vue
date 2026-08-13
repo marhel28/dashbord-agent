@@ -303,8 +303,7 @@
     <Teleport to="body">
       <div
         v-if="showModal"
-        class="fixed inset-0 z-[var(--wp-z-modal)] flex items-end md:items-center justify-center p-0 md:p-4 md:py-8 transition-opacity"
-        style="background: rgba(15,26,46,0.5);"
+        class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 md:py-8 bg-slate-900/60 backdrop-blur-xs transition-opacity"
         @click.self="closeModal"
       >
         <div class="bg-white shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-fade-in-up border-t md:border rounded-t-2xl md:rounded-none overflow-hidden" style="border-color: var(--wp-navy);">
@@ -545,8 +544,7 @@
     <Teleport to="body">
       <div
         v-if="showDeleteConfirm"
-        class="fixed inset-0 z-[var(--wp-z-modal)] flex items-center justify-center px-4"
-        style="background: rgba(15,26,46,0.5);"
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-xs"
         @click.self="showDeleteConfirm = false"
       >
         <div class="bg-white p-6 max-w-sm w-full animate-fade-in-up text-center border" style="border-color: var(--wp-navy); border-radius: 0px;">
@@ -614,8 +612,7 @@
     <Teleport to="body">
       <div
         v-if="showBatchDeleteConfirm"
-        class="fixed inset-0 z-50 flex items-center justify-center px-4"
-        style="background: rgba(15,26,46,0.5);"
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-xs"
         @click.self="showBatchDeleteConfirm = false"
       >
         <div class="bg-white p-6 max-w-sm w-full animate-fade-in-up text-center border" style="border-color: var(--wp-navy); border-radius: 0px;">

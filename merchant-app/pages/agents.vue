@@ -141,8 +141,7 @@
     <Teleport to="body">
       <div
         v-if="modalAgent"
-        class="fixed inset-0 z-[var(--wp-z-modal)] flex items-center justify-center px-4"
-        style="background: rgba(15,26,46,0.4); backdrop-filter: blur(4px);"
+        class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-xs"
         @click.self="modalAgent = null"
       >
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col animate-fade-in-up" style="border: 1px solid var(--wp-border);">

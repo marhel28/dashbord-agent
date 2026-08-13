@@ -7,9 +7,17 @@
         v-model="searchQuery"
         type="text"
         placeholder="Cari produk..."
-        class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-[var(--wp-border)] text-sm focus:outline-none focus:border-[var(--wp-gold)] transition"
+        class="w-full pl-10 pr-10 py-2.5 rounded-lg border border-[var(--wp-border)] text-sm focus:outline-none focus:border-[var(--wp-gold)] transition"
         style="background: white; color: var(--wp-text);"
       />
+      <button
+        v-if="searchQuery"
+        @click="searchQuery = ''"
+        class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+        aria-label="Hapus pencarian"
+      >
+        <Icon name="heroicons:x-mark" class="w-4 h-4" />
+      </button>
     </div>
 
     <!-- Category Chips -->
@@ -71,9 +79,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import type { PublicProduct } from '~/composables/usePublicApi'
-import { publicApi } from '~/composables/usePublicApi'
 import ProductCard from './ProductCard.vue'
 
 const props = defineProps<{
@@ -88,8 +95,6 @@ defineEmits<{
 
 const searchQuery = ref('')
 const selectedCategory = ref('')
-const searchResults = ref<PublicProduct[]>([])
-const searching = ref(false)
 
 // Derive categories from products
 const categories = computed(() => {
@@ -100,36 +105,50 @@ const categories = computed(() => {
   return Array.from(cats).sort()
 })
 
-// Filter products by category and search
-const displayProducts = computed(() => {
-  if (searchQuery.value.trim() && searchResults.value.length > 0) {
-    return searchResults.value
-  }
-  if (selectedCategory.value) {
-    return props.products.filter(p => p.category === selectedCategory.value)
-  }
-  return props.products
-})
-
-// Debounced search
-let searchTimer: ReturnType<typeof setTimeout> | null = null
-watch(searchQuery, (val) => {
-  if (searchTimer) clearTimeout(searchTimer)
-  if (!val.trim()) {
-    searchResults.value = []
-    return
-  }
-  searchTimer = setTimeout(async () => {
-    searching.value = true
-    try {
-      const results = await publicApi.searchProducts(props.merchantUuid, val.trim())
-      searchResults.value = results
-    } catch {
-      searchResults.value = []
-    } finally {
-      searching.value = false
+// Client-side relevance scoring (AND semantics, field-weighted)
+function scoreProduct(product: PublicProduct, words: string[]): number {
+  const name = product.product_name.toLowerCase()
+  const cat = (product.category ?? '').toLowerCase()
+  const desc = (product.description ?? '').toLowerCase()
+  const unit = product.unit.toLowerCase()
+  let total = 0
+  for (const w of words) {
+    let ws = 0
+    if (name.includes(w)) {
+      ws = 10
+      if (name.startsWith(w)) ws += 3
+    } else if (cat.includes(w)) {
+      ws = 4
+    } else if (desc.includes(w)) {
+      ws = 2
+    } else if (unit.includes(w)) {
+      ws = 1
+    } else {
+      return 0 // AND semantics: one word misses → exclude
     }
-  }, 400)
+    total += ws
+  }
+  return total
+}
+
+// Combine category + search filters (intersection, not either/or)
+const displayProducts = computed(() => {
+  let pool = props.products
+
+  // Category filter first (narrows the pool)
+  if (selectedCategory.value) {
+    pool = pool.filter(p => p.category === selectedCategory.value)
+  }
+
+  // Search filter over the (already category-filtered) pool
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return pool
+  const words = q.split(/\s+/).filter(Boolean)
+  return pool
+    .map(p => ({ p, s: scoreProduct(p, words) }))
+    .filter(x => x.s > 0)
+    .sort((a, b) => b.s - a.s)
+    .map(x => x.p)
 })
 </script>
 

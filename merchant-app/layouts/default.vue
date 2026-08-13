@@ -210,7 +210,7 @@
       ref="telegramButton"
       @mousedown="startDrag"
       @touchstart="startDrag"
-      class="fixed z-[999] flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group cursor-move select-none bottom-20 md:bottom-6"
+      class="fixed z-40 flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group cursor-move select-none bottom-20 md:bottom-6"
       :style="{
         borderRadius: '9999px',
         boxShadow: '0 4px 16px rgba(38, 165, 228, 0.4)',

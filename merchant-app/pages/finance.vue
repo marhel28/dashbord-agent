@@ -112,40 +112,42 @@
     </template>
 
     <!-- Modal Catat Pengeluaran: desktop centered dialog (>= 768px) -->
-    <div v-if="showExpenseModal" class="fixed inset-0 z-50 hidden md:flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-      <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden animate-fade-in-up">
-        <div class="px-5 py-4 border-b flex justify-between items-center" style="border-color: var(--wp-border);">
-          <h3 class="font-bold text-sm" style="color: var(--wp-navy);">Catat Pengeluaran</h3>
-          <button @click="showExpenseModal = false" class="text-slate-400 hover:text-slate-600">
-            <Icon name="heroicons:x-mark" class="w-5 h-5" />
-          </button>
-        </div>
-        <form @submit.prevent="submitExpense" class="p-5 space-y-4">
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nominal (Rp)</label>
-            <input v-model.number="formExpense.amount" type="number" required min="1" class="w-full px-3 py-2 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)]" />
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Kategori</label>
-            <select v-model="formExpense.category" class="w-full px-3 py-2 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)] bg-white">
-              <option value="OPERATIONAL">Operasional (Listrik, Sewa, dll)</option>
-              <option value="SALARY">Gaji Karyawan</option>
-              <option value="MAINTENANCE">Perbaikan/Maintenance</option>
-              <option value="OTHER">Lain-lain</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat</label>
-            <input v-model="formExpense.description" type="text" required placeholder="Cth: Bayar tagihan internet" class="w-full px-3 py-2 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)]" />
-          </div>
-          <div class="pt-2">
-            <button type="submit" :disabled="submitting" class="w-full py-2.5 rounded-lg text-xs font-bold text-white transition-transform active:scale-95 disabled:opacity-50" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-              {{ submitting ? 'Menyimpan...' : 'Simpan Pengeluaran' }}
+    <Teleport to="body">
+      <div v-if="showExpenseModal" class="fixed inset-0 z-50 hidden md:flex items-center justify-center p-4 py-8 bg-slate-900/50 backdrop-blur-sm animate-fade-in" @click.self="showExpenseModal = false">
+        <div class="bg-white rounded-2xl w-full max-w-sm max-h-[90vh] flex flex-col shadow-xl animate-fade-in-up">
+          <div class="shrink-0 px-5 py-4 border-b flex justify-between items-center" style="border-color: var(--wp-border);">
+            <h3 class="font-bold text-sm" style="color: var(--wp-navy);">Catat Pengeluaran</h3>
+            <button @click="showExpenseModal = false" class="text-slate-400 hover:text-slate-600">
+              <Icon name="heroicons:x-mark" class="w-5 h-5" />
             </button>
           </div>
-        </form>
+          <form @submit.prevent="submitExpense" class="p-5 space-y-4 overflow-y-auto min-h-0 flex-1">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nominal (Rp)</label>
+              <input v-model.number="formExpense.amount" type="number" required min="1" class="w-full px-3 py-2 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)]" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Kategori</label>
+              <select v-model="formExpense.category" class="w-full px-3 py-2 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)] bg-white">
+                <option value="OPERATIONAL">Operasional (Listrik, Sewa, dll)</option>
+                <option value="SALARY">Gaji Karyawan</option>
+                <option value="MAINTENANCE">Perbaikan/Maintenance</option>
+                <option value="OTHER">Lain-lain</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Deskripsi Singkat</label>
+              <input v-model="formExpense.description" type="text" required placeholder="Cth: Bayar tagihan internet" class="w-full px-3 py-2 border rounded-lg text-xs outline-none focus:border-[var(--wp-gold)]" />
+            </div>
+            <div class="pt-2">
+              <button type="submit" :disabled="submitting" class="w-full py-2.5 rounded-lg text-xs font-bold text-white transition-transform active:scale-95 disabled:opacity-50" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
+                {{ submitting ? 'Menyimpan...' : 'Simpan Pengeluaran' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Modal Catat Pengeluaran: mobile bottom sheet (< 768px) -->
     <MobileSheet v-if="showExpenseModal" v-model:open="showExpenseModal" title="Catat Pengeluaran" class="md:hidden">

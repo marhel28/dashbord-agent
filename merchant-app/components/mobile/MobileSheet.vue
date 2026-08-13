@@ -11,7 +11,7 @@
     >
       <div
         v-if="open"
-        class="fixed inset-0 z-[var(--wp-z-modal)] bg-slate-900/60"
+        class="fixed inset-0 z-50 bg-slate-900/60 md:hidden"
         style="overscroll-behavior: none;"
         @click="onBackdropClick"
         aria-hidden="true"
@@ -29,7 +29,7 @@
     >
       <div
         v-if="open"
-        class="fixed bottom-0 left-0 right-0 z-[calc(var(--wp-z-modal)+1)] flex flex-col bg-[var(--wp-surface)] shadow-2xl md:hidden mobile-surface"
+        class="fixed bottom-0 left-0 right-0 z-50 flex flex-col bg-[var(--wp-surface)] shadow-2xl md:hidden mobile-surface"
         :style="{
           maxHeight: maxHeight,
           borderTopLeftRadius: 'var(--wp-radius-mobile)',
