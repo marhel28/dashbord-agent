@@ -237,6 +237,11 @@
           </p>
         </div>
 
+        <div v-else-if="insightError" class="p-4 rounded mb-4" style="background-color: #FEF2F2; border: 1px solid #FECACA;">
+          <p class="text-xs font-bold" style="color: #DC2626;">{{ insightError }}</p>
+          <button class="mt-2 text-[10px] underline font-semibold" style="color: #DC2626;" @click="fetchInsight">Coba Lagi</button>
+        </div>
+
         <div v-else class="text-center py-8">
           <Icon name="heroicons:light-bulb" class="w-10 h-10 mx-auto mb-3" style="color: var(--wp-gold);" />
           <p class="text-xs" style="color: var(--wp-text-secondary);">Klik "Generate" untuk membuat insight AI</p>
@@ -345,12 +350,12 @@ const ACTION_COLORS: Record<string, { color: string }> = {
 }
 
 const {
-  loading, insightLoading, error,
+  loading, insightLoading, insightError, error,
   criticalRecs, highRecs, mediumRecs, opportunityRecs, quickWins,
   restockCount, promoCount, criticalCount, highCount, opportunityCount,
   doneCount, rejectedCount, history,
   filterActionType, filterPriorityLevel,
-  refresh, fetchInsight, loadHistory,
+  refresh, fetchInsight, loadHistory, markDecision,
 } = useDecisionSupport()
 
 function onTabChange(tab: string) {
@@ -358,6 +363,9 @@ function onTabChange(tab: string) {
 }
 
 function handleAction(rec: Recommendation, cta: { label: string; action: string }) {
+  // Record the decision to history BEFORE navigating
+  markDecision(rec, 'done')
+
   if (cta.action === 'restock' || cta.action === 'add_stock') {
     navigateTo(`/inventory?highlight=${rec.product_uuid}`)
   } else if (cta.action === 'promo' || cta.action === 'ai_promo' || cta.action === 'bundle') {

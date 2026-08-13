@@ -88,6 +88,7 @@ const insight = ref<DecisionInsight | null>(null)
 const history = ref<DecisionHistoryEntry[]>([])
 const loading = ref(true)
 const insightLoading = ref(false)
+const insightError = ref<string | null>(null)
 const error = ref<string | null>(null)
 
 // Filter state
@@ -194,13 +195,18 @@ async function fetchHealth() {
 
 async function fetchInsight() {
   insightLoading.value = true
+  insightError.value = null
   try {
     const res = await api.get('/agentic/decision-support/insights')
     if (res.status === 'success') {
       insight.value = res.data
+    } else {
+      // Backend returned {status: "error", message: "..."} with HTTP 200
+      insightError.value = res.message ?? 'Gagal membuat insight AI.'
     }
-  } catch {
-    // Insight is non-critical
+  } catch (e: any) {
+    // Network error or 500
+    insightError.value = e?.message ?? 'Terjadi kesalahan saat membuat insight.'
   } finally {
     insightLoading.value = false
   }
@@ -261,6 +267,7 @@ export function useDecisionSupport() {
     history,
     loading,
     insightLoading,
+    insightError,
     error,
     // Filters
     filterActionType,
