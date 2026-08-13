@@ -13,6 +13,7 @@ import 'node:url';
 import '@iconify/utils';
 import 'node:crypto';
 import 'consola';
+import 'node:module';
 import 'node:path';
 import 'vue-bundle-renderer/runtime';
 import 'unhead/server';
@@ -440,7 +441,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-CI--5dnE.mjs')
+    component: () => import('./index-DbdQzCsa.mjs')
   },
   {
     name: "login",
@@ -517,7 +518,7 @@ const _routes = [
   {
     name: "merchants",
     path: "/merchants",
-    component: () => import('./index-CTLnUHeo.mjs')
+    component: () => import('./index-DxHhQmr7.mjs')
   },
   {
     name: "merchants-uuid",

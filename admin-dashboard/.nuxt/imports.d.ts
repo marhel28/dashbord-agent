@@ -34,3 +34,4 @@ export { useAnalytics, KpiSummary, TrendPoint, CategorySlice, PaymentSlice, TopP
 export { useAuth, User, RegisterPayload, LoginResponse } from '../composables/useAuth';
 export { api } from '../utils/api';
 export { useColorMode } from '../node_modules/@nuxtjs/color-mode/dist/runtime/composables';
+export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

@@ -155,7 +155,7 @@
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg text-white disabled:opacity-50 transition hover:shadow-md"
                         style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
                   <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
-                  Caption
+                  Teks Promosi
                 </button>
                 <button @click="handleCreateCampaign(rec.product)"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg border transition hover:shadow-md"
@@ -438,7 +438,7 @@
                      : 'border-color: var(--wp-border);'">
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-bold" style="color: var(--wp-text);">{{ variant.emoji }} {{ variant.style || 'Caption' }}</span>
+                    <span class="text-sm font-bold" style="color: var(--wp-text);">{{ variant.emoji }} {{ variant.style || 'Teks Promosi' }}</span>
                     <span v-if="variant.score"
                           class="text-[9px] font-bold px-2 py-0.5 rounded text-white"
                           :style="`background: ${variant.score >= 80 ? '#22c55e' : variant.score >= 60 ? '#f59e0b' : '#94a3b8'};`">
@@ -453,7 +453,7 @@
                   </button>
                 </div>
                 <p class="text-xs leading-relaxed whitespace-pre-wrap mb-3" style="color: var(--wp-text);">
-                  {{ variant.caption || 'Tidak ada caption' }}
+                  {{ variant.caption || 'Tidak ada teks promosi' }}
                 </p>
                 <!-- hashtags -->
                 <div v-if="variant.hashtags?.length" class="flex flex-wrap gap-1.5 mb-2">
@@ -511,7 +511,7 @@
                       class="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl text-white transition hover:shadow-md"
                       style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
                 <Icon :name="copied ? 'heroicons:check' : 'heroicons:clipboard-document'" class="w-4 h-4" />
-                {{ copied ? 'Tersalin!' : 'Salin Semua Caption' }}
+                {{ copied ? 'Tersalin!' : 'Salin Semua Teks Promosi' }}
               </button>
               <button @click="closeContentModal"
                       class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl border transition hover:bg-slate-50"
@@ -549,7 +549,7 @@ const selectedPlatform = ref('instagram')
 // ── Static data ──────────────────────────────────────────────────────
 
 const examplePrompts = [
-  'Buat caption untuk produk terlaris',
+  'Buat teks promosi untuk produk terlaris',
   'Strategi promo mingguan',
   'Produk apa yang harus saya promosikan?',
   'Ide konten TikTok untuk snack',
@@ -565,7 +565,7 @@ const platforms = [
 const contentTypes = [
   {
     key: 'caption',
-    label: 'Caption',
+    label: 'Teks Promosi',
     desc: 'Teks promosi menarik',
     icon: 'heroicons:pencil-square',
     iconBg: 'linear-gradient(135deg, #D4A843, #B8922E)',
@@ -645,7 +645,7 @@ const copyContent = async () => {
   const variants = generatedContent.value.variants || []
   if (variants.length) {
     const text = variants.map((v: any, i: number) =>
-      `${i + 1}. ${v.style || 'Caption'}\n${v.caption || ''}\n${(v.hashtags || []).join(' ')}\nCTA: ${v.cta || '-'}`
+      `${i + 1}. ${v.style || 'Teks Promosi'}\n${v.caption || ''}\n${(v.hashtags || []).join(' ')}\nCTA: ${v.cta || '-'}`
     ).join('\n\n---\n\n')
     await copyText(text)
   } else {
