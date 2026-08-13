@@ -57,7 +57,26 @@ async function apiFetch(path: string, options: FetchOptions = {}) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.detail || `Request failed (${response.status})`)
+    let errorMessage = `Request failed (${response.status})`
+
+    if (errorData.detail) {
+      if (typeof errorData.detail === 'string') {
+        errorMessage = errorData.detail
+      } else if (Array.isArray(errorData.detail)) {
+        // FastAPI / Pydantic validation error array
+        errorMessage = errorData.detail
+          .map((item: any) => {
+            const loc = Array.isArray(item.loc) ? item.loc.filter((l: any) => l !== 'body' && l !== 'query' && l !== 'path').join(' ') : ''
+            const msg = item.msg || item.message || JSON.stringify(item)
+            return loc ? `${loc}: ${msg}` : msg
+          })
+          .join('\n')
+      } else if (typeof errorData.detail === 'object') {
+        errorMessage = JSON.stringify(errorData.detail)
+      }
+    }
+
+    throw new Error(errorMessage)
   }
 
   return handleResponse(response)

@@ -61,7 +61,7 @@ export interface AnalyticsData {
 }
 
 export const useAnalytics = () => {
-  const period = ref<'today' | 'week' | 'month' | 'year' | 'custom'>('month')
+  const period = ref<'today' | 'week' | 'month' | 'year' | 'custom'>('week')
   const customStartDate = ref<string>('')
   const customEndDate = ref<string>('')
   const data = ref<AnalyticsData | null>(null)

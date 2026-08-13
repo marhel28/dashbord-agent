@@ -250,12 +250,26 @@ import {
   LegendComponent,
   DataZoomComponent,
   TitleComponent,
+  VisualMapComponent,
+  MarkLineComponent,
 } from 'echarts/components'
 import * as echarts from 'echarts'
 import { useAnalytics } from '~/composables/useAnalytics'
 
 // Register ECharts components once (tree-shakeable)
-use([CanvasRenderer, LineChart, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent, DataZoomComponent, TitleComponent])
+use([
+  CanvasRenderer,
+  LineChart,
+  BarChart,
+  PieChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  DataZoomComponent,
+  TitleComponent,
+  VisualMapComponent,
+  MarkLineComponent,
+])
 
 const {
   period, data, loading, error, customStartDate, customEndDate,
@@ -327,6 +341,12 @@ const warningHex = '#D97706'
 const trendOption = computed(() => {
   if (!data.value) return {}
   const trend = data.value.trend
+  const revenues = trend.map((t: any) => t.revenue)
+  const maxRevenue = Math.max(...revenues, 100000)
+
+  const p1 = Math.round(maxRevenue * 0.35)
+  const p2 = Math.round(maxRevenue * 0.70)
+
   return {
     tooltip: {
       trigger: 'axis',
@@ -353,9 +373,10 @@ const trendOption = computed(() => {
       },
     },
     legend: { show: false },
-    grid: { left: 12, right: 24, top: 8, bottom: 36 },
+    grid: { left: 12, right: 24, top: 12, bottom: 45, containLabel: true },
     xAxis: {
       type: 'category',
+      boundaryGap: false,
       data: trend.map((t: any) => t.date),
       axisLine: { lineStyle: { color: gridColor } },
       axisTick: { show: false },
@@ -371,16 +392,34 @@ const trendOption = computed(() => {
       },
       splitLine: { lineStyle: { color: gridColor, type: 'dashed' } },
     },
+    visualMap: {
+      type: 'piecewise',
+      show: false,
+      dimension: 1,
+      seriesIndex: 0,
+      pieces: [
+        { lte: p1, color: 'rgba(212, 168, 67, 0.45)' },
+        { gt: p1, lte: p2, color: 'rgba(184, 146, 46, 0.75)' },
+        { gt: p2, color: 'rgba(15, 26, 46, 0.90)' },
+      ],
+    },
     dataZoom: [
+      {
+        type: 'inside',
+        start: 0,
+        end: 100,
+        zoomOnMouseWheel: true,
+        moveOnMouseMove: true,
+      },
       {
         type: 'slider',
         start: 0,
         end: 100,
         height: 20,
-        bottom: 4,
+        bottom: 6,
         borderColor: gridColor,
         backgroundColor: '#F8FAFC',
-        fillerColor: 'rgba(212,168,67,0.15)',
+        fillerColor: 'rgba(212,168,67,0.18)',
         handleStyle: { color: goldHex, borderColor: goldDarkHex },
         textStyle: { color: textColor, fontSize: 9 },
       },
@@ -389,13 +428,20 @@ const trendOption = computed(() => {
       {
         name: 'Revenue',
         type: 'line',
-        data: trend.map((t: any) => t.revenue),
+        data: revenues,
         smooth: true,
         symbol: 'circle',
         symbolSize: 6,
-        lineStyle: { color: goldHex, width: 2.5 },
-        itemStyle: { color: goldHex, borderColor: '#fff', borderWidth: 2 },
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(212,168,67,0.15)' }, { offset: 1, color: 'rgba(212,168,67,0.0)' }] } },
+        lineStyle: { width: 2.5 },
+        markLine: {
+          symbol: ['none', 'none'],
+          label: { show: true, position: 'end', fontSize: 9, formatter: '{b}' },
+          data: [
+            { name: 'Standar', yAxis: p1, lineStyle: { color: goldHex, type: 'dashed' } },
+            { name: 'Tinggi', yAxis: p2, lineStyle: { color: navyHex, type: 'dashed' } },
+          ],
+        },
+        areaStyle: {},
       },
       {
         name: 'Profit',

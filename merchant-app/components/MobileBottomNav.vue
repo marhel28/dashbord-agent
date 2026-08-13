@@ -56,8 +56,8 @@
       <DrawerSection title="AI Copilot">
         <DrawerRow icon="heroicons:sparkles" :icon-color="`var(--wp-gold)`" label="Asisten AI" @click="navigateToRoute('/chat')" />
         <DrawerRow icon="heroicons:wallet" :icon-color="`var(--wp-gold)`" label="Dompet" @click="navigateToRoute('/dompet')" />
-        <DrawerRow icon="heroicons:book-open" :icon-color="`var(--wp-gold)`" label="Knowledge Base" @click="navigateToRoute('/knowledge-base')" />
-        <DrawerRow icon="heroicons:user-group" :icon-color="`var(--wp-gold)`" label="Toko" @click="navigateToRoute('/agents')" />
+        <DrawerRow v-if="isExpert" icon="heroicons:book-open" :icon-color="`var(--wp-gold)`" label="Knowledge Base" @click="navigateToRoute('/knowledge-base')" />
+        <DrawerRow v-if="isExpert" icon="heroicons:user-group" :icon-color="`var(--wp-gold)`" label="Toko" @click="navigateToRoute('/agents')" />
         <DrawerRow icon="heroicons:cpu-chip" :icon-color="`var(--wp-gold)`" label="Memory" @click="navigateToRoute('/memory')" />
       </DrawerSection>
 

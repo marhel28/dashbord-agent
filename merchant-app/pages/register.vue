@@ -5,12 +5,49 @@ import type { RegisterPayload } from '../composables/useAuth'
 
 definePageMeta({ layout: 'auth' })
 
+const storeCategories = [
+  'Makanan & Minuman',
+  'Toko Retail',
+  'Fashion',
+  'Kecantikan & Perawatan',
+  'Kesehatan',
+  'Elektronik & Gadget',
+  'Rumah Tangga & Furniture',
+  'Pertanian',
+  'Peternakan',
+  'Perikanan',
+  'Otomotif',
+  'Konstruksi & Bangunan',
+  'Percetakan & Advertising',
+  'Jasa Profesional',
+  'Jasa Digital',
+  'Pendidikan',
+  'Pariwisata',
+  'Transportasi & Logistik',
+  'Kerajinan',
+  'Industri & Produksi',
+  'Hewan Peliharaan',
+  'Laundry & Kebersihan',
+  'Marketplace & Online Shop',
+  'Lainnya',
+]
+
+const storeTypes = [
+  'Warung Kecil',
+  'Toko Kelontong',
+  'Distributor',
+  'Toko Online',
+  'Grosir',
+]
+
 const form = reactive<RegisterPayload>({
   name: '',
   email: '',
   password: '',
   phone_number: '',
   store_name: '',
+  category_store: 'Makanan & Minuman',
+  store_type: 'Warung Kecil',
   address: '',
   role: 'penjual',
   description: '',
@@ -39,7 +76,7 @@ const step2Valid = computed(() =>
   form.store_name.trim() && form.address.trim()
 )
 
-const { register: doRegister, verifyEmail } = useAuth()
+const { register: doRegister, verifyEmail, login: doLogin } = useAuth()
 const colorMode = useColorMode()
 
 const logoSrc = computed(() => {
@@ -76,6 +113,27 @@ const prevStep = () => {
   if (currentStep.value > 1) currentStep.value--
 }
 
+const formatCallbackError = (err: any): string => {
+  if (typeof err === 'string') return err
+  if (err instanceof Error) {
+    // If message contains JSON callback detail
+    try {
+      const parsed = JSON.parse(err.message)
+      if (Array.isArray(parsed?.detail)) {
+        return parsed.detail
+          .map((d: any) => {
+            const field = Array.isArray(d.loc) ? d.loc.filter((l: any) => l !== 'body' && l !== 'query').join(' -> ') : ''
+            const reason = d.ctx?.reason || d.msg || 'Format data tidak valid'
+            return field ? `[${field}] ${reason}` : reason
+          })
+          .join('\n')
+      }
+    } catch (_) { /* not json */ }
+    return err.message
+  }
+  return 'Registrasi gagal. Silakan periksa kembali data Anda.'
+}
+
 const handleRegister = async () => {
   if (loading.value) return
   loading.value = true
@@ -84,13 +142,16 @@ const handleRegister = async () => {
   try {
     const data = await doRegister(form)
     if (data?.verification_token) {
-      try { await verifyEmail(data.verification_token) } catch { /* ignore */ }
+      try { await verifyEmail(data.verification_token) } catch { /* ignore verification error if auto verified */ }
     }
-    successMsg.value = 'Akun berhasil dibuat!'
-    registered.value = true
+    
+    // Auto login after successful registration
+    await doLogin(form.email, form.password)
+    
+    // Navigate straight to dashboard
+    await navigateTo('/')
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Registrasi gagal. Silakan coba lagi.'
-    errorMsg.value = message
+    errorMsg.value = formatCallbackError(err)
   } finally {
     loading.value = false
   }
@@ -172,32 +233,16 @@ const handleRegister = async () => {
         >
           <h2 class="form-section-title">Informasi Akun</h2>
 
-          <!-- Role picker -->
+          <!-- Role Badge (Pedagang Only) -->
           <div class="field-group">
-            <span class="field-label">Saya mendaftar sebagai</span>
-            <div class="role-picker">
-              <label
-                class="role-card"
-                :class="{ 'role-card--active': form.role === 'penjual' }"
-                id="role-penjual-label"
-              >
-                <input type="radio" v-model="form.role" value="penjual" class="sr-only" />
-                <Icon name="heroicons:building-storefront-solid" class="icon-role" />
-                <span class="role-name">Penjual</span>
-                <span class="role-desc">Kelola stok & kasir</span>
-                <Icon v-if="form.role === 'penjual'" name="heroicons:check-circle-solid" class="role-check" />
-              </label>
-              <label
-                class="role-card"
-                :class="{ 'role-card--active': form.role === 'admin' }"
-                id="role-admin-label"
-              >
-                <input type="radio" v-model="form.role" value="admin" class="sr-only" />
-                <Icon name="heroicons:shield-check-solid" class="icon-role" />
-                <span class="role-name">Admin</span>
-                <span class="role-desc">Pantau & kelola</span>
-                <Icon v-if="form.role === 'admin'" name="heroicons:check-circle-solid" class="role-check" />
-              </label>
+            <span class="field-label">Peran Akun</span>
+            <div class="role-card role-card--active" style="cursor: default;">
+              <Icon name="heroicons:building-storefront-solid" class="icon-role" />
+              <div class="flex-1">
+                <span class="role-name">Pedagang / Penjual</span>
+                <span class="role-desc">Pendaftaran akun khusus untuk Pemilik Toko & Pedagang</span>
+              </div>
+              <Icon name="heroicons:check-circle-solid" class="role-check" />
             </div>
           </div>
 
@@ -296,6 +341,31 @@ const handleRegister = async () => {
               <input id="reg-store" v-model="form.store_name" type="text" required
                 placeholder="Toko Kelontong Berkah"
                 class="field-input" />
+            </div>
+          </div>
+
+          <!-- Store Category & Store Type -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="field-group">
+              <label for="reg-category" class="field-label">Kategori Toko</label>
+              <div class="field-input-wrap">
+                <Icon name="heroicons:tag" class="field-icon" aria-hidden="true" />
+                <select id="reg-category" v-model="form.category_store" class="field-input appearance-none">
+                  <option v-for="cat in storeCategories" :key="cat" :value="cat">{{ cat }}</option>
+                </select>
+                <Icon name="heroicons:chevron-down" class="field-icon-right" aria-hidden="true" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="reg-type" class="field-label">Jenis Pedagang</label>
+              <div class="field-input-wrap">
+                <Icon name="heroicons:shopping-bag" class="field-icon" aria-hidden="true" />
+                <select id="reg-type" v-model="form.store_type" class="field-input appearance-none">
+                  <option v-for="st in storeTypes" :key="st" :value="st">{{ st }}</option>
+                </select>
+                <Icon name="heroicons:chevron-down" class="field-icon-right" aria-hidden="true" />
+              </div>
             </div>
           </div>
 
@@ -631,6 +701,10 @@ const handleRegister = async () => {
 .field-input-wrap { position: relative; }
 .field-icon {
   position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; color: #475569; pointer-events: none;
+}
+.field-icon-right {
+  position: absolute; right: 0.875rem; top: 50%; transform: translateY(-50%);
   width: 16px; height: 16px; color: #475569; pointer-events: none;
 }
 .field-input {

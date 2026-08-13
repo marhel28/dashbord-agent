@@ -11,7 +11,8 @@
     >
       <div
         v-if="open"
-        class="fixed inset-0 z-[var(--wp-z-modal)] bg-slate-900/60 backdrop-blur-sm"
+        class="fixed inset-0 z-[var(--wp-z-modal)] bg-slate-900/60"
+        style="overscroll-behavior: none;"
         @click="onBackdropClick"
         aria-hidden="true"
       />
@@ -62,7 +63,7 @@
         </div>
 
         <!-- Body -->
-        <div class="flex-1 overflow-y-auto momentum-scroll px-4 pb-4">
+        <div class="flex-1 overflow-y-auto momentum-scroll px-4 pb-4" style="overscroll-behavior: contain;">
           <slot />
         </div>
 
@@ -147,11 +148,14 @@ watch(
   (isOpen) => {
     if (typeof document === 'undefined') return
     document.body.style.overflow = isOpen ? 'hidden' : ''
+    document.body.style.overscrollBehavior = isOpen ? 'none' : ''
   },
   { immediate: true }
 )
 
 onUnmounted(() => {
-  if (typeof document !== 'undefined') document.body.style.overflow = ''
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = ''
+  document.body.style.overscrollBehavior = ''
 })
 </script>

@@ -396,13 +396,27 @@ import {
   GridComponent,
   TooltipComponent,
   LegendComponent,
+  VisualMapComponent,
+  DataZoomComponent,
+  MarkLineComponent,
 } from 'echarts/components'
 import { api } from '~/utils/api'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { useAuth } from '~/composables/useAuth'
 import { useWallet } from '~/composables/useWallet'
 
-use([CanvasRenderer, LineChart, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent])
+use([
+  CanvasRenderer,
+  LineChart,
+  BarChart,
+  PieChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  VisualMapComponent,
+  DataZoomComponent,
+  MarkLineComponent,
+])
 
 // ── Data ──
 const {
@@ -499,51 +513,105 @@ const kpiCards = computed(() => {
   ]
 })
 
-// ── ECharts: Sales Trend (simple bar) ──
+// ── ECharts: Sales Trend (Area Pieces with visualMap & dataZoom) ──
 const trendOption = computed(() => {
   const trend = analyticsData.value?.trend
   if (!trend || trend.length === 0) return null
+
+  const dates = trend.map((t: any) => t.date)
+  const revenues = trend.map((t: any) => t.revenue)
+  const maxRevenue = Math.max(...revenues, 100000)
+
+  // Define piece zones matching merchant brand tone
+  const p1 = Math.round(maxRevenue * 0.35)
+  const p2 = Math.round(maxRevenue * 0.70)
+
   return {
     tooltip: {
       trigger: 'axis',
       backgroundColor: '#ffffff',
       borderColor: '#E2E8F0',
       borderWidth: 1,
-      borderRadius: 8,
+      borderRadius: 10,
       padding: [8, 12],
       textStyle: { color: '#1E293B', fontSize: 12, fontFamily: 'var(--wp-font)' },
       formatter: (params: any) => {
         const p = params[0]
         const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
-        return `<b style="color:#0F1A2E">${p.axisValue}</b><br/><span style="color:#64748B">Pendapatan:</span> <b>${val}</b>`
+        return `<b style="color:#0F1A2E">${p.axisValue}</b><br/><span style="color:#D4A843">●</span> <span style="color:#64748B">Pendapatan:</span> <b>${val}</b>`
       },
     },
-    grid: { left: 0, right: 8, top: 8, bottom: 20 },
+    grid: { left: 12, right: 24, top: 12, bottom: 45, containLabel: true },
     xAxis: {
       type: 'category',
-      data: trend.map((t: any) => t.date),
-      axisLine: { show: false },
+      boundaryGap: false,
+      data: dates,
+      axisLine: { lineStyle: { color: '#E2E8F0' } },
       axisTick: { show: false },
-      axisLabel: { color: '#94A3B8', fontSize: 9, fontWeight: 600 },
+      axisLabel: { color: '#64748B', fontSize: 10, fontWeight: 600 },
     },
     yAxis: {
       type: 'value',
-      show: false,
-    },
-    series: [{
-      type: 'bar',
-      data: trend.map((t: any) => ({
-        value: t.revenue,
-        itemStyle: {
-          color: '#D4A843',
-          borderRadius: [4, 4, 0, 0],
-        },
-      })),
-      barWidth: 14,
-      emphasis: {
-        itemStyle: { color: '#B8922E' },
+      axisLabel: {
+        color: '#64748B',
+        fontSize: 10,
+        fontWeight: 600,
+        formatter: (v: number) => formatCompact(v),
       },
-    }],
+      splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
+    },
+    visualMap: {
+      type: 'piecewise',
+      show: false,
+      dimension: 1,
+      seriesIndex: 0,
+      pieces: [
+        { lte: p1, color: 'rgba(212, 168, 67, 0.45)' },
+        { gt: p1, lte: p2, color: 'rgba(184, 146, 46, 0.75)' },
+        { gt: p2, color: 'rgba(15, 26, 46, 0.90)' },
+      ],
+    },
+    dataZoom: [
+      {
+        type: 'inside',
+        start: 0,
+        end: 100,
+        zoomOnMouseWheel: true,
+        moveOnMouseMove: true,
+      },
+      {
+        type: 'slider',
+        start: 0,
+        end: 100,
+        height: 18,
+        bottom: 6,
+        borderColor: '#E2E8F0',
+        backgroundColor: '#F8FAFC',
+        fillerColor: 'rgba(212,168,67,0.18)',
+        handleStyle: { color: '#D4A843', borderColor: '#B8922E' },
+        textStyle: { color: '#64748B', fontSize: 9 },
+      },
+    ],
+    series: [
+      {
+        name: 'Pendapatan',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        data: revenues,
+        lineStyle: { width: 2.5 },
+        markLine: {
+          symbol: ['none', 'none'],
+          label: { show: true, position: 'end', fontSize: 9, formatter: '{b}' },
+          data: [
+            { name: 'Standar', yAxis: p1, lineStyle: { color: '#D4A843', type: 'dashed' } },
+            { name: 'Tinggi', yAxis: p2, lineStyle: { color: '#0F1A2E', type: 'dashed' } },
+          ],
+        },
+        areaStyle: {},
+      },
+    ],
   }
 })
 

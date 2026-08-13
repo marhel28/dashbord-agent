@@ -69,11 +69,11 @@
               <Icon name="heroicons:wallet" class="w-5 h-5" />
               <span>Dompet</span>
             </NuxtLink>
-            <NuxtLink to="/knowledge-base" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink v-if="isExpert" to="/knowledge-base" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:book-open" class="w-5 h-5" />
               <span>Knowledge Base</span>
             </NuxtLink>
-            <NuxtLink to="/agents" exact-active-class="nav-active" class="nav-link">
+            <NuxtLink v-if="isExpert" to="/agents" exact-active-class="nav-active" class="nav-link">
               <Icon name="heroicons:user-group" class="w-5 h-5" />
               <span>Toko</span>
             </NuxtLink>

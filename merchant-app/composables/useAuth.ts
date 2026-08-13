@@ -25,8 +25,10 @@ export interface RegisterPayload {
   password: string
   phone_number: string
   store_name: string
+  category_store?: string
+  store_type?: string
   address: string
-  role: 'admin' | 'penjual'
+  role: 'penjual'
   description?: string
   latitude?: number
   longitude?: number

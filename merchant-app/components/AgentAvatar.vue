@@ -3,7 +3,7 @@
     <!-- Glow ring when speaking -->
     <div v-if="isSpeaking" class="avatar-glow"></div>
 
-    <!-- Avatar image (single img, no stacking = no blink) -->
+    <!-- Avatar image (WhatsApp circular style) -->
     <div class="avatar-box">
       <img
         :src="currentFrame"
@@ -11,6 +11,8 @@
         class="avatar-img"
         draggable="false"
       />
+      <!-- WhatsApp style online status dot -->
+      <span class="online-dot" title="Online"></span>
     </div>
 
     <!-- Sound wave bars -->
@@ -38,48 +40,26 @@ const props = withDefaults(defineProps<{
   showLabel: false,
 })
 
-// ── All 20 animation frames (paths relative to /public/) ─────────
+// ── Primary Avatar Image (AHA.png) ─────────
+const AHA_IMAGE = ['/agent-avatar/AHA.png']
 
 const FRAMES: Record<string, string[]> = {
-  idle: ['/agent-avatar/Senyum.png'],
-  talking: [
-    '/agent-avatar/TT 1.png',
-    '/agent-avatar/TT 2.png',
-    '/agent-avatar/TT 3.png',
-    '/agent-avatar/TT 4.png',
-    '/agent-avatar/TT 5.png',
-  ],
-  explaining: [
-    '/agent-avatar/Menjelaskan  1.png',
-    '/agent-avatar/menjelaskan 2.png',
-    '/agent-avatar/menjelaskan 3.png',
-  ],
-  thinking: [
-    '/agent-avatar/Bingung.png',
-    '/agent-avatar/Bingung 2.png',
-  ],
-  muttering: [
-    '/agent-avatar/Mutung  1.png',
-    '/agent-avatar/Mutung 2.png',
-    '/agent-avatar/Mutung 3.png',
-    '/agent-avatar/Mutung 4.png',
-    '/agent-avatar/Mutung 5.png',
-  ],
-  realization: [
-    '/agent-avatar/AHA.png',
-    '/agent-avatar/AHA 2.png',
-    '/agent-avatar/AHA 3.png',
-  ],
-  sad: ['/agent-avatar/sedikit sedih.png'],
+  idle: AHA_IMAGE,
+  talking: AHA_IMAGE,
+  explaining: AHA_IMAGE,
+  thinking: AHA_IMAGE,
+  muttering: AHA_IMAGE,
+  realization: AHA_IMAGE,
+  sad: AHA_IMAGE,
 }
 
 const SPEED: Record<string, number> = {
   idle: 0,
-  talking: 90,
-  explaining: 110,
-  thinking: 180,
-  muttering: 130,
-  realization: 140,
+  talking: 0,
+  explaining: 0,
+  thinking: 0,
+  muttering: 0,
+  realization: 0,
   sad: 0,
 }
 
@@ -125,6 +105,7 @@ const stateLabel = computed(() => {
 
 function startLoop() {
   stopLoop()
+  if (!process.client) return
   const ms = SPEED[props.state] || 0
   if (ms <= 0) { frameIndex.value = 0; return }
   timer = setInterval(() => {
@@ -138,10 +119,10 @@ function stopLoop() {
 
 watch(() => props.state, () => {
   frameIndex.value = 0
-  if (SPEED[props.state] > 0) startLoop(); else stopLoop()
-}, { immediate: true })
+  if (process.client && SPEED[props.state] > 0) startLoop(); else stopLoop()
+})
 
-onMounted(() => { if (SPEED[props.state] > 0) startLoop() })
+onMounted(() => { if (process.client && SPEED[props.state] > 0) startLoop() })
 onUnmounted(() => stopLoop())
 </script>
 
@@ -158,42 +139,54 @@ onUnmounted(() => stopLoop())
 .avatar-glow {
   position: absolute;
   inset: -6px;
-  border-radius: 20px;
-  border: 2px solid #D4A843;
+  border-radius: 50%;
+  border: 2px solid #25D366;
   animation: glow-pulse 1.4s ease-out infinite;
   pointer-events: none;
   z-index: 2;
 }
 
-/* ── Image container (rounded rect, NOT circle) ────────────────── */
+/* ── Image container (WhatsApp style circle) ────────────────── */
 .avatar-box {
   width: 80px;
   height: 80px;
-  border-radius: 18px;
+  border-radius: 50%;
   overflow: hidden;
   background: #FFFFFF;
   border: 2px solid #E2E8F0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
   animation: avatar-breathe 3s ease-in-out infinite;
   flex-shrink: 0;
   position: relative;
 }
 
-/* Speaking = faster breathe + gold border + glow */
+/* Speaking = faster breathe + WA green border + glow */
 .speaking .avatar-box {
   animation: avatar-breathe 1.2s ease-in-out infinite;
-  border-color: #D4A843;
-  box-shadow: 0 4px 24px rgba(212,168,67,0.35);
+  border-color: #25D366;
+  box-shadow: 0 4px 24px rgba(37,211,102,0.35);
 }
 
-/* ── Image (fills container, no transparency issues) ───────────── */
+/* ── Image (fills circular container, focus on face area) ───── */
 .avatar-img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 15%; /* focus on face area */
-  /* NO transition = NO blink */
+  object-position: center 12%; /* perfect face alignment */
+}
+
+/* ── WhatsApp style online status dot ────────────────────────── */
+.online-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 6px;
+  width: 14px;
+  height: 14px;
+  background: #25D366;
+  border: 2.5px solid #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
 
 /* ── Voice bars ────────────────────────────────────────────────── */

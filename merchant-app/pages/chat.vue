@@ -19,12 +19,22 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
+          <!-- Stop Audio Interruption Button -->
+          <button
+            v-if="isSpeaking"
+            @click="stopAudio"
+            class="px-3 py-1.5 text-[10px] font-bold rounded-lg border border-red-300 bg-red-50 text-red-600 transition hover:bg-red-100 flex items-center gap-1.5 animate-pulse"
+            title="Hentikan suara agen"
+          >
+            <Icon name="heroicons:stop-solid" class="w-3.5 h-3.5 text-red-600" />
+            <span>Hentikan Suara</span>
+          </button>
           <!-- Voice Mode Toggle -->
           <button
             @click="toggleVoiceMode"
             class="px-3 py-1.5 text-[10px] font-bold rounded-lg border transition hover:bg-slate-50 flex items-center gap-1.5"
             style="border-color: var(--wp-border); color: var(--wp-text-secondary);"
-            :title="voiceMode ? 'Aktifkan suara (klik untuk matikan)' : 'Matikan suara (klik untuk aktifkan)'"
+            :title="voiceMode ? 'Matikan suara (klik untuk matikan)' : 'Aktifkan suara (klik untuk aktifkan)'"
           >
             <Icon :name="voiceMode ? 'heroicons:microphone' : 'heroicons:musical-note'" class="w-3.5 h-3.5" />
             {{ voiceMode ? 'Suara' : 'Teks' }}
@@ -40,17 +50,19 @@
       <div ref="chatContainer" class="flex-1 overflow-y-auto p-4 sm:p-8 relative z-10 custom-scrollbar scroll-smooth">
 
         <!-- Empty State / Welcome -->
-        <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-full max-w-lg mx-auto text-center animate-fade-in-up">
-          <!-- Large animated avatar -->
-          <div class="mb-6">
-            <AgentAvatar :state="isSpeaking ? 'talking' : 'idle'" :is-speaking="isSpeaking" :show-label="false" />
+        <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-full max-w-lg mx-auto text-center animate-fade-in-up py-4">
+          <!-- Large prominent avatar in center -->
+          <div class="mb-5 flex flex-col items-center justify-center">
+            <div class="p-2 rounded-3xl bg-slate-50 border border-slate-200/60 shadow-lg">
+              <AgentAvatar :state="isSpeaking ? 'talking' : 'idle'" :is-speaking="isSpeaking" :show-label="true" />
+            </div>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-black mb-3" style="color: var(--wp-navy);">Halo! Saya Nahkoeda AI.</h1>
-          <p class="text-sm sm:text-base leading-relaxed mb-2" style="color: var(--wp-text-secondary);">
-            Saya siap membantu memantau penjualan, mengecek stok, membuat laporan, dan memberikan ide bisnis cerdas untuk Anda.
+          <h1 class="text-2xl sm:text-3xl font-black mb-2" style="color: var(--wp-navy);">Halo! Saya Nahkoeda AI.</h1>
+          <p class="text-sm leading-relaxed mb-1" style="color: var(--wp-text-secondary);">
+            Saya asisten kecerdasan buatan toko Anda. Tanyakan stok, tren penjualan, atau ide bisnis.
           </p>
-          <p class="text-xs font-semibold mb-8" style="color: var(--wp-gold);">
-            🎙️ Mode suara aktif — tanyakan apa saja dengan suara atau ketik!
+          <p class="text-xs font-bold mb-6" style="color: var(--wp-gold);">
+            {{ voiceMode ? '🎙️ Mode Suara Aktif' : '📝 Mode Teks' }}
           </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
@@ -146,19 +158,17 @@
         </div>
 
         <div class="max-w-4xl mx-auto relative flex items-end gap-3 p-2 rounded-2xl border bg-slate-50 transition-colors focus-within:bg-white focus-within:border-[var(--wp-gold)] shadow-inner focus-within:shadow-md" style="border-color: var(--wp-border);">
-          <!-- Mic button (voice input) -->
+          <!-- Mic / Audio Stop button (voice input & interruption) -->
           <button
             v-if="voiceMode"
-            @click="isRecording ? stopRecording() : startRecording()"
+            @click="handleMicClick"
             :disabled="isSending"
             class="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center transition-all shadow-sm mb-0.5"
-            :class="isRecording ? 'animate-pulse' : 'hover:scale-105'"
-            :style="isRecording
-              ? 'background: #DC2626; color: white;'
-              : 'background: linear-gradient(135deg, var(--wp-navy), #1e293b); color: white;'"
-            :title="isRecording ? 'Berhenti merekam' : 'Mulai rekam suara'"
+            :class="isSpeaking ? 'bg-amber-500 text-white animate-pulse hover:bg-amber-600' : isRecording ? 'bg-red-600 text-white animate-pulse' : 'hover:scale-105'"
+            :style="!isSpeaking && !isRecording ? 'background: linear-gradient(135deg, var(--wp-navy), #1e293b); color: white;' : ''"
+            :title="isSpeaking ? 'Hentikan AI berbicara' : isRecording ? 'Berhenti merekam' : 'Mulai rekam suara'"
           >
-            <Icon :name="isRecording ? 'heroicons:stop' : 'heroicons:microphone'" class="w-5 h-5" />
+            <Icon :name="isSpeaking ? 'heroicons:speaker-x-mark' : isRecording ? 'heroicons:stop' : 'heroicons:microphone'" class="w-5 h-5" />
           </button>
 
           <textarea
@@ -216,6 +226,7 @@ const {
   stopRecording: _stopRecording,
   toggleVoiceMode: _toggleVoiceMode,
   playAudio,
+  stopAudio,
   clearChat: _clearChat,
 } = useAiAssistant()
 
@@ -253,6 +264,18 @@ const sendMessage = async (text?: string) => {
 
   await _sendMessage(msg)
   await scrollToBottom()
+}
+
+const handleMicClick = () => {
+  if (isSpeaking.value) {
+    stopAudio()
+    return
+  }
+  if (isRecording.value) {
+    stopRecording()
+  } else {
+    startRecording()
+  }
 }
 
 const startRecording = async () => {

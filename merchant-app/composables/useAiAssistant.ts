@@ -96,52 +96,79 @@ async function sendMessage(text: string) {
   }
 }
 
+let currentAudio: HTMLAudioElement | null = null
+
+function stopAudio() {
+  if (currentAudio) {
+    try {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+    } catch (_) { /* ignore */ }
+    currentAudio = null
+  }
+  isSpeaking.value = false
+  if (agentState.value === 'talking' || agentState.value === 'explaining') {
+    agentState.value = 'idle'
+  }
+}
+
 async function playAudio(audioData: string) {
+  // Stop any currently playing audio (interruption feature)
+  stopAudio()
+
   return new Promise<void>((resolve) => {
     isSpeaking.value = true
     agentState.value = 'talking'
 
     try {
-      // audioData is already a base64 data URL: "data:audio/ogg;base64,..."
+      // audioData is base64 data URL: "data:audio/ogg;base64,..."
       const audio = new Audio(audioData)
+      currentAudio = audio
 
-      audio.onended = () => {
+      const cleanup = () => {
+        if (currentAudio === audio) {
+          currentAudio = null
+        }
         isSpeaking.value = false
         agentState.value = 'idle'
+      }
+
+      audio.onended = () => {
+        cleanup()
         resolve()
       }
       audio.onerror = () => {
         console.warn('[AI Assistant] Audio playback error')
-        isSpeaking.value = false
-        agentState.value = 'idle'
+        cleanup()
         resolve()
       }
 
       // Ensure audio is loaded before playing
       audio.oncanplaythrough = () => {
-        audio.play().catch((err) => {
-          console.warn('[AI Assistant] Play failed:', err?.message)
-          isSpeaking.value = false
-          agentState.value = 'idle'
-          resolve()
-        })
+        if (currentAudio === audio) {
+          audio.play().catch((err) => {
+            console.warn('[AI Assistant] Play failed:', err?.message)
+            cleanup()
+            resolve()
+          })
+        }
       }
 
       // Fallback: try to play even if oncanplaythrough doesn't fire
       setTimeout(() => {
-        if (isSpeaking.value) {
+        if (currentAudio === audio && isSpeaking.value) {
           audio.play().catch(() => {
-            isSpeaking.value = false
-            agentState.value = 'idle'
+            cleanup()
             resolve()
           })
         }
-      }, 500)
+      }, 300)
 
     } catch (e) {
       console.warn('[AI Assistant] Audio setup failed:', e)
       isSpeaking.value = false
       agentState.value = 'idle'
+      currentAudio = null
       resolve()
     }
   })
@@ -153,6 +180,9 @@ let mediaRecorder: MediaRecorder | null = null
 let audioChunks: Blob[] = []
 
 async function startRecording() {
+  // Intercept/stop any running audio playback when microphone starts
+  stopAudio()
+
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     mediaRecorder = new MediaRecorder(stream)
@@ -206,10 +236,16 @@ async function transcribeAndSend(blob: Blob) {
 
 function toggleVoiceMode() {
   voiceMode.value = !voiceMode.value
+  if (!voiceMode.value) {
+    stopAudio()
+  }
 }
 
 function setVoiceMode(enabled: boolean) {
   voiceMode.value = enabled
+  if (!enabled) {
+    stopAudio()
+  }
 }
 
 function clearChat() {

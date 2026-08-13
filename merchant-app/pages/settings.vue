@@ -41,10 +41,10 @@
         <div class="mt-4 p-3 rounded border" style="background: var(--wp-bg); border-color: var(--wp-border);">
           <p class="text-[10px] font-semibold" style="color: var(--wp-text-secondary);">
             <template v-if="storeMode === 'basic'">
-              <span class="font-bold" style="color: var(--wp-navy);">Mode Basic:</span> Menyembunyikan menu Tim, Operasional, dan Monitoring. Cocok untuk penggunaan sehari-hari.
+              <span class="font-bold" style="color: var(--wp-navy);">Mode Basic:</span> Menyembunyikan menu Knowledge Base, Toko, Tim, Operasional, dan Monitoring. Cocok untuk penggunaan sederhana harian.
             </template>
             <template v-else>
-              <span class="font-bold" style="color: var(--wp-navy);">Mode Expert:</span> Menampilkan semua menu termasuk Tim, Operasional, dan Monitoring. Akses penuh ke semua fitur.
+              <span class="font-bold" style="color: var(--wp-navy);">Mode Expert:</span> Menampilkan semua menu tingkat lanjut termasuk Knowledge Base, Toko, Tim, Operasional, dan Monitoring. Akses penuh ke semua fitur.
             </template>
           </p>
         </div>
