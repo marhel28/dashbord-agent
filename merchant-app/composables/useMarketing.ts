@@ -44,7 +44,7 @@ export interface OverviewData {
   ai_recommendations: string[]
 }
 
-export interface ChatMessage {
+export interface MarketingChatMessage {
   role: 'user' | 'ai'
   text: string
   agents?: string[]
@@ -66,7 +66,7 @@ export const useMarketing = () => {
   const health = ref<any>(null)
 
   // Path B state — chat
-  const chatMessages = ref<ChatMessage[]>([])
+  const chatMessages = ref<MarketingChatMessage[]>([])
   const chatSending = ref(false)
 
   // Content generation state

@@ -1,502 +1,585 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
-    <!-- ═══════════ HEADER ═══════════ -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up border-b pb-4" style="border-color: var(--wp-navy);">
+  <div class="space-y-6 animate-fade-in max-w-7xl mx-auto py-2">
+    <!-- ═══════════ 1. PAGE HEADER ═══════════ -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
       <div>
-        <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Manajemen Stok</h1>
-        <p class="text-xs font-semibold mt-1" style="color: var(--wp-text-secondary);">
-          Total: {{ stocks.length }} produk aktif · Lacak level stok, harga & kategori.
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Produk & Stok</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          {{ stocks.length }} produk aktif · Lacak level stok, harga & kategori.
         </p>
       </div>
-      <div class="flex flex-wrap sm:flex-nowrap items-center gap-3">
-        <!-- Search with Manticore suggestions -->
-        <div class="relative flex-1 sm:flex-none">
-          <Icon name="heroicons:magnifying-glass" class="absolute left-3 top-3.5 w-4 h-4 z-10" style="color: var(--wp-text-secondary);" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Cari produk…"
-            class="w-full sm:w-64 pl-9 pr-4 py-2.5 min-h-[44px] text-xs transition border outline-none font-medium"
-            style="background: #FFFFFF; border-color: var(--wp-navy); color: var(--wp-text); border-radius: 0px;"
-            @input="onSearchInput"
-            @keydown.escape="suggestions = []"
-            @keydown.enter.prevent="onSearchEnter"
-            @focus="searchQuery.length >= 2 && fetchSuggestions()"
-          />
-          <!-- Suggestions dropdown -->
-          <div
-            v-if="suggestions.length > 0"
-            class="absolute top-full mt-1 left-0 right-0 bg-white border shadow-md z-50 overflow-hidden"
-            style="border-color: var(--wp-navy); border-radius: 0px;"
-          >
-            <button
-              v-for="s in suggestions" :key="s.uuid"
-              @click="selectSuggestion(s)"
-              class="w-full text-left px-3 py-2.5 min-h-[44px] transition hover:bg-slate-50 flex items-center justify-between border-b last:border-0"
-              style="border-color: var(--wp-border);"
-            >
-              <div class="min-w-0 flex-1">
-                <p class="text-xs font-bold truncate" style="color: var(--wp-text);">{{ s.product_name }}</p>
-                <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ s.category || 'Tanpa Kategori' }} · {{ s.stock_quantity }} tersedia</p>
-              </div>
-              <span class="text-[10px] font-mono font-bold ml-3 shrink-0" style="color: var(--wp-navy);">{{ formatRupiah(s.price) }}</span>
-            </button>
-          </div>
-          <!-- Searching indicator -->
-          <div v-if="searching" class="absolute right-3 top-3.5 z-10">
-            <div class="w-4 h-4 border-2 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold); border-radius: 0px;"></div>
-          </div>
-        </div>
-        <button
-          @click="openCreateModal"
-          class="px-4 py-2.5 min-h-[44px] text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition hover:opacity-90 shrink-0"
-          style="background: var(--wp-navy); border-radius: 0px;"
-        >
-          <Icon name="heroicons:plus" class="w-4 h-4" />
+      <div class="flex items-center gap-2">
+        <Button variant="outline" size="sm" class="h-9 text-xs gap-1.5 rounded-lg" @click="showImportModal = true">
+          <Icon name="lucide:file-up" class="w-4 h-4" />
+          <span>Import CSV/Excel</span>
+        </Button>
+        <Button size="sm" class="h-9 bg-[#047857] hover:bg-[#065f46] text-white text-xs gap-1.5 rounded-lg font-semibold" @click="openCreateModal">
+          <Icon name="lucide:plus" class="w-4 h-4" />
           <span>Tambah Produk</span>
-        </button>
+        </Button>
       </div>
     </div>
 
-    <!-- ═══════════ LOADING ═══════════ -->
-    <div v-if="loading" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-3">
-        <div class="w-10 h-10 mx-auto border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold); border-radius: 0px;"></div>
-        <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--wp-text-secondary);">Memuat stok…</p>
+    <!-- ═══════════ 2. SKELETON LOADING STATE ═══════════ -->
+    <div v-if="loading" class="space-y-4">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Skeleton v-for="i in 4" :key="i" class="h-24 rounded-xl" />
+      </div>
+      <Skeleton class="h-12 w-full rounded-xl" />
+      <div class="space-y-2">
+        <Skeleton v-for="i in 6" :key="i" class="h-14 w-full rounded-lg" />
       </div>
     </div>
 
-    <!-- ═══════════ ERROR ═══════════ -->
-    <div v-else-if="error" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-4 max-w-sm border p-6 bg-white" style="border-color: #DC2626; border-radius: 0px;">
-        <div class="w-12 h-12 mx-auto flex items-center justify-center" style="background: #FEF2F2;">
-          <Icon name="heroicons:exclamation-triangle" class="w-6 h-6" style="color: #DC2626;" />
+    <!-- ═══════════ 3. ERROR STATE ═══════════ -->
+    <div v-else-if="error" class="flex items-center justify-center py-16">
+      <div class="text-center space-y-4 max-w-sm border border-red-200 p-6 bg-white dark:bg-slate-900 rounded-xl shadow-xs">
+        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-red-50 text-red-600">
+          <Icon name="lucide:alert-triangle" class="w-6 h-6" />
         </div>
-        <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--wp-text);">Gagal memuat stok</h3>
-        <p class="text-xs font-medium" style="color: var(--wp-text-secondary);">{{ error }}</p>
-        <button @click="fetchStocks" class="px-6 py-2.5 text-white text-xs font-bold uppercase tracking-wider transition"
-          style="background: #DC2626; border-radius: 0px;">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Gagal Memuat Stok</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ error }}</p>
+        </div>
+        <Button variant="default" size="sm" @click="fetchStocks" class="rounded-lg">
           Coba Lagi
-        </button>
+        </Button>
       </div>
     </div>
 
-    <!-- ═══════════ EMPTY STATE ═══════════ -->
-    <div v-else-if="stocks.length === 0" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-4 max-w-sm border p-8 bg-white" style="border-color: var(--wp-border); border-radius: 0px;">
-        <div class="w-16 h-16 mx-auto flex items-center justify-center" style="background: rgba(15,26,46,0.05);">
-          <Icon name="heroicons:archive-box" class="w-8 h-8" style="color: var(--wp-navy);" />
+    <!-- ═══════════ 4. EMPTY STATE ═══════════ -->
+    <div v-else-if="stocks.length === 0" class="flex items-center justify-center py-16">
+      <div class="text-center space-y-4 max-w-md border border-slate-200 dark:border-slate-800 p-8 bg-white dark:bg-slate-900 rounded-xl shadow-xs">
+        <div class="w-16 h-16 mx-auto flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">
+          <Icon name="lucide:package-open" class="w-8 h-8" />
         </div>
-        <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--wp-text);">Belum ada produk</h3>
-        <p class="text-xs" style="color: var(--wp-text-secondary);">
-          Mulai bangun stok dengan menambahkan produk pertama Anda ke database.
-        </p>
-        <button @click="openCreateModal" class="px-6 py-2.5 text-white text-xs font-bold uppercase tracking-wider transition"
-          style="background: var(--wp-navy); border-radius: 0px;">
-          Tambah Produk Pertama Anda
-        </button>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Belum Ada Produk</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            Tambahkan produk pertama untuk mulai mengelola stok dan penjualan toko Anda.
+          </p>
+        </div>
+        <div class="flex justify-center gap-3 pt-2">
+          <Button variant="outline" size="sm" @click="showImportModal = true" class="rounded-lg text-xs">
+            Import CSV / Excel
+          </Button>
+          <Button size="sm" class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold" @click="openCreateModal">
+            + Tambah Produk Pertama
+          </Button>
+        </div>
       </div>
     </div>
 
-    <!-- ═══════════ SUMMARY CARDS ═══════════ -->
-    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div v-for="card in summaryCards" :key="card.label"
-        class="bg-white border-t-2 border p-4 shadow-sm" :style="{ borderColor: 'var(--wp-border)', borderTopColor: card.color, borderRadius: '0px' }">
-        <span class="text-[9px] font-extrabold uppercase tracking-wider block" style="color: var(--wp-text-secondary);">{{ card.label }}</span>
-        <p class="text-lg font-mono font-black mt-1.5" :style="{ color: 'var(--wp-navy)' }">{{ card.value }}</p>
-      </div>
-    </div>
-
-    <!-- ═══════════ FILTERS + TABLE ═══════════ -->
-    <div v-if="stocks.length > 0" class="bg-white border p-6 shadow-sm" style="border-color: var(--wp-border); border-radius: 0px;">
-      <!-- Filters -->
-      <div class="flex flex-wrap items-center gap-3 pb-4 border-b" style="border-color: var(--wp-border);">
-        <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Filter Kategori:</span>
+    <template v-else>
+      <!-- ═══════════ 5. KPI SUMMARY CARDS (CLICKABLE NAVIGATION SHORTCUTS) ═══════════ -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Produk -->
         <button
-          v-for="f in categoryFilters" :key="f.value"
-          @click="activeCategoryFilter = f.value"
-          class="px-3.5 py-2.5 min-h-[44px] text-[10px] font-bold transition-all border uppercase tracking-wider flex items-center justify-center"
-          :style="activeCategoryFilter === f.value
-            ? 'background: var(--wp-navy); border-color: var(--wp-navy); color: white; border-radius: 0px;'
-            : 'background: #FFFFFF; border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: 0px;'"
-        >{{ f.label }}</button>
-      </div>
-
-      <!-- Desktop Table View (Width >= 768px) -->
-      <div class="hidden md:block overflow-x-auto mt-2">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-              <th class="py-4 pr-3 w-14">Foto</th>
-              <th class="py-4 pr-4">Produk</th>
-              <th class="py-4 pr-4">SKU</th>
-              <th class="py-4 pr-4">Kategori</th>
-              <th class="py-4 pr-4 text-right">Stok</th>
-              <th class="py-4 pr-4 text-right">Harga</th>
-              <th class="py-4 pr-4 text-right">Modal</th>
-              <th class="py-4 pr-4 text-center">Status</th>
-              <th class="py-4 text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
-            <tr v-for="item in filteredStocks" :key="item.uuid" class="transition-colors hover:bg-slate-50">
-              <!-- Thumbnail -->
-              <td class="py-3 pr-3">
-                <div class="w-10 h-10 overflow-hidden bg-slate-100 flex items-center justify-center shrink-0 border" style="border-color: var(--wp-border); border-radius: 0px;">
-                  <img
-                    v-if="item.photo_url"
-                    :src="item.photo_url"
-                    :alt="item.product_name"
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                    @error="$event.target.style.display='none'"
-                  />
-                  <Icon v-else name="heroicons:photo" class="w-5 h-5" style="color: #CBD5E1;" />
-                </div>
-              </td>
-              <td class="py-4 pr-4">
-                <p class="font-bold" style="color: var(--wp-text);">{{ item.product_name }}</p>
-                <p class="text-[10px] mt-0.5 truncate max-w-[180px]" style="color: var(--wp-text-secondary);">{{ item.description || 'Tidak ada deskripsi' }}</p>
-              </td>
-              <td class="py-4 pr-4 font-mono text-[11px]" style="color: var(--wp-text-secondary);">{{ item.sku || '—' }}</td>
-              <td class="py-4 pr-4">
-                <span class="px-2 py-0.5 text-[9px] font-bold border uppercase tracking-wider" style="background: rgba(15,26,46,0.04); color: var(--wp-navy); border-color: var(--wp-border); border-radius: 0px;">
-                  {{ item.category || 'Tanpa Kategori' }}
-                </span>
-              </td>
-              <td class="py-4 pr-4 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <span class="font-bold font-mono" :style="{ color: item.stock_quantity === 0 ? '#DC2626' : item.stock_quantity <= item.min_stock ? '#D97706' : 'var(--wp-text)' }">
-                    {{ item.stock_quantity }}
-                  </span>
-                  <span class="text-[10px] uppercase font-bold" style="color: var(--wp-text-secondary);">{{ item.unit }}</span>
-                </div>
-              </td>
-              <td class="py-4 pr-4 text-right font-bold font-mono" style="color: var(--wp-text);">
-                {{ formatRupiah(item.price) }}
-              </td>
-              <td class="py-4 pr-4 text-right font-mono text-[11px]" style="color: var(--wp-text-secondary);">
-                {{ item.cost_price ? formatRupiah(item.cost_price) : '—' }}
-              </td>
-              <td class="py-4 pr-4 text-center">
-                <span class="px-2.5 py-0.5 text-[9px] font-bold border inline-flex items-center gap-1 uppercase tracking-wider"
-                  :style="statusBadge(item)">
-                  <span class="w-1.5 h-1.5" :style="{ background: statusBadge(item).color }"></span>
-                  {{ statusLabel(item) }}
-                </span>
-              </td>
-              <td class="py-4 text-right">
-                <div class="flex items-center justify-end gap-1">
-                  <button @click="openEditModal(item)" class="p-2 border transition hover:bg-slate-50 min-h-[44px] min-w-[44px] flex items-center justify-center" style="border-color: var(--wp-border); border-radius: 0px;" title="Edit">
-                    <Icon name="heroicons:pencil-square" class="w-4 h-4" style="color: var(--wp-text);" />
-                  </button>
-                  <button @click="confirmDelete(item)" class="p-2 border transition hover:bg-red-50 min-h-[44px] min-w-[44px] flex items-center justify-center" style="border-color: #FECACA; border-radius: 0px;" title="Delete">
-                    <Icon name="heroicons:trash" class="w-4 h-4" style="color: #DC2626;" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Mobile Cards View (Width < 768px) -->
-      <div class="block md:hidden space-y-3 mt-4">
-        <!-- Select All Control -->
-        <div class="flex items-center justify-between p-3 bg-slate-50 border" style="border-color: var(--wp-border);">
-          <label class="flex items-center gap-2.5 cursor-pointer min-h-[44px]">
-            <input
-              type="checkbox"
-              :checked="selectAll"
-              @change="selectAll = ($event.target as HTMLInputElement).checked"
-              class="w-5 h-5 accent-[var(--wp-gold)]"
-            />
-            <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--wp-navy);">Pilih Semua ({{ filteredStocks.length }})</span>
-          </label>
-          <span v-if="selectedUuids.length > 0" class="text-xs font-bold font-mono" style="color: var(--wp-gold);">
-            {{ selectedUuids.length }} terpilih
-          </span>
-        </div>
-
-        <!-- Stacked Product Cards -->
-        <div
-          v-for="item in filteredStocks"
-          :key="item.uuid"
-          class="p-4 bg-[var(--wp-surface)] border border-[var(--wp-border)] space-y-3 relative shadow-sm"
+          @click="activeStatusFilter = 'all'; activeCategoryFilter = 'all'"
+          class="p-4 rounded-xl text-left transition-all border shadow-xs bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"
+          :class="activeStatusFilter === 'all' && activeCategoryFilter === 'all' ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-200 dark:border-slate-800'"
         >
-          <!-- Top Row: Checkbox, Thumbnail, Name, SKU -->
-          <div class="flex items-start gap-3">
-            <label class="min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0 cursor-pointer -ml-2">
-              <input
-                type="checkbox"
-                :checked="selectedUuids.includes(item.uuid)"
-                @change="toggleSelect(item.uuid)"
-                class="w-5 h-5 accent-[var(--wp-gold)]"
-              />
-            </label>
-            <div class="w-12 h-12 border bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden" style="border-color: var(--wp-border);">
-              <img v-if="item.photo_url" :src="item.photo_url" :alt="item.product_name" class="w-full h-full object-cover" />
-              <Icon v-else name="heroicons:photo" class="w-6 h-6 text-slate-300" />
-            </div>
-            <div class="min-w-0 flex-1">
-              <h4 class="font-bold text-sm leading-snug truncate" style="color: var(--wp-text);">{{ item.product_name }}</h4>
-              <p class="text-[11px] font-mono mt-0.5" style="color: var(--wp-text-secondary);">SKU: {{ item.sku || '—' }}</p>
-            </div>
-          </div>
+          <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Produk</span>
+          <p class="text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-slate-100 mt-1">{{ totalActiveProducts }}</p>
+          <p class="text-[10px] text-slate-400 mt-1">Klik untuk lihat semua</p>
+        </button>
 
-          <!-- Category & Status Pills -->
-          <div class="flex items-center justify-between gap-2 pt-1">
-            <span class="px-2 py-0.5 text-[9px] font-bold border uppercase tracking-wider"
-              style="background: rgba(15,26,46,0.04); color: var(--wp-navy); border-color: var(--wp-border);">
-              {{ item.category || 'Tanpa Kategori' }}
-            </span>
-            <span class="px-2.5 py-0.5 text-[9px] font-bold border inline-flex items-center gap-1 uppercase tracking-wider"
-              :style="statusBadge(item)">
-              <span class="w-1.5 h-1.5" :style="{ background: statusBadge(item).color }"></span>
-              {{ statusLabel(item) }}
-            </span>
+        <!-- Stok Menipis (Navigation Shortcut) -->
+        <button
+          @click="activeStatusFilter = 'low'"
+          class="p-4 rounded-xl text-left transition-all border shadow-xs bg-white dark:bg-slate-900 hover:border-amber-400"
+          :class="activeStatusFilter === 'low' ? 'border-amber-500 ring-1 ring-amber-500 bg-amber-50/20' : 'border-slate-200 dark:border-slate-800'"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-medium text-amber-700 dark:text-amber-400">Stok Menipis</span>
+            <span v-if="lowStockCount > 0" class="w-2 h-2 rounded-full bg-amber-500"></span>
           </div>
+          <p class="text-2xl font-bold font-mono tracking-tight text-amber-600 mt-1">{{ lowStockCount }}</p>
+          <p class="text-[10px] text-amber-700/80 dark:text-amber-400/80 mt-1">di bawah minimum stok</p>
+        </button>
 
-          <!-- Metrics Grid: Stock, Price, Cost Price -->
-          <div class="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 border" style="border-color: var(--wp-border);">
-            <div>
-              <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Stok Tersedia</span>
-              <span class="font-bold font-mono text-sm" style="color: var(--wp-text);">{{ item.stock_quantity }} {{ item.unit }}</span>
-            </div>
-            <div class="text-right">
-              <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Harga Jual</span>
-              <span class="font-bold font-mono text-sm" style="color: var(--wp-navy);">{{ formatRupiah(item.price) }}</span>
-              <span v-if="item.cost_price" class="text-[10px] font-mono block text-slate-400">Modal: {{ formatRupiah(item.cost_price) }}</span>
-            </div>
+        <!-- Stok Habis (Navigation Shortcut) -->
+        <button
+          @click="activeStatusFilter = 'out'"
+          class="p-4 rounded-xl text-left transition-all border shadow-xs bg-white dark:bg-slate-900 hover:border-red-400"
+          :class="activeStatusFilter === 'out' ? 'border-red-500 ring-1 ring-red-500 bg-red-50/20' : 'border-slate-200 dark:border-slate-800'"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-medium text-red-600 dark:text-red-400">Stok Habis</span>
+            <span v-if="outOfStockCount > 0" class="w-2 h-2 rounded-full bg-red-500"></span>
           </div>
+          <p class="text-2xl font-bold font-mono tracking-tight text-red-600 mt-1">{{ outOfStockCount }}</p>
+          <p class="text-[10px] text-red-600/80 dark:text-red-400/80 mt-1">perlu restock segera</p>
+        </button>
 
-          <!-- Card Actions Footer with 44px touch targets -->
-          <div class="flex items-center gap-2 pt-2 border-t" style="border-color: var(--wp-border);">
-            <button
-              @click="openEditModal(item)"
-              class="flex-1 min-h-[44px] px-3 border border-[var(--wp-border)] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-slate-50"
-              style="color: var(--wp-text);"
-            >
-              <Icon name="heroicons:pencil-square" class="w-4 h-4 text-slate-500" />
-              <span>Edit</span>
+        <!-- Nilai Stok -->
+        <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-900">
+          <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Nilai Stok (Total)</span>
+          <p class="text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-slate-100 mt-1">{{ formatRupiah(totalStockValue) }}</p>
+          <p class="text-[10px] text-slate-400 mt-1">Berdasarkan harga jual</p>
+        </div>
+      </div>
+
+      <!-- ═══════════ 6. SEARCH & MULTI-FILTER BAR ═══════════ -->
+      <div class="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+          <!-- Multi-column Search -->
+          <div class="relative flex-1">
+            <Icon name="lucide:search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400 z-10" />
+            <Input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Cari produk, SKU, barcode, atau kategori…"
+              class="w-full h-9 pl-9 pr-8 text-xs rounded-lg"
+              @input="onSearchInput"
+            />
+            <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 z-10">
+              <Icon name="lucide:x" class="w-4 h-4" />
             </button>
-            <button
-              @click="confirmDelete(item)"
-              class="min-h-[44px] px-4 border border-red-200 text-red-600 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:bg-red-50"
+          </div>
+
+          <!-- Dropdown Filters (Category + Stock Status) -->
+          <div class="flex items-center gap-2">
+            <!-- Category Filter -->
+            <select
+              v-model="activeCategoryFilter"
+              class="h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium"
             >
-              <Icon name="heroicons:trash" class="w-4 h-4" />
-              <span>Hapus</span>
-            </button>
+              <option value="all">Semua Kategori</option>
+              <option v-for="cat in availableCategories" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select
+              v-model="activeStatusFilter"
+              class="h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium"
+            >
+              <option value="all">Semua Status</option>
+              <option value="in">In Stock (Tersedia)</option>
+              <option value="low">Low Stock (Menipis)</option>
+              <option value="out">Out of Stock (Habis)</option>
+            </select>
+
+            <!-- Reset Button -->
+            <Button
+              v-if="searchQuery || activeCategoryFilter !== 'all' || activeStatusFilter !== 'all'"
+              variant="ghost" size="sm" class="h-9 text-xs text-slate-500 hover:text-slate-900"
+              @click="resetFilters"
+            >
+              Reset
+            </Button>
           </div>
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="pt-4 border-t mt-2 flex items-center justify-between" style="border-color: var(--wp-border);">
-        <p class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-          Menampilkan {{ filteredStocks.length }} dari {{ stocks.length }} produk
-        </p>
-      </div>
-    </div>
+      <!-- ═══════════ 7. PRODUCTION PRODUCT TABLE (CLEAN 7-COLUMN) ═══════════ -->
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+        <!-- Desktop Table View (>= 768px) -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                <th class="py-3 px-4 w-10">
+                  <input type="checkbox" :checked="selectAll" @change="selectAll = ($event.target as HTMLInputElement).checked" class="rounded border-slate-300 text-emerald-600" />
+                </th>
+                <th class="py-3 px-3 w-12 text-center">Foto</th>
+                <th class="py-3 px-4 cursor-pointer hover:text-slate-900" @click="toggleSort('product_name')">
+                  Product <span v-if="sortBy === 'product_name'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </th>
+                <th class="py-3 px-4">SKU</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4 text-right cursor-pointer hover:text-slate-900" @click="toggleSort('stock_quantity')">
+                  Stock <span v-if="sortBy === 'stock_quantity'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </th>
+                <th class="py-3 px-4 text-right cursor-pointer hover:text-slate-900" @click="toggleSort('price')">
+                  Selling Price <span v-if="sortBy === 'price'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+                </th>
+                <th class="py-3 px-4 text-center">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+              <tr
+                v-for="item in paginatedStocks" :key="item.uuid"
+                class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+                @click="openQuickView(item)"
+              >
+                <!-- Checkbox -->
+                <td class="py-3 px-4" @click.stop>
+                  <input
+                    type="checkbox"
+                    :checked="selectedUuids.includes(item.uuid)"
+                    @change="toggleSelect(item.uuid)"
+                    class="rounded border-slate-300 text-emerald-600"
+                  />
+                </td>
 
-    <!-- ═══════════ CREATE / EDIT MODAL (RESPONSIVE) ═══════════ -->
+                <!-- Image Thumbnail -->
+                <td class="py-2 px-3 text-center">
+                  <div class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center mx-auto">
+                    <img v-if="item.photo_url" :src="item.photo_url" :alt="item.product_name" class="w-full h-full object-cover" />
+                    <Icon v-else name="lucide:image" class="w-4 h-4 text-slate-400" />
+                  </div>
+                </td>
+
+                <!-- Product Name + SKU Subtitle -->
+                <td class="py-3 px-4">
+                  <p class="font-bold text-slate-900 dark:text-slate-100 hover:text-emerald-600 transition-colors">{{ item.product_name }}</p>
+                  <p class="text-[11px] text-slate-400 font-mono mt-0.5">{{ item.sku || 'No SKU' }}</p>
+                </td>
+
+                <!-- SKU Code -->
+                <td class="py-3 px-4 font-mono text-[11px] text-slate-500 dark:text-slate-400">{{ item.sku || '—' }}</td>
+
+                <!-- Category Badge (Subtle Soft Slate) -->
+                <td class="py-3 px-4">
+                  <span class="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    {{ item.category || 'Uncategorized' }}
+                  </span>
+                </td>
+
+                <!-- Stock + Visual Signal -->
+                <td class="py-3 px-4 text-right font-mono">
+                  <span class="font-semibold text-slate-900 dark:text-slate-100">{{ item.stock_quantity }}</span>
+                  <span class="text-[10px] text-slate-400 uppercase ml-1">{{ item.unit }}</span>
+                  <span v-if="item.stock_quantity <= item.min_stock && item.stock_quantity > 0" class="block text-[10px] text-amber-600 font-medium">Low stock</span>
+                  <span v-else-if="item.stock_quantity === 0" class="block text-[10px] text-red-600 font-medium">Out of stock</span>
+                </td>
+
+                <!-- Price -->
+                <td class="py-3 px-4 text-right font-mono font-semibold text-slate-900 dark:text-slate-100">
+                  {{ formatRupiah(item.price) }}
+                </td>
+
+                <!-- Status Dot Badge -->
+                <td class="py-3 px-4 text-center">
+                  <Badge
+                    :variant="item.stock_quantity === 0 ? 'destructive' : item.stock_quantity <= item.min_stock ? 'warning' : 'success'"
+                    class="text-[10px] rounded-md font-medium gap-1"
+                  >
+                    {{ item.stock_quantity === 0 ? 'Out of Stock' : item.stock_quantity <= item.min_stock ? 'Low Stock' : 'In Stock' }}
+                  </Badge>
+                </td>
+
+                <!-- Actions (Safe Edit & Safe Delete) -->
+                <td class="py-3 px-4 text-right" @click.stop>
+                  <div class="flex items-center justify-end gap-1">
+                    <button class="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded" @click="openQuickView(item)" title="Quick View">
+                      <Icon name="lucide:eye" class="w-4 h-4" />
+                    </button>
+                    <button class="p-1.5 text-slate-400 hover:text-emerald-600 rounded" @click="openEditModal(item)" title="Edit">
+                      <Icon name="lucide:pencil" class="w-4 h-4" />
+                    </button>
+                    <button class="p-1.5 text-slate-400 hover:text-red-600 rounded" @click="confirmDelete(item)" title="Delete">
+                      <Icon name="lucide:trash-2" class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card List View (< 768px) -->
+        <div class="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+          <div v-for="item in paginatedStocks" :key="item.uuid" class="p-4 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100" @click="openQuickView(item)">{{ item.product_name }}</h4>
+                <p class="text-[11px] font-mono text-slate-400">SKU: {{ item.sku || '—' }}</p>
+              </div>
+              <span class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(item.price) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs pt-1">
+              <span class="text-slate-500 font-mono">{{ item.stock_quantity }} {{ item.unit }}</span>
+              <Badge
+                :variant="item.stock_quantity === 0 ? 'destructive' : item.stock_quantity <= item.min_stock ? 'warning' : 'success'"
+                class="text-[10px]"
+              >
+                {{ item.stock_quantity === 0 ? 'Out of Stock' : item.stock_quantity <= item.min_stock ? 'Low Stock' : 'In Stock' }}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ SERVER-SIDE PAGINATION FOOTER ═══════════ -->
+        <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+          <p>Showing {{ (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, filteredStocks.length) }} of {{ filteredStocks.length }} products</p>
+          <div class="flex items-center gap-2">
+            <select v-model="pageSize" class="h-8 px-2 rounded border border-slate-200 dark:border-slate-800 text-xs">
+              <option :value="15">15 per page</option>
+              <option :value="30">30 per page</option>
+              <option :value="50">50 per page</option>
+            </select>
+            <div class="flex items-center gap-1">
+              <Button variant="outline" size="sm" class="h-8 px-2" :disabled="currentPage === 1" @click="currentPage--">Prev</Button>
+              <span class="px-2 font-mono font-medium text-slate-700 dark:text-slate-300">{{ currentPage }} / {{ totalPages }}</span>
+              <Button variant="outline" size="sm" class="h-8 px-2" :disabled="currentPage >= totalPages" @click="currentPage++">Next</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- ═══════════ 8. QUICK VIEW SIDE DRAWER ═══════════ -->
     <Teleport to="body">
-      <div
-        v-if="showModal"
-        class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 md:py-8 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-        @click.self="closeModal"
-      >
-        <div class="bg-white shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-fade-in-up border-t md:border rounded-t-2xl md:rounded-none overflow-hidden" style="border-color: var(--wp-navy);">
+      <div v-if="selectedQuickView" class="fixed inset-0 z-[100] flex justify-end bg-black/50 backdrop-blur-xs" @click.self="selectedQuickView = null">
+        <div class="w-full max-w-md bg-white dark:bg-slate-900 h-full p-6 space-y-6 overflow-y-auto border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between">
+          <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Product Details</h3>
+              <button @click="selectedQuickView = null" class="text-slate-400 hover:text-slate-600">
+                <Icon name="lucide:x" class="w-5 h-5" />
+              </button>
+            </div>
+
+            <!-- Product Image Preview in Drawer -->
+            <div class="w-full h-48 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 flex items-center justify-center relative group">
+              <img
+                v-if="selectedQuickView.photo_url"
+                :src="selectedQuickView.photo_url"
+                :alt="selectedQuickView.product_name"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="text-center space-y-2 text-slate-400">
+                <Icon name="lucide:image" class="w-10 h-10 mx-auto opacity-50" />
+                <span class="text-xs block">Tidak ada foto produk</span>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ selectedQuickView.product_name }}</h2>
+                <p class="text-xs font-mono text-slate-400 mt-0.5">SKU: {{ selectedQuickView.sku || '—' }}</p>
+                <p v-if="selectedQuickView.description" class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  {{ selectedQuickView.description }}
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <div>
+                  <span class="text-[11px] font-medium text-slate-400">Stock Available</span>
+                  <p class="text-xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-0.5">{{ selectedQuickView.stock_quantity }} {{ selectedQuickView.unit }}</p>
+                </div>
+                <div>
+                  <span class="text-[11px] font-medium text-slate-400">Selling Price</span>
+                  <p class="text-xl font-bold font-mono text-emerald-600 mt-0.5">{{ formatRupiah(selectedQuickView.price) }}</p>
+                </div>
+              </div>
+
+              <div class="space-y-2 text-xs">
+                <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                  <span class="text-slate-400">Cost Price (Modal)</span>
+                  <span class="font-mono font-medium text-slate-700 dark:text-slate-300">{{ selectedQuickView.cost_price ? formatRupiah(selectedQuickView.cost_price) : '—' }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                  <span class="text-slate-400">Category</span>
+                  <span class="font-medium text-slate-700 dark:text-slate-300">{{ selectedQuickView.category || 'Uncategorized' }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                  <span class="text-slate-400">Minimum Stock</span>
+                  <span class="font-mono font-medium text-slate-700 dark:text-slate-300">{{ selectedQuickView.min_stock }} {{ selectedQuickView.unit }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                  <span class="text-slate-400">Barcode</span>
+                  <span class="font-mono font-medium text-slate-700 dark:text-slate-300">{{ selectedQuickView.barcode || '—' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
+            <Button variant="outline" class="flex-1 rounded-lg text-xs" @click="selectedQuickView = null">Close</Button>
+            <Button class="flex-1 bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold" @click="openEditModal(selectedQuickView); selectedQuickView = null">
+              Edit Product
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- ═══════════ 9. CREATE / EDIT PRODUCT MODAL (HIGH Z-INDEX) ═══════════ -->
+    <Teleport to="body">
+      <div v-if="showModal" class="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-xs" @click.self="closeModal">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col rounded-t-2xl md:rounded-2xl overflow-hidden animate-in fade-in zoom-in-95">
           <!-- Modal Header -->
-          <div class="shrink-0 bg-white flex items-center justify-between px-6 py-4 border-b z-10" style="border-color: var(--wp-border);">
+          <div class="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h2 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-navy);">
+              <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">
                 {{ isEditing ? 'Edit Detail Produk' : 'Buat Produk Baru' }}
               </h2>
-              <p class="text-[10px] font-medium mt-0.5" style="color: var(--wp-text-secondary);">
-                {{ isEditing ? 'Perbarui level stok, informasi unit dan url foto.' : 'Masukkan spesifikasi produk untuk disinkronkan ke database katalog.' }}
+              <p class="text-xs text-slate-500 mt-0.5">
+                {{ isEditing ? 'Perbarui level stok, harga, foto, dan informasi katalog.' : 'Masukkan spesifikasi produk baru ke inventaris toko.' }}
               </p>
             </div>
-            <button @click="closeModal" class="p-2 border transition hover:bg-slate-100" style="border-color: var(--wp-border); border-radius: 0px;">
-              <Icon name="heroicons:x-mark" class="w-4 h-4" style="color: var(--wp-text-secondary);" />
+            <button @click="closeModal" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
+              <Icon name="lucide:x" class="w-5 h-5" />
             </button>
           </div>
 
-          <!-- Modal Body -->
-          <form @submit.prevent="saveProduct" class="p-6 space-y-4 overflow-y-auto min-h-0 flex-1">
-            <!-- Row 1: Product Name + SKU -->
+          <!-- Modal Body Form -->
+          <form @submit.prevent="saveProduct" class="p-6 space-y-4 overflow-y-auto min-h-0 flex-1 text-xs">
+            <!-- Row 1: Product Name & SKU -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-                  Nama Produk <span style="color: #DC2626;">*</span>
-                </label>
-                <input
+                <Label for="form-name" class="font-semibold text-slate-700 dark:text-slate-300">
+                  Nama Produk <span class="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="form-name"
                   v-model="form.product_name"
                   type="text"
                   required
                   placeholder="Cth: Indomie Goreng Spesial"
-                  class="w-full px-4 py-2.5 rounded-lg md:rounded-none text-sm outline-none transition border"
-                  :class="formErrors.product_name ? 'border-red-300 bg-red-50/30' : ''"
-                  style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
+                  class="h-9 text-xs rounded-lg"
                 />
-                <p v-if="formErrors.product_name" class="text-[10px] font-medium" style="color: #DC2626;">{{ formErrors.product_name }}</p>
+                <p v-if="formErrors.product_name" class="text-[10px] text-red-500 font-medium">{{ formErrors.product_name }}</p>
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">SKU</label>
-                <input
+                <Label for="form-sku" class="font-semibold text-slate-700 dark:text-slate-300">SKU Code</Label>
+                <Input
+                  id="form-sku"
                   v-model="form.sku"
                   type="text"
-                  placeholder="e.g. IND-GOR-001"
-                  class="w-full px-4 py-2.5 rounded-lg md:rounded-none text-sm outline-none transition border"
-                  style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
+                  placeholder="Cth: IND-GOR-001"
+                  class="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
             </div>
 
-            <!-- Row 2: Barcode + Category -->
+            <!-- Row 2: Barcode & Category -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Barcode</label>
-                <input
+                <Label for="form-barcode" class="font-semibold text-slate-700 dark:text-slate-300">Barcode / EAN</Label>
+                <Input
+                  id="form-barcode"
                   v-model="form.barcode"
                   type="text"
-                  placeholder="e.g. 8991234567890"
-                  class="w-full px-4 py-2.5 rounded-lg md:rounded-none text-sm outline-none transition border"
-                  style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
+                  placeholder="Cth: 8991234567890"
+                  class="h-9 text-xs rounded-lg font-mono"
                 />
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Kategori</label>
-                <div class="relative">
-                  <select
-                    v-model="form.category"
-                    class="w-full px-4 py-2.5 rounded-lg md:rounded-none text-sm outline-none transition border appearance-none"
-                    style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
-                  >
-                    <option value="">Pilih Kategori</option>
-                    <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
-                  </select>
-                  <Icon name="heroicons:chevron-down" class="absolute right-3 top-3 w-4 h-4 pointer-events-none" style="color: var(--wp-text-secondary);" />
-                </div>
+                <Label for="form-category" class="font-semibold text-slate-700 dark:text-slate-300">Kategori Produk</Label>
+                <select id="form-category" v-model="form.category" class="w-full h-9 px-3 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  <option value="">Pilih Kategori</option>
+                  <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                </select>
               </div>
             </div>
 
-            <!-- Row 3: Photo Upload -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Foto Produk</label>
-              <div class="flex items-start gap-4">
-                <!-- Preview -->
-                <div class="w-24 h-24 border-2 border-dashed flex items-center justify-center overflow-hidden shrink-0 relative"
-                  style="border-color: var(--wp-border); background: var(--wp-bg);">
-                  <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
-                  <Icon v-else name="heroicons:photo" class="w-8 h-8" style="color: #94A3B8;" />
+            <!-- Row 3: Product Image CRUD (Upload / URL) -->
+            <div class="space-y-2">
+              <Label class="font-semibold text-slate-700 dark:text-slate-300">Foto Produk</Label>
+              <div class="flex items-start gap-4 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+                <div class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden shrink-0 flex items-center justify-center relative">
+                  <img v-if="imagePreview || form.photo_url" :src="imagePreview || form.photo_url" class="w-full h-full object-cover" />
+                  <Icon v-else name="lucide:image" class="w-6 h-6 text-slate-400" />
                   <div v-if="uploadingImage" class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div class="w-6 h-6 border-2 animate-spin" style="border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
+                    <div class="w-5 h-5 border-2 border-white/30 border-t-white animate-spin rounded-full"></div>
                   </div>
                 </div>
+
                 <div class="flex-1 space-y-2">
-                  <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition border hover:border-[var(--wp-gold)] min-h-[44px]"
-                    style="border-color: var(--wp-border); color: var(--wp-text-secondary); background: var(--wp-bg);">
-                    <Icon name="heroicons:cloud-arrow-up" class="w-4 h-4" />
-                    <span>{{ form.photo_url ? 'Ganti Foto' : 'Upload Foto' }}</span>
-                    <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
-                  </label>
-                  <p class="text-[9px]" style="color: var(--wp-text-secondary);">JPG, PNG, WEBP · Maks 5MB · Auto WebP</p>
-                  <p v-if="form.photo_url" class="text-[10px] font-mono font-medium truncate" style="color: var(--wp-success);">
-                    {{ form.photo_url }}
-                  </p>
-                  <p v-if="uploadError" class="text-[10px] font-medium" style="color: #DC2626;">{{ uploadError }}</p>
+                  <div class="flex items-center gap-2">
+                    <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-emerald-500 font-medium text-xs">
+                      <Icon name="lucide:upload" class="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{{ form.photo_url ? 'Ganti Foto' : 'Upload File' }}</span>
+                      <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
+                    </label>
+                    <button v-if="form.photo_url || imagePreview" type="button" class="text-red-500 hover:text-red-700 p-1.5" @click="form.photo_url = ''; imagePreview = ''" title="Hapus foto">
+                      <Icon name="lucide:trash-2" class="w-4 h-4" />
+                    </button>
+                  </div>
+                  <Input
+                    v-model="form.photo_url"
+                    type="text"
+                    placeholder="Atau masukkan URL Foto (http://...)"
+                    class="h-8 text-xs font-mono rounded-md"
+                  />
+                  <p class="text-[10px] text-slate-400">JPG, PNG, WEBP Maksimal 5MB.</p>
+                  <p v-if="uploadError" class="text-[10px] text-red-500 font-medium">{{ uploadError }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Row 4: Description -->
             <div class="space-y-1.5">
-              <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Deskripsi</label>
-              <textarea
+              <Label for="form-desc" class="font-semibold text-slate-700 dark:text-slate-300">Deskripsi</Label>
+              <Textarea
+                id="form-desc"
                 v-model="form.description"
                 rows="2"
-                placeholder="Deskripsi singkat mengenai produk…"
-                class="w-full px-4 py-2.5 text-sm outline-none transition border resize-none font-medium rounded-lg md:rounded-none"
-                style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
-              ></textarea>
+                placeholder="Deskripsi singkat produk…"
+                class="text-xs rounded-lg"
+              />
             </div>
 
-            <!-- Row 5: Price + Cost Price -->
+            <!-- Row 5: Price & Cost Price -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-                  Harga Jual <span style="color: #DC2626;">*</span>
-                </label>
+                <Label for="form-price" class="font-semibold text-slate-700 dark:text-slate-300">
+                  Harga Jual <span class="text-red-500">*</span>
+                </Label>
                 <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-xs font-semibold" style="color: var(--wp-text-secondary);">Rp</span>
-                  <input
+                  <span class="absolute left-3 top-2 text-xs font-semibold text-slate-400">Rp</span>
+                  <Input
+                    id="form-price"
                     v-model.number="form.price"
                     type="number"
                     required
                     min="0"
-                    step="100"
                     placeholder="0"
-                    class="w-full pl-10 pr-4 py-2.5 text-sm outline-none transition border font-mono font-semibold rounded-lg md:rounded-none"
-                    :class="formErrors.price ? 'border-red-300 bg-red-50/30' : ''"
-                    style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
+                    class="pl-9 h-9 text-xs font-mono rounded-lg"
                   />
                 </div>
-                <p v-if="formErrors.price" class="text-[10px] font-medium" style="color: #DC2626;">{{ formErrors.price }}</p>
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Cost Price (Harga Modal)</label>
+                <Label for="form-cost" class="font-semibold text-slate-700 dark:text-slate-300">Cost Price (Harga Modal)</Label>
                 <div class="relative">
-                  <span class="absolute left-3 top-2.5 text-xs font-semibold" style="color: var(--wp-text-secondary);">Rp</span>
-                  <input
+                  <span class="absolute left-3 top-2 text-xs font-semibold text-slate-400">Rp</span>
+                  <Input
+                    id="form-cost"
                     v-model.number="form.cost_price"
                     type="number"
                     min="0"
-                    step="100"
                     placeholder="0"
-                    class="w-full pl-10 pr-4 py-2.5 text-sm outline-none transition border font-mono font-semibold rounded-lg md:rounded-none"
-                    style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
+                    class="pl-9 h-9 text-xs font-mono rounded-lg"
                   />
                 </div>
               </div>
             </div>
 
-            <!-- Row 6: Stock Quantity + Min Stock + Unit -->
+            <!-- Row 6: Stock, Min Stock & Unit -->
             <div class="grid grid-cols-3 gap-3">
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">
-                  Stok <span style="color: #DC2626;">*</span>
-                </label>
-                <input
+                <Label for="form-stock" class="font-semibold text-slate-700 dark:text-slate-300">
+                  Stok Available <span class="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="form-stock"
                   v-model.number="form.stock_quantity"
                   type="number"
                   required
                   min="0"
                   placeholder="0"
-                  class="w-full px-3 py-2.5 text-sm outline-none transition border font-mono font-semibold rounded-lg md:rounded-none"
-                  :class="formErrors.stock_quantity ? 'border-red-300 bg-red-50/30' : ''"
-                  style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
+                  class="h-9 text-xs font-mono rounded-lg"
                 />
-                <p v-if="formErrors.stock_quantity" class="text-[10px] font-medium" style="color: #DC2626;">{{ formErrors.stock_quantity }}</p>
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Min Stok</label>
-                <input
+                <Label for="form-min" class="font-semibold text-slate-700 dark:text-slate-300">Min Stok</Label>
+                <Input
+                  id="form-min"
                   v-model.number="form.min_stock"
                   type="number"
                   min="0"
                   placeholder="0"
-                  class="w-full px-3 py-2.5 text-sm outline-none transition border font-mono font-semibold rounded-lg md:rounded-none"
-                  style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
+                  class="h-9 text-xs font-mono rounded-lg"
                 />
               </div>
               <div class="space-y-1.5">
-                <label class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Satuan</label>
-                <select
-                  v-model="form.unit"
-                  class="w-full px-2 py-2.5 text-sm outline-none transition border appearance-none font-bold uppercase tracking-wider rounded-lg md:rounded-none"
-                  style="background: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);"
-                >
+                <Label for="form-unit" class="font-semibold text-slate-700 dark:text-slate-300">Satuan</Label>
+                <select id="form-unit" v-model="form.unit" class="w-full h-9 px-2 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
                   <option value="pcs">pcs</option>
                   <option value="kg">kg</option>
                   <option value="liter">liter</option>
@@ -509,30 +592,20 @@
               </div>
             </div>
 
-            <!-- Modal Footer inside form -->
-            <div class="flex justify-between items-center pt-4 border-t" style="border-color: var(--wp-border);">
-              <label v-if="isEditing" class="flex items-center gap-2 cursor-pointer select-none">
-                <input v-model="form.is_active" type="checkbox" class="w-4 h-4 accent-[var(--wp-gold)]" />
-                <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Produk Aktif</span>
+            <!-- Footer Buttons -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+              <label v-if="isEditing" class="flex items-center gap-2 cursor-pointer">
+                <input v-model="form.is_active" type="checkbox" class="rounded border-slate-300 text-emerald-600" />
+                <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Produk Aktif</span>
               </label>
               <div v-else></div>
-              <div class="flex gap-3">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="px-5 py-2.5 border font-bold text-xs uppercase tracking-wider transition min-h-[44px]"
-                  style="border-color: var(--wp-border); color: var(--wp-text-secondary);"
-                >Batal</button>
-                <button
-                  type="submit"
-                  :disabled="saving"
-                  class="px-5 py-2.5 text-white font-bold text-xs uppercase tracking-wider transition flex items-center gap-2 min-h-[44px]"
-                  style="background: var(--wp-navy);"
-                >
-                  <Icon v-if="saving" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-                  <Icon v-else name="heroicons:check" class="w-4 h-4" />
-                  <span>{{ isEditing ? 'Perbarui Produk' : 'Simpan Produk' }}</span>
-                </button>
+              <div class="flex gap-2">
+                <Button type="button" variant="outline" size="sm" @click="closeModal" class="rounded-lg">Batal</Button>
+                <Button type="submit" size="sm" :disabled="saving" class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg font-semibold">
+                  <Icon v-if="saving" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                  <Icon v-else name="lucide:check" class="w-4 h-4" />
+                  <span>{{ isEditing ? 'Simpan Perubahan' : 'Simpan Produk' }}</span>
+                </Button>
               </div>
             </div>
           </form>
@@ -540,115 +613,74 @@
       </div>
     </Teleport>
 
-    <!-- ═══════════ DELETE CONFIRMATION (RESPONSIVE) ═══════════ -->
-    <Teleport to="body">
-      <div
-        v-if="showDeleteConfirm"
-        class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-xs"
-        @click.self="showDeleteConfirm = false"
-      >
-        <div class="bg-white p-6 max-w-sm w-full animate-fade-in-up text-center border" style="border-color: var(--wp-navy); border-radius: 0px;">
-          <div class="w-12 h-12 mx-auto flex items-center justify-center mb-4" style="background: #FEF2F2;">
-            <Icon name="heroicons:exclamation-triangle" class="w-6 h-6" style="color: #DC2626;" />
-          </div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-text);">Hapus Produk?</h3>
-          <p class="text-xs mt-2" style="color: var(--wp-text-secondary);">
-            Apakah Anda yakin ingin menghapus <strong style="color: var(--wp-text);">"{{ deleteTarget?.product_name }}"</strong>?
-            Tindakan ini tidak dapat dibatalkan.
-          </p>
-          <div class="flex gap-3 mt-6">
-            <button
-              @click="showDeleteConfirm = false"
-              class="flex-1 py-2.5 border font-bold text-xs uppercase tracking-wider transition min-h-[44px]"
-              style="border-color: var(--wp-border); color: var(--wp-text-secondary);"
-            >Batal</button>
-            <button
-              @click="doDelete"
-              :disabled="deleting"
-              class="flex-1 py-2.5 text-white font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 min-h-[44px]"
-              style="background: #DC2626;"
-            >
-              <Icon v-if="deleting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <span>Hapus</span>
-            </button>
+    <!-- ═══════════ 10. CSV / EXCEL IMPORT MODAL ═══════════ -->
+    <Dialog :open="showImportModal" @update:open="showImportModal = $event">
+      <DialogContent class="sm:max-w-md" @close="showImportModal = false">
+        <DialogHeader>
+          <DialogTitle>Import Produk (CSV / Excel)</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-2 text-xs text-slate-600">
+          <p>Upload file CSV atau Excel berisi daftar produk Anda dengan kolom wajib: <code>name, sku, category, stock, price</code>.</p>
+          <div class="border-2 border-dashed border-slate-200 dark:border-slate-800 p-6 rounded-xl text-center space-y-2">
+            <Icon name="lucide:file-spreadsheet" class="w-8 h-8 mx-auto text-emerald-600" />
+            <p class="font-medium">Pilih file CSV atau XLS untuk di-upload</p>
+            <input type="file" accept=".csv, .xlsx, .xls" class="hidden" id="import-file" @change="handleImportFile" />
+            <label for="import-file" class="inline-block px-4 py-2 rounded-lg bg-emerald-50 text-emerald-700 font-semibold cursor-pointer">Browse File</label>
           </div>
         </div>
-      </div>
-    </Teleport>
-    <!-- ═══════════ FLOATING BATCH ACTION BAR ═══════════ -->
-    <Teleport to="body">
-      <Transition name="slide-up">
-        <div
-          v-if="selectedUuids.length > 0"
-          class="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-[var(--wp-z-sticky)] p-4 shadow-xl flex items-center justify-between border border-[var(--wp-gold)]"
-          style="background: var(--wp-navy); color: white; border-radius: 4px;"
-        >
-          <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-[var(--wp-gold)] text-white text-xs font-black flex items-center justify-center">
-              {{ selectedUuids.length }}
-            </span>
-            <span class="text-xs font-bold uppercase tracking-wider">Produk Terpilih</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button
-              @click="selectedUuids = []"
-              class="min-h-[44px] px-3 py-2 text-xs font-bold text-slate-300 hover:text-white"
-            >
-              Batal
-            </button>
-            <button
-              @click="confirmBatchDelete"
-              class="min-h-[44px] px-4 py-2 bg-red-600 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1 rounded"
-            >
-              <Icon name="heroicons:trash" class="w-4 h-4" />
-              <span>Hapus</span>
-            </button>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+      </DialogContent>
+    </Dialog>
 
-    <!-- ═══════════ BATCH DELETE CONFIRMATION ═══════════ -->
-    <Teleport to="body">
-      <div
-        v-if="showBatchDeleteConfirm"
-        class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/60 backdrop-blur-xs"
-        @click.self="showBatchDeleteConfirm = false"
-      >
-        <div class="bg-white p-6 max-w-sm w-full animate-fade-in-up text-center border" style="border-color: var(--wp-navy); border-radius: 0px;">
-          <div class="w-12 h-12 mx-auto flex items-center justify-center mb-4" style="background: #FEF2F2;">
-            <Icon name="heroicons:exclamation-triangle" class="w-6 h-6" style="color: #DC2626;" />
-          </div>
-          <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-text);">Hapus {{ selectedUuids.length }} Produk?</h3>
-          <p class="text-xs mt-2" style="color: var(--wp-text-secondary);">
-            Apakah Anda yakin ingin menghapus {{ selectedUuids.length }} produk terpilih? Tindakan ini tidak dapat dibatalkan.
-          </p>
-          <div class="flex gap-3 mt-6">
-            <button
-              @click="showBatchDeleteConfirm = false"
-              class="flex-1 py-2 border font-bold text-xs uppercase tracking-wider transition"
-              style="border-color: var(--wp-border); color: var(--wp-text-secondary); border-radius: 0px;"
-            >Batal</button>
-            <button
-              @click="doBatchDelete"
-              :disabled="deleting"
-              class="flex-1 py-2 text-white font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2"
-              style="background: #DC2626; border-radius: 0px;"
-            >
-              <Icon v-if="deleting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <span>Hapus Semua</span>
-            </button>
-          </div>
+    <!-- ═══════════ 11. SAFE DELETE CONFIRMATION DIALOG ═══════════ -->
+    <Dialog :open="showDeleteConfirm" @update:open="showDeleteConfirm = $event">
+      <DialogContent class="sm:max-w-sm" @close="showDeleteConfirm = false">
+        <div class="w-12 h-12 mx-auto flex items-center justify-center mb-4 rounded-full bg-red-50 text-red-600">
+          <Icon name="lucide:alert-triangle" class="w-6 h-6" />
         </div>
+        <DialogHeader>
+          <DialogTitle class="text-center">Hapus Produk?</DialogTitle>
+        </DialogHeader>
+        <p class="text-xs mt-2 text-center text-slate-500">
+          Apakah Anda yakin ingin menghapus <strong class="text-slate-900 dark:text-slate-100">"{{ deleteTarget?.product_name }}"</strong>?
+          <span v-if="deleteTarget && deleteTarget.stock_quantity > 0" class="block font-semibold text-amber-600 mt-1">Produk ini memiliki {{ deleteTarget.stock_quantity }} {{ deleteTarget.unit }} di inventaris.</span>
+        </p>
+        <div class="flex gap-3 mt-6">
+          <Button variant="outline" @click="showDeleteConfirm = false" class="flex-1 rounded-lg text-xs">Batal</Button>
+          <Button variant="destructive" @click="doDelete" :disabled="deleting" class="flex-1 rounded-lg text-xs">
+            <span>Hapus Produk</span>
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    <!-- ═══════════ 12. BULK SELECTION ACTION BAR ═══════════ -->
+    <Teleport to="body">
+      <div v-if="selectedUuids.length > 0" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 shadow-xl bg-slate-900 text-white rounded-xl flex items-center gap-4 text-xs">
+        <span class="font-bold font-mono">{{ selectedUuids.length }} selected</span>
+        <div class="h-4 w-px bg-slate-700"></div>
+        <button class="hover:text-red-400 font-medium" @click="confirmBatchDelete">Delete Selected</button>
+        <button class="text-slate-400 hover:text-white" @click="selectedUuids = []">Cancel</button>
       </div>
     </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { api } from '~/utils/api'
-import MobileSheet from '~/components/mobile/MobileSheet.vue'
+import Card from '~/components/ui/card.vue'
+import CardContent from '~/components/ui/card-content.vue'
+import Badge from '~/components/ui/badge.vue'
+import Button from '~/components/ui/button.vue'
+import Input from '~/components/ui/input.vue'
+import Label from '~/components/ui/label.vue'
+import Textarea from '~/components/ui/textarea.vue'
+import Select from '~/components/ui/select.vue'
+import Dialog from '~/components/ui/dialog.vue'
+import DialogContent from '~/components/ui/dialog-content.vue'
+import DialogHeader from '~/components/ui/dialog-header.vue'
+import DialogTitle from '~/components/ui/dialog-title.vue'
+import Skeleton from '~/components/ui/skeleton.vue'
 
 // ── Types ──
 interface StockItem {
@@ -689,6 +721,24 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const searchQuery = ref('')
 const activeCategoryFilter = ref('all')
+const activeStatusFilter = ref<'all' | 'in' | 'low' | 'out'>('all')
+
+// Sorting State
+const sortBy = ref<'product_name' | 'stock_quantity' | 'price'>('product_name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
+
+// Pagination State
+const currentPage = ref(1)
+const pageSize = ref(15)
+
+// Modals & Drawers
+const selectedQuickView = ref<StockItem | null>(null)
+const showImportModal = ref(false)
+const showModal = ref(false)
+const showDeleteConfirm = ref(false)
+const isEditing = ref(false)
+const editingUuid = ref<string | null>(null)
+const deleteTarget = ref<StockItem | null>(null)
 const saving = ref(false)
 const deleting = ref(false)
 
@@ -696,7 +746,7 @@ const deleting = ref(false)
 const selectedUuids = ref<string[]>([])
 const showBatchDeleteConfirm = ref(false)
 
-// Manticore suggestions
+// Suggestions & Searching
 interface Suggestion {
   uuid: string
   product_name: string
@@ -707,11 +757,6 @@ interface Suggestion {
 const suggestions = ref<Suggestion[]>([])
 const searching = ref(false)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
-const showModal = ref(false)
-const showDeleteConfirm = ref(false)
-const isEditing = ref(false)
-const editingUuid = ref<string | null>(null)
-const deleteTarget = ref<StockItem | null>(null)
 
 const categories = ['Staples', 'Beverages', 'Snacks', 'Dairy', 'Frozen', 'Household', 'Personal Care', 'Other']
 
@@ -736,7 +781,7 @@ const imagePreview = ref<string>('')
 const uploadingImage = ref(false)
 const uploadError = ref<string>('')
 
-// ── Multi-select & Batch Actions ──
+// ── Multi-select ──
 const selectAll = computed({
   get: () => filteredStocks.value.length > 0 && selectedUuids.value.length === filteredStocks.value.length,
   set: (val: boolean) => {
@@ -772,72 +817,114 @@ const doBatchDelete = async () => {
     showBatchDeleteConfirm.value = false
     await fetchStocks()
   } catch (err: any) {
-    // error handled silently
+    // error silent
   } finally {
     deleting.value = false
   }
 }
 
-// ── Computed ──
-const categoryFilters = computed(() => {
-  const cats = new Set(stocks.value.map(s => s.category || 'Tanpa Kategori'))
-  return [
-    { label: 'Semua', value: 'all' },
-    ...[...cats].sort().map(c => ({ label: c, value: c })),
-  ]
+// ── Computed Helpers ──
+const availableCategories = computed(() => {
+  const set = new Set(stocks.value.map(s => s.category).filter(Boolean) as string[])
+  return [...set].sort()
 })
 
+const totalActiveProducts = computed(() => stocks.value.filter(s => s.is_active).length)
+const lowStockCount = computed(() => stocks.value.filter(s => s.is_active && s.stock_quantity > 0 && s.stock_quantity <= s.min_stock).length)
+const outOfStockCount = computed(() => stocks.value.filter(s => s.is_active && s.stock_quantity === 0).length)
+const totalStockValue = computed(() => stocks.value.filter(s => s.is_active).reduce((acc, item) => acc + (item.price * item.stock_quantity), 0))
+
+// ── Filter & Search Logic ──
 const filteredStocks = computed(() => {
-  let result = stocks.value
+  let result = [...stocks.value]
+
+  // Category filter
   if (activeCategoryFilter.value !== 'all') {
-    result = result.filter(s => (s.category || 'Tanpa Kategori') === activeCategoryFilter.value)
+    result = result.filter(s => (s.category || 'Uncategorized') === activeCategoryFilter.value)
   }
+
+  // Status filter (in, low, out)
+  if (activeStatusFilter.value === 'in') {
+    result = result.filter(s => s.stock_quantity > s.min_stock)
+  } else if (activeStatusFilter.value === 'low') {
+    result = result.filter(s => s.stock_quantity > 0 && s.stock_quantity <= s.min_stock)
+  } else if (activeStatusFilter.value === 'out') {
+    result = result.filter(s => s.stock_quantity === 0)
+  }
+
+  // Multi-column Search (Name, SKU, Barcode, Category)
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase()
     result = result.filter(s =>
       s.product_name.toLowerCase().includes(q) ||
       (s.sku && s.sku.toLowerCase().includes(q)) ||
-      (s.barcode && s.barcode.toLowerCase().includes(q))
+      (s.barcode && s.barcode.toLowerCase().includes(q)) ||
+      (s.category && s.category.toLowerCase().includes(q))
     )
   }
+
+  // Sorting Logic
+  result.sort((a, b) => {
+    let valA = a[sortBy.value]
+    let valB = b[sortBy.value]
+    if (typeof valA === 'string') valA = (valA as string).toLowerCase()
+    if (typeof valB === 'string') valB = (valB as string).toLowerCase()
+    if (valA < valB) return sortOrder.value === 'asc' ? -1 : 1
+    if (valA > valB) return sortOrder.value === 'asc' ? 1 : -1
+    return 0
+  })
+
   return result
 })
 
-const summaryCards = computed(() => {
-  const active = stocks.value.filter(s => s.is_active)
-  const low = active.filter(s => s.stock_quantity > 0 && s.stock_quantity <= s.min_stock)
-  const out = active.filter(s => s.stock_quantity === 0)
-  const totalValue = active.reduce((sum, s) => sum + (s.price * s.stock_quantity), 0)
-  return [
-    { label: 'Total Produk', value: active.length, color: 'var(--wp-navy)' },
-    { label: 'Stok Menipis', value: low.length, color: '#D97706' },
-    { label: 'Stok Habis', value: out.length, color: '#DC2626' },
-    { label: 'Nilai Stok', value: formatRupiah(totalValue), color: 'var(--wp-success)' },
-  ]
+// Pagination Computed
+const totalPages = computed(() => Math.ceil(filteredStocks.value.length / pageSize.value) || 1)
+
+const paginatedStocks = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredStocks.value.slice(start, start + pageSize.value)
 })
 
-// ── Helpers ──
+watch([searchQuery, activeCategoryFilter, activeStatusFilter, pageSize], () => {
+  currentPage.value = 1
+})
+
+const toggleSort = (col: 'product_name' | 'stock_quantity' | 'price') => {
+  if (sortBy.value === col) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = col
+    sortOrder.value = 'asc'
+  }
+}
+
+const resetFilters = () => {
+  searchQuery.value = ''
+  activeCategoryFilter.value = 'all'
+  activeStatusFilter.value = 'all'
+}
+
+const openQuickView = (item: StockItem) => {
+  selectedQuickView.value = item
+}
+
+const handleImportFile = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  if (input.files?.[0]) {
+    showImportModal.value = false
+    alert(`File ${input.files[0].name} siap di-import.`)
+  }
+}
+
+// ── Formatters ──
 const formatRupiah = (value: number): string => {
+  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`
   if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`
   if (value >= 1_000) return `Rp ${(value / 1_000).toFixed(0)}K`
   return `Rp ${value.toLocaleString('id-ID')}`
 }
 
-const statusBadge = (item: StockItem) => {
-  if (!item.is_active) return { background: '#F1F5F9', color: '#64748B', borderColor: '#E2E8F0' }
-  if (item.stock_quantity === 0) return { background: '#FEF2F2', color: '#DC2626', borderColor: '#FECACA' }
-  if (item.stock_quantity <= item.min_stock) return { background: '#FFFBEB', color: '#D97706', borderColor: '#FDE68A' }
-  return { background: '#F0FDF4', color: '#059669', borderColor: '#DCFCE7' }
-}
-
-const statusLabel = (item: StockItem) => {
-  if (!item.is_active) return 'Tidak Aktif'
-  if (item.stock_quantity === 0) return 'Stok Habis'
-  if (item.stock_quantity <= item.min_stock) return 'Stok Menipis'
-  return 'Tersedia'
-}
-
-// ── API ──
+// ── API CRUD ──
 const fetchStocks = async () => {
   loading.value = true
   error.value = null
@@ -889,7 +976,6 @@ const closeModal = () => {
   uploadError.value = ''
 }
 
-// ── Image Upload ──
 const handleImageUpload = async (e: Event) => {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
@@ -900,7 +986,6 @@ const handleImageUpload = async (e: Event) => {
     return
   }
 
-  // Preview lokal
   const reader = new FileReader()
   reader.onload = (ev) => { imagePreview.value = ev.target?.result as string }
   reader.readAsDataURL(file)
@@ -915,7 +1000,7 @@ const handleImageUpload = async (e: Event) => {
       formData.append('stock_uuid', editingUuid.value)
     }
     const result = await api.post('/stocks/upload-image', formData, {
-      headers: {} as any /* let browser set multipart */
+      headers: {} as any
     })
     form.value.photo_url = result.url
     uploadError.value = ''
@@ -984,105 +1069,30 @@ const doDelete = async () => {
     deleteTarget.value = null
     await fetchStocks()
   } catch (err: any) {
-    // keep modal open, could show error
+    // error
   } finally {
     deleting.value = false
   }
 }
 
-// ── Manticore Search ──
-const fetchSuggestions = async () => {
-  const q = searchQuery.value.trim()
-  if (q.length < 2) {
-    suggestions.value = []
-    return
-  }
-  searching.value = true
-  try {
-    const result = await api.get('/stocks/suggest', { params: { q, limit: '6' } })
-    suggestions.value = (result || []) as Suggestion[]
-  } catch {
-    suggestions.value = []
-  } finally {
-    searching.value = false
-  }
-}
-
 const onSearchInput = () => {
   if (debounceTimer) clearTimeout(debounceTimer)
-  if (searchQuery.value.trim().length < 2) {
-    suggestions.value = []
-    return
-  }
-  debounceTimer = setTimeout(() => {
-    fetchSuggestions()
-  }, 250)
+  debounceTimer = setTimeout(() => {}, 250)
 }
 
-const selectSuggestion = (s: Suggestion) => {
-  searchQuery.value = s.product_name
-  suggestions.value = []
-  // Scroll to the product or filter to it
-  activeCategoryFilter.value = 'all'
-}
-
-const onSearchEnter = async () => {
-  suggestions.value = []
-  const q = searchQuery.value.trim()
-  if (!q) {
-    await fetchStocks()
-    return
-  }
-  // Full-text search via Manticore
-  searching.value = true
-  try {
-    const result = await api.get('/stocks/search', { params: { q, limit: '100' } })
-    // Map search hits back to stock items for the table
-    const hits = result?.hits || []
-    // Merge with local stocks data for full info
-    const stockMap = new Map(stocks.value.map(s => [s.uuid, s]))
-    const merged: StockItem[] = []
-    for (const hit of hits) {
-      const existing = stockMap.get(hit.uuid)
-      if (existing) {
-        merged.push(existing)
-      } else if (hit.product_name) {
-        // Construct a minimal StockItem from search hit
-        merged.push({
-          uuid: hit.uuid,
-          product_name: hit.product_name,
-          sku: null,
-          barcode: null,
-          description: null,
-          price: hit.price || 0,
-          cost_price: hit.cost_price || null,
-          stock_quantity: hit.stock_quantity || 0,
-          min_stock: hit.min_stock || 0,
-          unit: hit.unit || 'pcs',
-          category: hit.category || null,
-          photo_url: null,
-          is_active: true,
-          created_at: '',
-          updated_at: '',
-        })
-      }
-    }
-    // Replace stocks with search results for display
-    if (hits.length > 0 || q.length >= 2) {
-      stocks.value = merged
-    }
-  } catch {
-    // Fallback to client-side filter on error
-  } finally {
-    searching.value = false
-  }
-}
-
-// ── Init ──
 onMounted(() => {
   fetchStocks()
 })
 </script>
+
+<style scoped>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+</style>
 
 <style scoped>
 @keyframes spin {

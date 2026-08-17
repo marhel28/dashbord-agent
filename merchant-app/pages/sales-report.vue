@@ -1,237 +1,340 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
-    <!-- ═══════════ HEADER + PERIOD TOGGLE ═══════════ -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
+  <div class="space-y-6 animate-fade-in max-w-7xl mx-auto py-2">
+    <!-- ═══════════ 1. PAGE HEADER + PERIOD SELECTOR ═══════════ -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Analisis Penjualan</h1>
-        <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">
-          Performa penjualan detail dengan analisis pendapatan, profit & tren.
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Analisis Penjualan</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Pantau pendapatan, laba, tren penjualan, dan produk terlaris bisnis Anda.
         </p>
       </div>
-      <div class="inline-flex flex-wrap p-1 rounded-xl border" style="background: var(--wp-bg); border-color: var(--wp-border);">
-        <button
-          v-for="p in periods" :key="p.value"
-          @click="setPeriod(p.value)"
-          :class="['px-3.5 py-2.5 min-h-[44px] text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center',
-            period === p.value ? 'text-white shadow-sm' : 'hover:text-slate-700']"
-          :style="period === p.value
-            ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;'
-            : 'color: var(--wp-text-secondary);'"
-        >{{ p.label }}</button>
+      <div class="flex items-center gap-3">
+        <!-- Last Updated / Sync indicator -->
+        <span class="text-[11px] font-medium text-slate-400 hidden lg:inline-flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Sync 5 mnt lalu
+        </span>
+
+        <!-- Period Toggle Buttons -->
+        <div class="inline-flex p-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+          <button
+            v-for="p in periods" :key="p.value"
+            @click="setPeriod(p.value)"
+            :class="['px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+              period === p.value ? 'bg-[#047857] text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900']"
+          >{{ p.label }}</button>
+        </div>
       </div>
     </div>
-    
+
     <!-- Custom Date Range Picker -->
-    <div v-if="period === 'custom'" class="flex flex-wrap items-center gap-2 animate-fade-in-up">
-      <input type="date" v-model="localStartDate" class="px-3 py-2.5 min-h-[44px] text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
-      <span class="text-xs text-slate-500">-</span>
-      <input type="date" v-model="localEndDate" class="px-3 py-2.5 min-h-[44px] text-xs rounded-lg border focus:outline-none focus:ring-1 focus:ring-amber-500 bg-white" style="border-color: var(--wp-border); color: var(--wp-text);" />
-      <button @click="applyCustomDate" class="px-4 py-2.5 min-h-[44px] text-xs font-bold text-white rounded-lg transition-all" style="background: var(--wp-gold);">Terapkan</button>
+    <div v-if="period === 'custom'" class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-3 animate-fade-in text-xs">
+      <span class="font-medium text-slate-600 dark:text-slate-400">Rentang Tanggal:</span>
+      <input type="date" v-model="localStartDate" class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+      <span class="text-slate-400">-</span>
+      <input type="date" v-model="localEndDate" class="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" />
+      <Button size="sm" @click="applyCustomDate" class="bg-[#047857] text-white text-xs h-8 rounded-lg font-semibold">Terapkan</Button>
     </div>
 
-    <!-- ═══════════ LOADING STATE ═══════════ -->
-    <div v-if="loading" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-3">
-        <div class="w-10 h-10 mx-auto rounded-full border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold);"></div>
-        <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Memuat data analisis…</p>
+    <!-- ═══════════ 2. SKELETON LOADING STATE ═══════════ -->
+    <div v-if="loading" class="space-y-4">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Skeleton v-for="i in 4" :key="i" class="h-28 rounded-xl" />
       </div>
-    </div>
-
-    <!-- ═══════════ ERROR STATE ═══════════ -->
-    <div v-else-if="error" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-4 max-w-sm">
-        <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style="background: #FEF2F2;">
-          <Icon name="heroicons:exclamation-triangle" class="w-8 h-8" style="color: #DC2626;" />
-        </div>
-        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Gagal memuat data</h3>
-        <p class="text-sm" style="color: var(--wp-text-secondary);">{{ error }}</p>
-        <button @click="fetchAnalytics()" class="px-6 py-2.5 text-white text-xs font-bold rounded-xl shadow-sm transition"
-          style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          Coba Lagi
-        </button>
-      </div>
-    </div>
-
-    <!-- ═══════════ EMPTY STATE ═══════════ -->
-    <div v-else-if="!data || data.kpi.total_transactions === 0" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-4 max-w-sm">
-        <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style="background: rgba(212,168,67,0.08);">
-          <Icon name="heroicons:chart-bar" class="w-8 h-8" style="color: var(--wp-gold);" />
-        </div>
-        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Belum ada data penjualan</h3>
-        <p class="text-sm" style="color: var(--wp-text-secondary);">
-          Mulai catat transaksi untuk melihat dashboard analisis penjualan Anda.
-        </p>
-      </div>
-    </div>
-
-    <!-- ═══════════ DASHBOARD ═══════════ -->
-    <template v-else-if="data">
-      <!-- ── KPI Row ── -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
-        <div v-for="card in kpiCards" :key="card.label"
-          class="bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md relative overflow-hidden group"
-          style="border-color: var(--wp-border);">
-          <!-- accent top bar -->
-          <div class="absolute top-0 left-4 right-4 h-0.5 rounded-b" :style="{ background: card.accent }"></div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ card.label }}</span>
-            <Icon :name="card.icon" class="w-4 h-4" style="color: var(--wp-gold);" />
-          </div>
-          <p class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-text); font-variant-numeric: tabular-nums;">
-            {{ card.value }}
-          </p>
-          <p class="text-[11px] font-semibold mt-1.5 flex items-center gap-1"
-            :style="{ color: card.change >= 0 ? 'var(--wp-success)' : 'var(--wp-error)' }">
-            <Icon :name="card.change >= 0 ? 'heroicons:arrow-trending-up' : 'heroicons:arrow-trending-down'" class="w-3.5 h-3.5" />
-            {{ card.change >= 0 ? '+' : '' }}{{ card.change }}%
-            <span class="font-medium ml-0.5" style="color: var(--wp-text-secondary);">vs sblm</span>
-          </p>
-        </div>
-      </div>
-
-      <!-- ── Row 1: Revenue Trend (2/3) + Category Donut (1/3) ── -->
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Revenue & Profit Trend -->
-        <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <div class="flex items-center justify-between mb-1">
-            <h2 class="text-base font-bold" style="color: var(--wp-text);">Tren Pendapatan & Profit</h2>
-            <div class="flex items-center gap-4 text-[10px] font-bold tracking-wider" style="color: var(--wp-text-secondary);">
-              <span class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full" style="background: var(--wp-gold);"></span>Pendapatan
-              </span>
-              <span class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full" style="background: var(--wp-success);"></span>Profit
-              </span>
+        <Skeleton class="xl:col-span-2 h-80 rounded-xl" />
+        <Skeleton class="h-80 rounded-xl" />
+      </div>
+    </div>
+
+    <!-- ═══════════ 3. ERROR STATE ═══════════ -->
+    <div v-else-if="error" class="flex items-center justify-center py-16">
+      <div class="text-center space-y-4 max-w-sm border border-red-200 p-6 bg-white dark:bg-slate-900 rounded-xl shadow-xs">
+        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-red-50 text-red-600">
+          <Icon name="lucide:alert-triangle" class="w-6 h-6" />
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Gagal Memuat Data Penjualan</h3>
+          <p class="text-xs text-slate-500 mt-1">{{ error }}</p>
+        </div>
+        <Button variant="default" size="sm" @click="fetchAnalytics()" class="rounded-lg text-xs">Coba Lagi</Button>
+      </div>
+    </div>
+
+    <!-- ═══════════ 4. EMPTY STATE ═══════════ -->
+    <div v-else-if="!data || data.kpi.total_transactions === 0" class="flex items-center justify-center py-16">
+      <div class="text-center space-y-4 max-w-md border border-slate-200 dark:border-slate-800 p-8 bg-white dark:bg-slate-900 rounded-xl shadow-xs">
+        <div class="w-16 h-16 mx-auto flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400">
+          <Icon name="lucide:bar-chart-2" class="w-8 h-8" />
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Belum Ada Transaksi Penjualan</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            Mulai catat transaksi kasir atau penjualan produk untuk melihat statistik bisnis secara real-time.
+          </p>
+        </div>
+        <NuxtLink to="/pos">
+          <Button size="sm" class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold">
+            + Catat Transaksi Baru
+          </Button>
+        </NuxtLink>
+      </div>
+    </div>
+
+    <!-- ═══════════ 5. PRODUCTION SALES DASHBOARD ═══════════ -->
+    <template v-else-if="data">
+      <!-- ── PERFORMANCE SUMMARY (CLICKABLE KPI SHORTCUTS + GROSS MARGIN) ── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Pendapatan (Total Revenue) -->
+        <button
+          @click="trendMetric = 'revenue'"
+          class="p-4 rounded-xl text-left transition-all border shadow-xs bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"
+          :class="trendMetric === 'revenue' ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-200 dark:border-slate-800'"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Pendapatan</span>
+            <Icon name="lucide:banknotes" class="w-4 h-4 text-emerald-600" />
+          </div>
+          <p class="text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-slate-100 mt-1.5">{{ formatRupiah(data.kpi.total_revenue) }}</p>
+          <div class="mt-2 flex items-center justify-between text-[11px]">
+            <span :class="data.kpi.revenue_change_pct >= 0 ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'">
+              {{ data.kpi.revenue_change_pct >= 0 ? '+' : '' }}{{ data.kpi.revenue_change_pct }}%
+            </span>
+            <span class="text-slate-400">{{ periodComparisonLabel }}</span>
+          </div>
+        </button>
+
+        <!-- Laba Kotor + Gross Margin -->
+        <button
+          @click="trendMetric = 'profit'"
+          class="p-4 rounded-xl text-left transition-all border shadow-xs bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"
+          :class="trendMetric === 'profit' ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-200 dark:border-slate-800'"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Laba Kotor</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">Margin {{ grossMarginPct }}%</span>
+          </div>
+          <p class="text-2xl font-bold font-mono tracking-tight text-emerald-600 dark:text-emerald-400 mt-1.5">{{ formatRupiah(data.kpi.total_profit) }}</p>
+          <div class="mt-2 flex items-center justify-between text-[11px]">
+            <span :class="data.kpi.profit_change_pct >= 0 ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'">
+              {{ data.kpi.profit_change_pct >= 0 ? '+' : '' }}{{ data.kpi.profit_change_pct }}%
+            </span>
+            <span class="text-slate-400">{{ periodComparisonLabel }}</span>
+          </div>
+        </button>
+
+        <!-- Transaksi (Orders) Shortcut -->
+        <button
+          @click="scrollToTransactions()"
+          class="p-4 rounded-xl text-left transition-all border shadow-xs bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 border-slate-200 dark:border-slate-800"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Transaksi</span>
+            <Icon name="lucide:receipt" class="w-4 h-4 text-blue-600" />
+          </div>
+          <p class="text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-slate-100 mt-1.5">{{ data.kpi.total_transactions.toLocaleString('id-ID') }}</p>
+          <div class="mt-2 flex items-center justify-between text-[11px]">
+            <span :class="data.kpi.transactions_change_pct >= 0 ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'">
+              {{ data.kpi.transactions_change_pct >= 0 ? '+' : '' }}{{ data.kpi.transactions_change_pct }}%
+            </span>
+            <span class="text-slate-400">{{ periodComparisonLabel }}</span>
+          </div>
+        </button>
+
+        <!-- Rata-rata Nilai Transaksi (AOV) -->
+        <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs bg-white dark:bg-slate-900">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Rata-rata Transaksi (AOV)</span>
+            <Icon name="lucide:shopping-bag" class="w-4 h-4 text-amber-600" />
+          </div>
+          <p class="text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-slate-100 mt-1.5">{{ formatRupiah(data.kpi.avg_order_value) }}</p>
+          <div class="mt-2 flex items-center justify-between text-[11px]">
+            <span :class="data.kpi.aov_change_pct >= 0 ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'">
+              {{ data.kpi.aov_change_pct >= 0 ? '+' : '' }}{{ data.kpi.aov_change_pct }}%
+            </span>
+            <span class="text-slate-400">{{ periodComparisonLabel }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 6. BUSINESS COPILOT DECISION LAYER (ACTIONABLE INSIGHTS) ── -->
+      <div class="p-5 bg-gradient-to-r from-[#003B32] to-[#047857] text-white rounded-xl shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] uppercase font-bold tracking-wider">Business Copilot Insight</span>
+            <span class="text-xs text-emerald-200">Performa Minggu Ini</span>
+          </div>
+          <h3 class="text-base font-bold text-white">
+            {{ copilotSummaryTitle }}
+          </h3>
+          <p class="text-xs text-slate-200 leading-relaxed max-w-2xl">
+            {{ copilotSummaryDescription }}
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <NuxtLink to="/ai-chat">
+            <Button size="sm" class="bg-white text-[#003B32] hover:bg-slate-100 font-bold text-xs gap-1.5 rounded-lg">
+              <Icon name="lucide:sparkles" class="w-4 h-4 text-emerald-600" />
+              <span>Tanya Copilot</span>
+            </Button>
+          </NuxtLink>
+        </div>
+      </div>
+
+      <!-- ── 7. PERFORMANCE TREND CHART (WITH METRIC TOGGLES) ── -->
+      <div class="p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Tren Performa Penjualan</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pantau fluktuasi pendapatan, laba kotor, dan margin harian.</p>
+          </div>
+          <!-- Toggle Chart View -->
+          <div class="inline-flex p-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs font-medium">
+            <button
+              @click="trendMetric = 'all'"
+              :class="['px-3 py-1 rounded-md transition-colors', trendMetric === 'all' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-bold shadow-xs' : 'text-slate-500']"
+            >Semua</button>
+            <button
+              @click="trendMetric = 'revenue'"
+              :class="['px-3 py-1 rounded-md transition-colors', trendMetric === 'revenue' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-bold shadow-xs' : 'text-slate-500']"
+            >Pendapatan</button>
+            <button
+              @click="trendMetric = 'profit'"
+              :class="['px-3 py-1 rounded-md transition-colors', trendMetric === 'profit' ? 'bg-white dark:bg-slate-900 text-[#047857] font-bold shadow-xs' : 'text-slate-500']"
+            >Laba Kotor</button>
+          </div>
+        </div>
+
+        <VChart :option="trendOption" autoresize class="h-72 w-full" />
+      </div>
+
+      <!-- ── 8. BUSINESS BREAKDOWN: CATEGORIES & TOP PRODUCTS ── -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- Horizontal Bar Category Ranking -->
+        <div class="p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Penjualan per Kategori</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kontribusi omzet berdasarkan kelompok produk.</p>
+          </div>
+
+          <div class="space-y-3 pt-2">
+            <div v-for="(cat, idx) in data.by_category" :key="cat.category" class="space-y-1 text-xs">
+              <div class="flex justify-between font-semibold">
+                <span class="text-slate-800 dark:text-slate-200">{{ idx + 1 }}. {{ cat.category }}</span>
+                <span class="font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(cat.revenue) }} ({{ cat.percentage }}%)</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div class="h-full bg-[#047857] rounded-full" :style="{ width: `${cat.percentage}%` }"></div>
+              </div>
             </div>
           </div>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Rincian harian dengan kontrol zoom</p>
-          <VChart :option="trendOption" autoresize class="h-72" />
         </div>
 
-        <!-- Sales by Category -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Penjualan per Kategori</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Distribusi pendapatan di berbagai jenis produk</p>
-          <VChart :option="categoryOption" autoresize class="h-64" />
+        <!-- Top Products List (with Metric Toggles) -->
+        <div class="xl:col-span-2 p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Produk Teratas (Top Products)</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Produk berkinerja terbaik di periode terpilih.</p>
+            </div>
+            <!-- Metric Toggle -->
+            <div class="inline-flex p-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs font-medium">
+              <button
+                @click="productMetric = 'revenue'"
+                :class="['px-2.5 py-1 rounded-md transition-colors', productMetric === 'revenue' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-bold shadow-xs' : 'text-slate-500']"
+              >Pendapatan</button>
+              <button
+                @click="productMetric = 'quantity'"
+                :class="['px-2.5 py-1 rounded-md transition-colors', productMetric === 'quantity' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-bold shadow-xs' : 'text-slate-500']"
+              >Unit Terjual</button>
+              <button
+                @click="productMetric = 'profit'"
+                :class="['px-2.5 py-1 rounded-md transition-colors', productMetric === 'profit' ? 'bg-white dark:bg-slate-900 text-[#047857] font-bold shadow-xs' : 'text-slate-500']"
+              >Laba</button>
+            </div>
+          </div>
+
+          <VChart :option="topProductsOption" autoresize class="h-64 w-full" />
         </div>
       </div>
 
-      <!-- ── Row 2: Payment Methods (1/3) + Top Products (2/3) ── -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Payment Method Distribution -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Metode Pembayaran</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Jumlah transaksi & total per metode</p>
-          <VChart :option="paymentOption" autoresize class="h-64" />
+      <!-- ── 9. PAYMENT MIX & METHODS ── -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-1 p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Metode Pembayaran</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Preferensi pembayaran dari pelanggan toko Anda.</p>
+
+          <div class="space-y-3 pt-2 text-xs">
+            <div v-for="pmt in data.by_payment" :key="pmt.method" class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <div>
+                <span class="font-bold text-slate-900 dark:text-slate-100">{{ pmt.method }}</span>
+                <span class="block text-[10px] text-slate-400">{{ pmt.count }} transaksi</span>
+              </div>
+              <span class="font-mono font-bold text-slate-900 dark:text-slate-100">{{ formatRupiah(pmt.total) }}</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Top Selling Products -->
-        <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Produk Terlaris</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Berdasarkan kontribusi pendapatan</p>
-          <VChart :option="topProductsOption" autoresize class="h-64" />
+        <div class="md:col-span-2 p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Distribusi Omzet Pembayaran</h2>
+          <VChart :option="paymentOption" autoresize class="h-56 w-full" />
         </div>
       </div>
 
-      <!-- ── Row 3: Recent Transactions Table ── -->
-      <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-bold" style="color: var(--wp-text);">Transaksi Terbaru</h2>
-          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(5,150,105,0.1); color: var(--wp-success);">
-            {{ data.recent_sales.length }} data
-          </span>
+      <!-- ── 10. RECENT TRANSACTIONS TABLE WITH FILTERS ── -->
+      <div id="transactions-section" class="p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Transaksi Terbaru</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daftar transaksi penjualan terdaftar di sistem.</p>
+          </div>
+          <!-- Filter input & Status dropdown -->
+          <div class="flex items-center gap-2 text-xs">
+            <Input v-model="txSearch" type="text" placeholder="Cari faktur / pelanggan…" class="h-8 w-44 text-xs rounded-lg" />
+            <select v-model="txStatusFilter" class="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs">
+              <option value="all">Semua Status</option>
+              <option value="PAID">PAID</option>
+              <option value="PENDING">PENDING</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+          </div>
         </div>
-        <!-- Desktop Table View (Width >= 768px) -->
-        <div class="hidden md:block overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+
+        <!-- Table View -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
             <thead>
-              <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-                <th class="py-3 pr-4">Faktur</th>
-                <th class="py-3 pr-4">Pelanggan</th>
-                <th class="py-3 pr-4 text-right">Total</th>
-                <th class="py-3 pr-4">Pembayaran</th>
-                <th class="py-3 pr-4 text-center">Status</th>
-                <th class="py-3 text-right">Tanggal</th>
+              <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                <th class="py-3 px-3">Faktur</th>
+                <th class="py-3 px-3">Pelanggan</th>
+                <th class="py-3 px-3 text-right">Total</th>
+                <th class="py-3 px-3">Metode</th>
+                <th class="py-3 px-3 text-center">Status</th>
+                <th class="py-3 px-3 text-right">Tanggal</th>
               </tr>
             </thead>
-            <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
-              <tr v-for="sale in data.recent_sales" :key="sale.uuid" class="transition-colors hover:bg-slate-50/50">
-                <td class="py-3 pr-4 font-bold font-mono text-[11px]" style="color: var(--wp-text);">{{ sale.invoice_number }}</td>
-                <td class="py-3 pr-4 font-medium" style="color: var(--wp-text-secondary);">{{ sale.customer_name || '—' }}</td>
-                <td class="py-3 pr-4 text-right font-bold font-mono" style="color: var(--wp-text);">{{ formatRupiah(sale.total) }}</td>
-                <td class="py-3 pr-4">
-                  <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border"
-                    :style="sale.payment_method === 'QRIS'
-                      ? { background: 'rgba(15,26,46,0.06)', color: 'var(--wp-navy)', borderColor: 'rgba(15,26,46,0.15)' }
-                      : { background: 'rgba(212,168,67,0.08)', color: 'var(--wp-gold-dark)', borderColor: 'rgba(212,168,67,0.20)' }">
-                    {{ sale.payment_method || '—' }}
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <tr v-for="sale in filteredTransactions" :key="sale.uuid" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-slate-100">{{ sale.invoice_number }}</td>
+                <td class="py-3 px-3 font-medium text-slate-700 dark:text-slate-300">{{ sale.customer_name || 'Guest' }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">{{ formatRupiah(sale.total) }}</td>
+                <td class="py-3 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    {{ sale.payment_method || 'Cash' }}
                   </span>
                 </td>
-                <td class="py-3 pr-4 text-center">
-                  <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border inline-flex items-center gap-1"
-                    :style="sale.status === 'PAID'
-                      ? { background: '#F0FDF4', color: '#059669', borderColor: '#DCFCE7' }
-                      : { background: '#FFFBEB', color: '#D97706', borderColor: '#FDE68A' }">
-                    <span class="w-1.5 h-1.5 rounded-full" :style="{ background: sale.status === 'PAID' ? '#059669' : '#D97706' }"></span>
+                <td class="py-3 px-3 text-center">
+                  <Badge
+                    :variant="sale.status === 'PAID' ? 'success' : sale.status === 'PENDING' ? 'warning' : 'destructive'"
+                    class="text-[10px] rounded-md font-medium"
+                  >
                     {{ sale.status }}
-                  </span>
+                  </Badge>
                 </td>
-                <td class="py-3 text-right font-medium font-mono text-[10px]" style="color: var(--wp-text-secondary);">
-                  {{ formatDate(sale.created_at) }}
-                </td>
+                <td class="py-3 px-3 text-right font-mono text-slate-400 text-[11px]">{{ formatDate(sale.created_at) }}</td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- Mobile Cards View (Width < 768px) -->
-        <div class="block md:hidden space-y-3">
-          <div
-            v-for="sale in data.recent_sales"
-            :key="sale.uuid"
-            class="p-4 bg-[var(--wp-surface)] border border-[var(--wp-border)] rounded-xl space-y-2.5 shadow-sm"
-          >
-            <div class="flex items-center justify-between border-b pb-2" style="border-color: var(--wp-border);">
-              <span class="font-bold font-mono text-xs" style="color: var(--wp-navy);">
-                {{ sale.invoice_number }}
-              </span>
-              <span class="text-[10px] font-mono" style="color: var(--wp-text-secondary);">
-                {{ formatDate(sale.created_at) }}
-              </span>
-            </div>
-
-            <div class="flex items-center justify-between py-1">
-              <div>
-                <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Pelanggan</span>
-                <span class="text-xs font-semibold" style="color: var(--wp-text);">
-                  {{ sale.customer_name || 'Pelanggan Umum' }}
-                </span>
-              </div>
-              <div class="text-right">
-                <span class="text-[9px] font-bold uppercase block" style="color: var(--wp-text-secondary);">Total Penjualan</span>
-                <span class="font-bold font-mono text-base" style="color: var(--wp-text);">
-                  {{ formatRupiah(sale.total) }}
-                </span>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--wp-border);">
-              <span class="px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase tracking-wider"
-                :style="sale.payment_method === 'QRIS'
-                  ? { background: 'rgba(15,26,46,0.06)', color: 'var(--wp-navy)', borderColor: 'rgba(15,26,46,0.15)' }
-                  : { background: 'rgba(212,168,67,0.08)', color: 'var(--wp-gold-dark)', borderColor: 'rgba(212,168,67,0.20)' }">
-                {{ sale.payment_method || '—' }}
-              </span>
-              <span class="px-2.5 py-1 rounded-full text-[9px] font-bold border inline-flex items-center gap-1 uppercase tracking-wider"
-                :style="sale.status === 'PAID'
-                  ? { background: '#F0FDF4', color: '#059669', borderColor: '#DCFCE7' }
-                  : { background: '#FFFBEB', color: '#D97706', borderColor: '#FDE68A' }">
-                <span class="w-1.5 h-1.5 rounded-full" :style="{ background: sale.status === 'PAID' ? '#059669' : '#D97706' }"></span>
-                {{ sale.status }}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </template>
@@ -239,7 +342,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import VChart from 'vue-echarts'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -250,13 +353,15 @@ import {
   LegendComponent,
   DataZoomComponent,
   TitleComponent,
-  VisualMapComponent,
-  MarkLineComponent,
 } from 'echarts/components'
 import * as echarts from 'echarts'
 import { useAnalytics } from '~/composables/useAnalytics'
+import Button from '~/components/ui/button.vue'
+import Input from '~/components/ui/input.vue'
+import Badge from '~/components/ui/badge.vue'
+import Skeleton from '~/components/ui/skeleton.vue'
 
-// Register ECharts components once (tree-shakeable)
+// Register ECharts components
 use([
   CanvasRenderer,
   LineChart,
@@ -267,23 +372,27 @@ use([
   LegendComponent,
   DataZoomComponent,
   TitleComponent,
-  VisualMapComponent,
-  MarkLineComponent,
 ])
 
 const {
-  period, data, loading, error, customStartDate, customEndDate,
-  fetchAnalytics, setPeriod, formatRupiah, formatCompact, formatPct,
+  period, data, loading, error,
+  fetchAnalytics, setPeriod, formatRupiah, formatCompact,
 } = useAnalytics()
 
 const localStartDate = ref('')
 const localEndDate = ref('')
+const trendMetric = ref<'all' | 'revenue' | 'profit'>('all')
+const productMetric = ref<'revenue' | 'quantity' | 'profit'>('revenue')
+
+// Transaction table filters
+const txSearch = ref('')
+const txStatusFilter = ref('all')
 
 const periods = [
   { label: 'Hari Ini', value: 'today' as const },
   { label: 'Minggu Ini', value: 'week' as const },
   { label: 'Bulan Ini', value: 'month' as const },
-  { label: 'Tahun Ini', value: 'year' as const },
+  { label: '3 Bulan', value: 'year' as const },
   { label: 'Kustom', value: 'custom' as const },
 ]
 
@@ -291,40 +400,62 @@ const applyCustomDate = () => {
   setPeriod('custom', localStartDate.value, localEndDate.value)
 }
 
-// ── KPI Cards ──
-const kpiCards = computed(() => {
+// Comparison text helper
+const periodComparisonLabel = computed(() => {
+  if (period.value === 'today') return 'vs kemarin'
+  if (period.value === 'week') return 'vs minggu lalu'
+  if (period.value === 'month') return 'vs bulan lalu'
+  if (period.value === 'year') return 'vs periode lalu'
+  return 'vs sblm'
+})
+
+// Gross Margin Percentage Calculation
+const grossMarginPct = computed(() => {
+  if (!data.value || !data.value.kpi.total_revenue) return '0.0'
+  const margin = (data.value.kpi.total_profit / data.value.kpi.total_revenue) * 100
+  return margin.toFixed(1)
+})
+
+// Business Copilot Insight Generation
+const copilotSummaryTitle = computed(() => {
+  if (!data.value) return 'Memuat Analisis Business Copilot...'
+  const revPct = data.value.kpi.revenue_change_pct
+  const margin = Number(grossMarginPct.value)
+  if (revPct >= 10 && margin >= 20) return `Penjualan Sangat Sehat! Omzet Naik ${revPct}% & Margin ${margin}%`
+  if (revPct >= 0) return `Omzet Tumbuh Stabil (+${revPct}%), Pertahankan Efisiensi Stok`
+  return `Omzet Turun ${Math.abs(revPct)}%, Tinjau Ulang Kategori & Promo Produk`
+})
+
+const copilotSummaryDescription = computed(() => {
+  if (!data.value || !data.value.top_products.length) return 'Data transaksi belum mencukupi.'
+  const topProd = data.value.top_products[0]
+  const topCat = data.value.by_category[0]?.category || 'Utama'
+  return `Produk "${topProd.product_name}" menyumbang kontribusi omzet terbesar (${formatRupiah(topProd.revenue)}) di kategori ${topCat}. Tingkatkan promosi bundling di kategori ini untuk mengoptimalkan Laba Kotor.`
+})
+
+const scrollToTransactions = () => {
+  const el = document.getElementById('transactions-section')
+  if (el) el.scrollIntoView({ behavior: 'smooth' })
+}
+
+// Filtered Transactions
+const filteredTransactions = computed(() => {
   if (!data.value) return []
-  const k = data.value.kpi
-  return [
-    {
-      label: 'Total Pendapatan',
-      value: formatRupiah(k.total_revenue),
-      change: k.revenue_change_pct,
-      icon: 'heroicons:banknotes',
-      accent: 'linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light))',
-    },
-    {
-      label: 'Laba Kotor',
-      value: formatRupiah(k.total_profit),
-      change: k.profit_change_pct,
-      icon: 'heroicons:arrow-trending-up',
-      accent: 'linear-gradient(90deg, var(--wp-success), #34D399)',
-    },
-    {
-      label: 'Transaksi',
-      value: k.total_transactions.toLocaleString('id-ID'),
-      change: k.transactions_change_pct,
-      icon: 'heroicons:document-text',
-      accent: 'linear-gradient(90deg, var(--wp-navy), #3B5998)',
-    },
-    {
-      label: 'Rata-rata Pesanan',
-      value: formatRupiah(k.avg_order_value),
-      change: k.aov_change_pct,
-      icon: 'heroicons:shopping-cart',
-      accent: 'linear-gradient(90deg, var(--wp-warning), #F59E0B)',
-    },
-  ]
+  let list = data.value.recent_sales || []
+
+  if (txStatusFilter.value !== 'all') {
+    list = list.filter((s: any) => s.status === txStatusFilter.value)
+  }
+
+  if (txSearch.value.trim()) {
+    const q = txSearch.value.toLowerCase()
+    list = list.filter((s: any) =>
+      s.invoice_number.toLowerCase().includes(q) ||
+      (s.customer_name && s.customer_name.toLowerCase().includes(q))
+    )
+  }
+
+  return list
 })
 
 // ── Shared chart text palette ──
@@ -337,15 +468,42 @@ const successHex = '#059669'
 const navyHex = '#0F1A2E'
 const warningHex = '#D97706'
 
-// ── Revenue & Profit Trend ──
+// ── Revenue & Profit Trend (Dynamic Metric Toggle) ──
 const trendOption = computed(() => {
   if (!data.value) return {}
   const trend = data.value.trend
   const revenues = trend.map((t: any) => t.revenue)
-  const maxRevenue = Math.max(...revenues, 100000)
+  const profits = trend.map((t: any) => t.profit)
 
-  const p1 = Math.round(maxRevenue * 0.35)
-  const p2 = Math.round(maxRevenue * 0.70)
+  const series: any[] = []
+
+  if (trendMetric.value === 'all' || trendMetric.value === 'revenue') {
+    series.push({
+      name: 'Revenue',
+      type: 'line',
+      data: revenues,
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: { color: '#047857', width: 2.5 },
+      itemStyle: { color: '#047857', borderColor: '#fff', borderWidth: 2 },
+      areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(4,120,87,0.2)' }, { offset: 1, color: 'rgba(4,120,87,0.0)' }] } },
+    })
+  }
+
+  if (trendMetric.value === 'all' || trendMetric.value === 'profit') {
+    series.push({
+      name: 'Profit',
+      type: 'line',
+      data: profits,
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: { color: '#D97706', width: 2.5 },
+      itemStyle: { color: '#D97706', borderColor: '#fff', borderWidth: 2 },
+      areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(217,119,6,0.15)' }, { offset: 1, color: 'rgba(217,119,6,0.0)' }] } },
+    })
+  }
 
   return {
     tooltip: {
@@ -355,14 +513,13 @@ const trendOption = computed(() => {
       borderWidth: 1,
       borderRadius: 10,
       padding: [10, 14],
-      textStyle: { color: '#1E293B', fontSize: 12, fontFamily: 'var(--wp-font)' },
-      axisPointer: { type: 'cross', crossStyle: { color: '#94A3B8' } },
+      textStyle: { color: '#1E293B', fontSize: 12 },
       formatter: (params: any) => {
         const d = params[0]
         let html = `<div style="font-weight:700;margin-bottom:4px;color:#0F1A2E">${d.axisValue}</div>`
         params.forEach((p: any) => {
           const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
-          let label = p.seriesName === 'Revenue' ? 'Pendapatan' : 'Profit'
+          let label = p.seriesName === 'Revenue' ? 'Pendapatan' : 'Laba Kotor'
           html += `<div style="display:flex;align-items:center;gap:6px;margin:2px 0">
             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
             <span style="color:#64748B">${label}:</span>
@@ -372,8 +529,7 @@ const trendOption = computed(() => {
         return html
       },
     },
-    legend: { show: false },
-    grid: { left: 12, right: 24, top: 12, bottom: 45, containLabel: true },
+    grid: { left: 12, right: 24, top: 16, bottom: 45, containLabel: true },
     xAxis: {
       type: 'category',
       boundaryGap: false,
@@ -392,69 +548,25 @@ const trendOption = computed(() => {
       },
       splitLine: { lineStyle: { color: gridColor, type: 'dashed' } },
     },
-    visualMap: {
-      type: 'piecewise',
-      show: false,
-      dimension: 1,
-      seriesIndex: 0,
-      pieces: [
-        { lte: p1, color: 'rgba(212, 168, 67, 0.45)' },
-        { gt: p1, lte: p2, color: 'rgba(184, 146, 46, 0.75)' },
-        { gt: p2, color: 'rgba(15, 26, 46, 0.90)' },
-      ],
-    },
     dataZoom: [
       {
         type: 'inside',
         start: 0,
         end: 100,
-        zoomOnMouseWheel: true,
-        moveOnMouseMove: true,
       },
       {
         type: 'slider',
         start: 0,
         end: 100,
-        height: 20,
-        bottom: 6,
+        height: 18,
+        bottom: 4,
         borderColor: gridColor,
         backgroundColor: '#F8FAFC',
-        fillerColor: 'rgba(212,168,67,0.18)',
-        handleStyle: { color: goldHex, borderColor: goldDarkHex },
+        fillerColor: 'rgba(4,120,87,0.15)',
         textStyle: { color: textColor, fontSize: 9 },
       },
     ],
-    series: [
-      {
-        name: 'Revenue',
-        type: 'line',
-        data: revenues,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { width: 2.5 },
-        markLine: {
-          symbol: ['none', 'none'],
-          label: { show: true, position: 'end', fontSize: 9, formatter: '{b}' },
-          data: [
-            { name: 'Standar', yAxis: p1, lineStyle: { color: goldHex, type: 'dashed' } },
-            { name: 'Tinggi', yAxis: p2, lineStyle: { color: navyHex, type: 'dashed' } },
-          ],
-        },
-        areaStyle: {},
-      },
-      {
-        name: 'Profit',
-        type: 'line',
-        data: trend.map((t: any) => t.profit),
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { color: successHex, width: 2.5 },
-        itemStyle: { color: successHex, borderColor: '#fff', borderWidth: 2 },
-        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(5,150,105,0.12)' }, { offset: 1, color: 'rgba(5,150,105,0.0)' }] } },
-      },
-    ],
+    series,
   }
 })
 
@@ -580,10 +692,18 @@ const paymentOption = computed(() => {
 
 const palette = ['#D4A843', '#0F1A2E', '#059669', '#D97706', '#64748B', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6', '#F43F5E']
 
-// ── Top Products Horizontal Bar ──
+// ── Top Products Horizontal Bar (Dynamic Metric Toggle) ──
 const topProductsOption = computed(() => {
   if (!data.value) return {}
-  const prods = data.value.top_products
+  const prods = data.value.top_products || []
+
+  // Sort prods according to active metric
+  const sortedProds = [...prods].sort((a: any, b: any) => {
+    if (productMetric.value === 'quantity') return b.quantity_sold - a.quantity_sold
+    if (productMetric.value === 'profit') return b.profit - a.profit
+    return b.revenue - a.revenue
+  })
+
   return {
     tooltip: {
       trigger: 'axis',
@@ -592,39 +712,40 @@ const topProductsOption = computed(() => {
       borderWidth: 1,
       borderRadius: 10,
       padding: [10, 14],
-      textStyle: { color: '#1E293B', fontSize: 12, fontFamily: 'var(--wp-font)' },
+      textStyle: { color: '#1E293B', fontSize: 12 },
       formatter: (params: any) => {
         const idx = params[0].dataIndex
-        const p = prods[idx]
-        const rev = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.revenue)
-        const prof = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.profit)
+        const p = sortedProds[idx]
+        if (!p) return ''
+        const rev = formatRupiah(p.revenue)
+        const prof = formatRupiah(p.profit)
         return `<div style="font-weight:700;color:#0F1A2E;margin-bottom:4px">${p.product_name}</div>
-          <div style="color:#64748B;font-size:10px">${p.category} · Terjual: <b>${p.quantity_sold}</b></div>
+          <div style="color:#64748B;font-size:10px">${p.category || 'Umum'} · Unit Terjual: <b>${p.quantity_sold}</b></div>
           <div style="margin-top:4px;color:#64748B">Pendapatan: <b style="color:#1E293B">${rev}</b></div>
-          <div style="color:#64748B">Profit: <b style="color:#059669">${prof}</b></div>`
+          <div style="color:#64748B">Laba Kotor: <b style="color:#047857">${prof}</b></div>`
       },
     },
-    grid: { left: 4, right: 24, top: 8, bottom: 24 },
+    grid: { left: 12, right: 24, top: 12, bottom: 24, containLabel: true },
     xAxis: {
       type: 'value',
       axisLabel: {
         color: textColor,
         fontSize: 10,
         fontWeight: 600,
-        formatter: (v: number) => formatCompact(v),
+        formatter: (v: number) => productMetric.value === 'quantity' ? v.toString() : formatCompact(v),
       },
       splitLine: { lineStyle: { color: gridColor, type: 'dashed' } },
     },
     yAxis: {
       type: 'category',
-      data: prods.map((p: any) => p.product_name).reverse(),
+      data: sortedProds.map((p: any) => p.product_name),
       axisLine: { lineStyle: { color: gridColor } },
       axisTick: { show: false },
       axisLabel: {
         color: textDark,
         fontSize: 11,
         fontWeight: 600,
-        width: 120,
+        width: 140,
         overflow: 'truncate',
       },
       inverse: true,
@@ -632,20 +753,17 @@ const topProductsOption = computed(() => {
     series: [
       {
         type: 'bar',
-        data: [...prods].reverse().map((p: any, i: number) => ({
-          value: p.revenue,
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-              { offset: 0, color: palette[i % palette.length] },
-              { offset: 1, color: palette[i % palette.length] + '99' },
-            ]),
-            borderRadius: [0, 6, 6, 0],
-          },
-        })),
+        data: sortedProds.map((p: any) => {
+          const val = productMetric.value === 'quantity' ? p.quantity_sold : (productMetric.value === 'profit' ? p.profit : p.revenue)
+          return {
+            value: val,
+            itemStyle: {
+              color: productMetric.value === 'profit' ? '#047857' : (productMetric.value === 'quantity' ? '#2563EB' : '#D97706'),
+              borderRadius: [0, 6, 6, 0],
+            },
+          }
+        }),
         barWidth: 16,
-        emphasis: {
-          itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.12)' },
-        },
       },
     ],
   }

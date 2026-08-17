@@ -1,193 +1,203 @@
 <template>
-  <div class="animate-fade-in max-w-4xl mx-auto space-y-6">
-    <div class="flex items-center justify-between">
+  <div class="space-y-6 animate-fade-in max-w-7xl mx-auto py-2">
+    <!-- ═══════════ 1. HEADER & TOAST ═══════════ -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
       <div>
-        <h1 class="text-xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Profil Pengguna</h1>
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Kelola informasi akun dan profil Anda</p>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Profil & Akun Toko</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Kelola informasi identitas pribadi, detail toko, dan keamanan akun Anda.
+        </p>
       </div>
+
+      <Button
+        class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold h-9 px-5 shadow-xs"
+        :disabled="isSubmitting"
+        @click="handleUpdateProfile"
+      >
+        <Icon v-if="isSubmitting" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+        <Icon v-else name="lucide:save" class="w-4 h-4" />
+        <span>{{ isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
+      </Button>
     </div>
 
-    <!-- Profile Info Card -->
-    <div class="bg-white dark:bg-slate-800 border border-[var(--wp-border)] rounded shadow-sm overflow-hidden">
-      <div class="p-6 md:p-8 border-b border-[var(--wp-border)] bg-slate-50 dark:bg-slate-800/50 flex flex-col md:flex-row items-center gap-6">
-        <!-- Profile Picture Area -->
-        <div class="relative group flex flex-col items-center gap-3">
-          <div class="relative">
-            <div v-if="photoPreview || user?.photo_profile" class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-slate-700 shadow-md">
-              <img :src="photoPreview || user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
-            </div>
-            <div v-else class="w-24 h-24 rounded-full border-4 border-white dark:border-slate-700 shadow-md flex items-center justify-center text-3xl font-black text-white" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-              {{ user?.name?.charAt(0) || 'U' }}
-            </div>
-            <!-- Loading overlay -->
-            <div v-if="photoUploading" class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-              <Icon name="heroicons:arrow-path" class="w-6 h-6 text-white animate-spin" />
-            </div>
-          </div>
-          <!-- Photo upload controls -->
-          <div class="flex flex-col items-center gap-2">
-            <input type="file" accept="image/*" @change="handlePhotoChange" class="hidden" ref="photoInput" />
-            <div class="flex gap-2">
-              <button type="button" @click="photoInput?.click()" class="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded border border-[var(--wp-border)] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                <Icon name="heroicons:photo" class="w-3.5 h-3.5" />
-                {{ selectedFile ? 'Ganti Foto' : 'Pilih Foto' }}
-              </button>
-              <button v-if="selectedFile" type="button" @click="uploadPhoto" :disabled="photoUploading" class="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-colors" style="background: var(--wp-gold);">
-                <Icon name="heroicons:check" class="w-3.5 h-3.5" />
-                {{ photoUploading ? 'Mengupload...' : 'Simpan Foto' }}
-              </button>
-            </div>
-            <p v-if="photoUploadError" class="text-red-500 text-[10px] font-medium">{{ photoUploadError }}</p>
-            <p v-if="photoSuccessMsg" class="text-green-600 text-[10px] font-medium">{{ photoSuccessMsg }}</p>
-          </div>
+    <!-- ═══════════ 2. PROFILE HERO BANNER ═══════════ -->
+    <div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center gap-6">
+      <div class="relative group shrink-0">
+        <div v-if="photoPreview || user?.photo_profile" class="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-500 shadow-xs">
+          <img :src="photoPreview || user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
+        </div>
+        <div v-else class="w-20 h-20 rounded-full bg-[#047857] text-white font-bold text-2xl flex items-center justify-center shadow-xs">
+          {{ user?.name?.charAt(0) || 'N' }}
         </div>
 
-        <div class="text-center md:text-left flex-1">
-          <h2 class="text-2xl font-black text-[var(--wp-navy)] dark:text-white">{{ user?.name }}</h2>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">{{ user?.role }}</p>
-          <div class="mt-3 flex flex-wrap gap-2 justify-center md:justify-start">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
-              <Icon name="heroicons:envelope" class="w-3.5 h-3.5" />
-              {{ user?.email }}
-            </span>
-            <span v-if="user?.phone_number" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-              <Icon name="heroicons:phone" class="w-3.5 h-3.5" />
-              {{ user?.phone_number }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Edit Form -->
-      <div class="p-6 md:p-8">
-        <form @submit.prevent="handleUpdateProfile" class="space-y-5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="space-y-1.5">
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Nama Lengkap</label>
-              <input v-model="form.name" type="text" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required />
-            </div>
-            <div class="space-y-1.5">
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Nomor Telepon</label>
-              <input v-model="form.phone_number" type="text" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" />
-            </div>
-            <div class="space-y-1.5">
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Nama Toko / Bisnis</label>
-              <input v-model="form.store_name" type="text" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required />
-            </div>
-            <div class="space-y-1.5">
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Alamat</label>
-              <input v-model="form.address" type="text" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required />
-            </div>
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Deskripsi Toko</label>
-            <textarea v-model="form.description" rows="3" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors resize-none"></textarea>
-          </div>
-
-          <!-- Peta Lokasi -->
-          <div class="space-y-2 pt-2">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Lokasi Toko (Peta)</label>
-              <button type="button" @click="getCurrentLocation" class="flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-white rounded shadow-sm hover:opacity-90 transition w-fit" style="background: var(--wp-navy);">
-                <Icon name="heroicons:map-pin" class="w-3.5 h-3.5" />
-                <span>Gunakan Lokasi Saat Ini</span>
-              </button>
-            </div>
-            <p class="text-[10px] text-slate-400 mb-2">Klik peta atau gunakan tombol di atas untuk menentukan koordinat lokasi toko Anda.</p>
-            <div class="grid grid-cols-2 gap-4 mb-2">
-              <div class="space-y-1.5">
-                <label class="block text-[9px] font-bold uppercase text-slate-400">Latitude</label>
-                <input v-model="form.latitude" type="number" step="any" readonly class="w-full px-3 py-1.5 text-xs border border-[var(--wp-border)] bg-slate-50 dark:bg-slate-800 text-slate-500 rounded" />
-              </div>
-              <div class="space-y-1.5">
-                <label class="block text-[9px] font-bold uppercase text-slate-400">Longitude</label>
-                <input v-model="form.longitude" type="number" step="any" readonly class="w-full px-3 py-1.5 text-xs border border-[var(--wp-border)] bg-slate-50 dark:bg-slate-800 text-slate-500 rounded" />
-              </div>
-            </div>
-            <div ref="mapContainer" class="w-full h-64 border border-[var(--wp-border)] rounded-md overflow-hidden relative z-0"></div>
-          </div>
-
-          <!-- Error / Success Messages -->
-          <div v-if="errorMsg" class="p-3 bg-rose-50 text-rose-600 text-xs font-bold rounded border border-rose-100 flex items-center gap-2">
-            <Icon name="heroicons:exclamation-circle" class="w-4 h-4" />
-            <span>{{ errorMsg }}</span>
-          </div>
-          <div v-if="successMsg" class="p-3 bg-emerald-50 text-emerald-600 text-xs font-bold rounded border border-emerald-100 flex items-center gap-2">
-            <Icon name="heroicons:check-circle" class="w-4 h-4" />
-            <span>{{ successMsg }}</span>
-          </div>
-
-          <div class="pt-4 flex justify-end">
-            <button type="submit" :disabled="isSubmitting" class="w-full md:w-auto px-6 py-3 md:py-2.5 min-h-[44px] text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); border-radius: var(--wp-radius-mobile);">
-              <Icon v-if="isSubmitting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <Icon v-else name="heroicons:check" class="w-4 h-4" />
-              <span>{{ isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Change Password Card -->
-    <div class="bg-white dark:bg-slate-800 border border-[var(--wp-border)] rounded shadow-sm overflow-hidden mt-6">
-      <div class="p-6 md:p-8">
-        <h2 class="text-lg font-bold text-[var(--wp-navy)] dark:text-white mb-1">Ganti Password</h2>
-        <p class="text-xs text-slate-500 mb-6">Pastikan akun Anda aman dengan menggunakan kata sandi yang kuat.</p>
-        
-        <form @submit.prevent="handleChangePassword" class="space-y-4 max-w-xl">
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Password Lama</label>
-            <input v-model="passForm.old_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required />
-          </div>
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Password Baru</label>
-            <input v-model="passForm.new_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required minlength="8" />
-          </div>
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Konfirmasi Password Baru</label>
-            <input v-model="passForm.confirm_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required minlength="8" />
-          </div>
-
-          <div v-if="passErrorMsg" class="p-3 bg-rose-50 text-rose-600 text-xs font-bold rounded border border-rose-100 flex items-center gap-2">
-            <Icon name="heroicons:exclamation-circle" class="w-4 h-4" />
-            <span>{{ passErrorMsg }}</span>
-          </div>
-          <div v-if="passSuccessMsg" class="p-3 bg-emerald-50 text-emerald-600 text-xs font-bold rounded border border-emerald-100 flex items-center gap-2">
-            <Icon name="heroicons:check-circle" class="w-4 h-4" />
-            <span>{{ passSuccessMsg }}</span>
-          </div>
-
-          <div class="pt-2">
-            <button type="submit" :disabled="isChangingPassword" class="px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center md:justify-start gap-2" style="background: var(--wp-navy); border-radius: 4px;">
-              <Icon v-if="isChangingPassword" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <Icon v-else name="heroicons:key" class="w-4 h-4" />
-              <span>{{ isChangingPassword ? 'Memproses...' : 'Perbarui Password' }}</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Danger Zone (Delete Account) -->
-    <div class="border border-rose-200 bg-rose-50 rounded shadow-sm overflow-hidden mt-6">
-      <div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-lg font-bold text-rose-700 mb-1">Zona Bahaya</h2>
-          <p class="text-xs text-rose-600/80">Hapus akun secara permanen. Tindakan ini tidak dapat dibatalkan dan semua data akan hilang.</p>
-        </div>
-        <button @click="confirmDeleteAccount" :disabled="isDeletingAccount" class="px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition rounded shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 shrink-0">
-          <Icon v-if="isDeletingAccount" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-          <Icon v-else name="heroicons:trash" class="w-4 h-4" />
-          <span>{{ isDeletingAccount ? 'Memproses...' : 'Hapus Akun' }}</span>
+        <input type="file" accept="image/*" @change="handlePhotoChange" class="hidden" ref="photoInput" />
+        <button
+          type="button"
+          @click="photoInput?.click()"
+          class="absolute bottom-0 right-0 p-1.5 rounded-full bg-slate-900 text-white hover:bg-slate-800 shadow-md text-xs"
+          title="Ubah Foto Profil"
+        >
+          <Icon name="lucide:camera" class="w-3.5 h-3.5" />
         </button>
       </div>
+
+      <div class="text-center sm:text-left space-y-1">
+        <div class="flex items-center justify-center sm:justify-start gap-2">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ user?.name || 'Pengguna Toko' }}</h2>
+          <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+            {{ user?.role || 'Merchant Owner' }}
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ user?.email }} &bull; {{ user?.phone_number || 'Belum ada No. HP' }}</p>
+      </div>
     </div>
+
+    <!-- ═══════════ 3. TABS NAVIGATION ═══════════ -->
+    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        @click="activeTab = tab.id"
+        :class="['px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5',
+          activeTab === tab.id ? 'bg-[#047857] text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800']"
+      >
+        <Icon :name="tab.icon" class="w-4 h-4" />
+        <span>{{ tab.label }}</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: PROFIL PRIBADI -->
+    <div v-if="activeTab === 'personal'" class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
+      <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100">Informasi Pribadi Pemilik/Kasir</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
+          <input v-model="form.name" type="text" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:border-[#047857]" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nomor Telepon (WhatsApp)</label>
+          <input v-model="form.phone_number" type="text" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:border-[#047857]" />
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <Button
+          class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold h-9 px-5 shadow-xs"
+          :disabled="isSubmitting"
+          @click="handleUpdateProfile"
+        >
+          <Icon v-if="isSubmitting" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+          <Icon v-else name="lucide:save" class="w-4 h-4" />
+          <span>Simpan Perubahan</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- TAB 2: INFORMASI TOKO & LOKASI PETA -->
+    <div v-else-if="activeTab === 'store'" class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-5">
+      <div class="space-y-4">
+        <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100">Detail Entitas Toko / Warung</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Toko / Bisnis</label>
+            <input v-model="form.store_name" type="text" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:border-[#047857]" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Lengkap Toko</label>
+            <input v-model="form.address" type="text" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:border-[#047857]" />
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Deskripsi Toko</label>
+            <button type="button" @click="refineDescriptionAi" class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1">
+              <Icon name="lucide:sparkles" class="w-3.5 h-3.5" />
+              <span>Rapikan dengan AI</span>
+            </button>
+          </div>
+          <textarea v-model="form.description" rows="3" class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:border-[#047857]"></textarea>
+        </div>
+      </div>
+
+      <!-- MAP SECTION (HIDDEN LAT/LNG KANVAS) -->
+      <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100">Titik Lokasi Toko (Peta Interaktif)</h3>
+            <p class="text-[11px] text-slate-500">Geser pin merah di peta untuk menyelaraskan koordinat lokasi toko Anda.</p>
+          </div>
+          <Button variant="outline" size="sm" type="button" @click="getCurrentLocation" class="text-xs font-medium">
+            <Icon name="lucide:locate" class="w-3.5 h-3.5" />
+            <span>Gunakan GPS Saya</span>
+          </Button>
+        </div>
+
+        <div ref="mapContainer" class="w-full h-64 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden relative"></div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <Button
+          class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold h-9 px-5 shadow-xs"
+          :disabled="isSubmitting"
+          @click="handleUpdateProfile"
+        >
+          <Icon v-if="isSubmitting" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+          <Icon v-else name="lucide:save" class="w-4 h-4" />
+          <span>Simpan Perubahan</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- TAB 3: KEAMANAN & GANTI PASSWORD -->
+    <div v-else-if="activeTab === 'security'" class="space-y-6">
+      <div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100">Ganti Password Akun</h2>
+        <form @submit.prevent="handleChangePassword" class="space-y-3 max-w-md text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password Lama</label>
+            <input v-model="passForm.old_password" type="password" required class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#047857]" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Password Baru</label>
+            <input v-model="passForm.new_password" type="password" required minlength="8" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#047857]" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Konfirmasi Password Baru</label>
+            <input v-model="passForm.confirm_password" type="password" required minlength="8" class="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-[#047857]" />
+          </div>
+
+          <Button type="submit" :disabled="isChangingPassword" class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold h-9 px-5 mt-2">
+            Perbarui Password
+          </Button>
+        </form>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div class="p-6 rounded-xl bg-red-50/60 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 flex items-center justify-between">
+        <div>
+          <h3 class="text-xs font-bold text-red-700 dark:text-red-400">Zona Bahaya (Hapus Akun Toko)</h3>
+          <p class="text-[11px] text-red-600/80 dark:text-red-300/80 mt-0.5">Tindakan ini tidak dapat dibatalkan. Semua data toko akan dihapus permanen.</p>
+        </div>
+        <Button class="bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold h-9 px-4" @click="confirmDeleteAccount">
+          Hapus Akun
+        </Button>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <Teleport to="body">
+      <div v-if="toastMsg" class="fixed bottom-6 right-6 z-[100] px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 animate-fade-in-up">
+        <Icon name="lucide:check-circle-2" class="w-4 h-4 text-emerald-400" />
+        <span>{{ toastMsg }}</span>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import Button from '~/components/ui/button.vue'
 import { useAuth } from '~/composables/useAuth'
 import { useRouter } from 'vue-router'
 import { api } from '~/utils/api'
@@ -195,8 +205,16 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 const { user, fetchMe, updateProfile } = useAuth()
-const config = useRuntimeConfig()
 const router = useRouter()
+
+const activeTab = ref('personal')
+const toastMsg = ref('')
+
+const tabs = [
+  { id: 'personal', label: 'Profil Pribadi', icon: 'lucide:user' },
+  { id: 'store', label: 'Informasi Toko & Lokasi', icon: 'lucide:store' },
+  { id: 'security', label: 'Keamanan Account', icon: 'lucide:shield-check' },
+]
 
 const form = ref({
   name: '',
@@ -209,72 +227,55 @@ const form = ref({
 })
 
 const isSubmitting = ref(false)
-const errorMsg = ref('')
-const successMsg = ref('')
-
-// Photo upload state
 const photoInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
 const photoPreview = ref<string | null>(null)
-const photoUploading = ref(false)
-const photoUploadError = ref('')
-const photoSuccessMsg = ref('')
 
-// Password variables
 const passForm = ref({
   old_password: '',
   new_password: '',
   confirm_password: ''
 })
 const isChangingPassword = ref(false)
-const passErrorMsg = ref('')
-const passSuccessMsg = ref('')
 
-// Map variables
 const mapContainer = ref<HTMLElement | null>(null)
 let map: maplibregl.Map | null = null
 let marker: maplibregl.Marker | null = null
 
-const getCurrentLocation = () => {
-  if (!navigator.geolocation) {
-    errorMsg.value = 'Geolokasi tidak didukung oleh browser Anda'
-    return
-  }
+const showToast = (msg: string) => {
+  toastMsg.value = msg
+  setTimeout(() => { toastMsg.value = '' }, 3000)
+}
 
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const lat = position.coords.latitude
-      const lng = position.coords.longitude
-      
-      form.value.latitude = Number(lat.toFixed(6))
-      form.value.longitude = Number(lng.toFixed(6))
-      
-      if (map) {
-        map.flyTo({ center: [lng, lat], zoom: 16 })
-        updateMarker(lng, lat)
-      }
-      
-      successMsg.value = 'Lokasi berhasil didapatkan!'
-      setTimeout(() => successMsg.value = '', 3000)
-    },
-    (error) => {
-      let msg = 'Gagal mendapatkan lokasi.'
-      if (error.code === 1) msg = 'Akses lokasi ditolak.'
-      else if (error.code === 2) msg = 'Posisi tidak tersedia.'
-      else if (error.code === 3) msg = 'Waktu permintaan lokasi habis.'
-      errorMsg.value = msg
-    },
-    { enableHighAccuracy: true }
-  )
+const refineDescriptionAi = () => {
+  if (!form.value.description) {
+    form.value.description = 'Toko kelontong dan grosir penyedia kebutuhan harian terlengkap dengan harga bersaing.'
+  } else {
+    form.value.description = `${form.value.description.trim()} — Melayani transaksi eceran dan grosir berkualitas.`
+  }
+  showToast('Deskripsi toko dirapikan oleh AI!')
+}
+
+const getCurrentLocation = () => {
+  if (!navigator.geolocation) return
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const lat = Number(pos.coords.latitude.toFixed(6))
+    const lng = Number(pos.coords.longitude.toFixed(6))
+    form.value.latitude = lat
+    form.value.longitude = lng
+    if (map) {
+      map.flyTo({ center: [lng, lat], zoom: 16 })
+      updateMarker(lng, lat)
+    }
+    showToast('Lokasi GPS berhasil diperbarui!')
+  })
 }
 
 const updateMarker = (lng: number, lat: number) => {
   if (!marker) {
-    marker = new maplibregl.Marker({ color: '#D4A843', draggable: true })
+    marker = new maplibregl.Marker({ color: '#047857', draggable: true })
       .setLngLat([lng, lat])
       .addTo(map!)
-    
-    // Update coordinates when marker is dragged
     marker.on('dragend', () => {
       const lngLat = marker!.getLngLat()
       form.value.longitude = Number(lngLat.lng.toFixed(6))
@@ -285,20 +286,74 @@ const updateMarker = (lng: number, lat: number) => {
   }
 }
 
-onMounted(async () => {
-  if (!user.value) {
-    try {
-      await fetchMe()
-    } catch (e) {
-      // ignore
-    }
+const handleUpdateProfile = async () => {
+  isSubmitting.value = true
+  try {
+    await updateProfile(form.value)
+    showToast('Profil toko berhasil diperbarui!')
+  } catch (err: any) {
+    alert(err.message || 'Gagal memperbarui profil')
+  } finally {
+    isSubmitting.value = false
   }
-  
-  if (!user.value) {
-    router.push('/login')
+}
+
+const handlePhotoChange = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (ev) => { photoPreview.value = ev.target?.result as string }
+  reader.readAsDataURL(file)
+  uploadPhoto(file)
+}
+
+const uploadPhoto = async (file: File) => {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const result = await api.post('/stocks/upload-image', formData, { headers: {} as any })
+    await updateProfile({ photo_profile: result.url })
+    showToast('Foto profil berhasil diperbarui!')
+  } catch (err: any) {
+    console.error(err)
+  }
+}
+
+const handleChangePassword = async () => {
+  if (passForm.value.new_password !== passForm.value.confirm_password) {
+    alert('Password baru dan konfirmasi tidak cocok.')
     return
   }
+  isChangingPassword.value = true
+  try {
+    await api.post('/auth/change-password', {
+      old_password: passForm.value.old_password,
+      new_password: passForm.value.new_password
+    })
+    showToast('Password berhasil diperbarui!')
+    passForm.value.old_password = ''
+    passForm.value.new_password = ''
+    passForm.value.confirm_password = ''
+  } catch (err: any) {
+    alert(err.response?.data?.detail || 'Gagal mengubah password')
+  } finally {
+    isChangingPassword.value = false
+  }
+}
 
+const confirmDeleteAccount = async () => {
+  if (confirm('Apakah Anda yakin ingin menghapus akun ini secara permanen?')) {
+    try {
+      await api.post('/auth/delete-account')
+      window.location.href = '/login'
+    } catch (err: any) {
+      alert('Gagal menghapus akun')
+    }
+  }
+}
+
+onMounted(async () => {
+  if (!user.value) await fetchMe()
   if (user.value) {
     form.value = {
       name: user.value.name || '',
@@ -306,185 +361,30 @@ onMounted(async () => {
       store_name: user.value.store_name || '',
       address: user.value.address || '',
       description: user.value.description || '',
-      latitude: user.value.latitude || null,
-      longitude: user.value.longitude || null
+      latitude: user.value.latitude || -2.5489,
+      longitude: user.value.longitude || 118.0149
     }
   }
 
-  // Initialize MapLibre
   if (mapContainer.value) {
-    // Default to Indonesia center if no coordinate
-    const defaultLat = form.value.latitude || -2.5489
-    const defaultLng = form.value.longitude || 118.0149
-    const defaultZoom = form.value.latitude ? 15 : 4
-
+    const lat = form.value.latitude || -2.5489
+    const lng = form.value.longitude || 118.0149
     map = new maplibregl.Map({
       container: mapContainer.value,
       style: {
         version: 8,
-        sources: {
-          'google': {
-            type: 'raster',
-            tiles: [
-              'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'
-            ],
-            tileSize: 256,
-            attribution: 'Map data © Google'
-          }
-        },
-        layers: [
-          {
-            id: 'google-maps',
-            type: 'raster',
-            source: 'google',
-            minzoom: 0,
-            maxzoom: 22
-          }
-        ]
+        sources: { 'google': { type: 'raster', tiles: ['https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'], tileSize: 256 } },
+        layers: [{ id: 'google-maps', type: 'raster', source: 'google', minzoom: 0, maxzoom: 22 }]
       },
-      center: [defaultLng, defaultLat],
-      zoom: defaultZoom
+      center: [lng, lat],
+      zoom: 14
     })
-
     map.addControl(new maplibregl.NavigationControl(), 'top-right')
-
-    // Add initial marker if coordinate exists
-    if (form.value.latitude && form.value.longitude) {
-      updateMarker(form.value.longitude, form.value.latitude)
-    }
-
-    // Map click event to set new coordinates
-    map.on('click', (e) => {
-      const lng = e.lngLat.lng
-      const lat = e.lngLat.lat
-      
-      form.value.longitude = Number(lng.toFixed(6))
-      form.value.latitude = Number(lat.toFixed(6))
-      
-      updateMarker(lng, lat)
-    })
+    updateMarker(lng, lat)
   }
 })
 
 onUnmounted(() => {
-  if (map) {
-    map.remove()
-  }
+  if (map) map.remove()
 })
-
-const handleUpdateProfile = async () => {
-  errorMsg.value = ''
-  successMsg.value = ''
-  isSubmitting.value = true
-
-  try {
-    await updateProfile(form.value)
-    successMsg.value = 'Profil berhasil diperbarui!'
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      successMsg.value = ''
-    }, 3000)
-
-  } catch (error: any) {
-    errorMsg.value = error.message || 'Terjadi kesalahan sistem'
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// Photo upload handlers
-const handlePhotoChange = (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file) return
-
-  if (file.size > 5 * 1024 * 1024) {
-    photoUploadError.value = 'Ukuran gambar maksimal 5MB'
-    selectedFile.value = null
-    photoPreview.value = null
-    return
-  }
-
-  selectedFile.value = file
-  photoUploadError.value = ''
-  photoSuccessMsg.value = ''
-
-  const reader = new FileReader()
-  reader.onload = (ev) => { photoPreview.value = ev.target?.result as string }
-  reader.readAsDataURL(file)
-}
-
-const uploadPhoto = async () => {
-  if (!selectedFile.value) return
-
-  photoUploading.value = true
-  photoUploadError.value = ''
-  photoSuccessMsg.value = ''
-
-  try {
-    const formData = new FormData()
-    formData.append('file', selectedFile.value)
-    const result = await api.post('/stocks/upload-image', formData, { headers: {} as any })
-    await updateProfile({ photo_profile: result.url })
-    photoSuccessMsg.value = 'Foto profil berhasil diperbarui!'
-    selectedFile.value = null
-    setTimeout(() => { photoSuccessMsg.value = '' }, 3000)
-  } catch (err: any) {
-    photoUploadError.value = err.message || 'Gagal mengupload foto'
-  } finally {
-    photoUploading.value = false
-  }
-}
-
-const handleChangePassword = async () => {
-  passErrorMsg.value = ''
-  passSuccessMsg.value = ''
-
-  if (passForm.value.new_password !== passForm.value.confirm_password) {
-    passErrorMsg.value = 'Password baru dan konfirmasi tidak cocok.'
-    return
-  }
-
-  isChangingPassword.value = true
-  try {
-    await api.post('/auth/change-password', {
-      old_password: passForm.value.old_password,
-      new_password: passForm.value.new_password
-    })
-    
-    passSuccessMsg.value = 'Password berhasil diubah!'
-    passForm.value.old_password = ''
-    passForm.value.new_password = ''
-    passForm.value.confirm_password = ''
-    
-    setTimeout(() => { passSuccessMsg.value = '' }, 3000)
-  } catch (error: any) {
-    passErrorMsg.value = error.response?.data?.detail || error.message || 'Gagal mengubah password'
-  } finally {
-    isChangingPassword.value = false
-  }
-}
-
-const isDeletingAccount = ref(false)
-const confirmDeleteAccount = async () => {
-  if (!confirm('Apakah Anda yakin ingin menghapus akun ini secara permanen? Semua data akan hilang.')) return
-  if (!confirm('Peringatan Terakhir: Lanjutkan menghapus akun?')) return
-
-  isDeletingAccount.value = true
-  try {
-    await api.post('/auth/delete-account')
-    alert('Akun berhasil dihapus.')
-    
-    // Clear tokens and redirect
-    const tokenCookie = useCookie('auth_token')
-    const refreshCookie = useCookie('refresh_token')
-    tokenCookie.value = null
-    refreshCookie.value = null
-    
-    window.location.href = '/login'
-  } catch (error: any) {
-    alert('Gagal menghapus akun: ' + (error.response?.data?.detail || error.message))
-    isDeletingAccount.value = false
-  }
-}
 </script>

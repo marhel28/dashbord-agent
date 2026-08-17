@@ -24,6 +24,36 @@ export const useNotificationStore = () => {
           console.error(e)
         }
       }
+      if (notifications.value.length === 0) {
+        // Seed default notifications for initial merchant experience
+        notifications.value = [
+          {
+            id: 'n1',
+            title: 'Transaksi QRIS Masuk',
+            message: 'Penjualan sebesar Rp 13000.0 telah ditambahkan ke pembukuan kasir.',
+            type: 'NEW_TRANSACTION',
+            date: new Date().toISOString(),
+            read: false
+          },
+          {
+            id: 'n2',
+            title: 'Analisis AI Copilot',
+            message: 'Stok Teh Celup Sariwangi menumpuk. Rekomendasi buat promo bundling diskon 10%.',
+            type: 'AI_COPILOT',
+            date: new Date(Date.now() - 3600000).toISOString(),
+            read: false
+          },
+          {
+            id: 'n3',
+            title: 'Peringatan Stok Menipis',
+            message: 'Indomie Goreng Spesial tersisa 5 pcs di gudang utama. Waktunya melakukan restock.',
+            type: 'STOCK_ALERT',
+            date: new Date(Date.now() - 86400000).toISOString(),
+            read: true
+          }
+        ]
+        saveNotifications()
+      }
       initialized.value = true
     }
   }

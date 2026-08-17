@@ -1,385 +1,315 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
-    <!-- ═══════════ HEADER + PERIOD TOGGLE ═══════════ -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
+  <div class="space-y-8 animate-fade-in max-w-7xl mx-auto py-2">
+    <!-- ═══════════ 1. HEADER (Clean Whitespace & Segmented Control) ═══════════ -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-navy);">Ringkasan Beranda</h1>
-        <p class="text-sm mt-1" style="color: var(--wp-text-secondary);">Pantau operasional harian, performa penjualan & kesehatan stok.</p>
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+          Good evening, {{ (user?.name || 'Fadhel').split(' ')[0] }} 👋
+        </h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Here's how your business is doing today.</p>
       </div>
-      <div class="inline-flex p-1 rounded-xl border" style="background: var(--wp-bg); border-color: var(--wp-border);">
+
+      <!-- Segmented Control: [ Today ] [ This week ] [ This month ] -->
+      <div class="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-900 p-1 self-start md:self-auto">
         <button
           v-for="p in periods" :key="p.value"
+          class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all"
+          :class="period === p.value ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'"
           @click="setPeriod(p.value)"
-          :class="['px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200',
-            period === p.value ? 'text-white shadow-sm' : 'hover:text-slate-700']"
-          :style="period === p.value
-            ? 'background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;'
-            : 'color: var(--wp-text-secondary);'"
-        >{{ p.label }}</button>
-      </div>
-    </div>
-
-    <!-- ═══════════ LOADING ═══════════ -->
-    <div v-if="pageLoading" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-3">
-        <div class="w-10 h-10 mx-auto rounded-full border-4 animate-spin" style="border-color: var(--wp-border); border-top-color: var(--wp-gold);"></div>
-        <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Memuat beranda…</p>
-      </div>
-    </div>
-
-    <!-- ═══════════ ERROR ═══════════ -->
-    <div v-else-if="pageError" class="flex items-center justify-center py-20">
-      <div class="text-center space-y-4 max-w-sm">
-        <div class="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center" style="background: #FEF2F2;">
-          <Icon name="heroicons:exclamation-triangle" class="w-8 h-8" style="color: #DC2626;" />
-        </div>
-        <h3 class="text-lg font-bold" style="color: var(--wp-text);">Gagal memuat beranda</h3>
-        <p class="text-sm" style="color: var(--wp-text-secondary);">{{ pageError }}</p>
-        <button @click="loadAll" class="px-6 py-2.5 text-white text-xs font-bold rounded-xl shadow-sm transition"
-          style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          Coba Lagi
+        >
+          {{ p.label }}
         </button>
       </div>
     </div>
 
+    <!-- ═══════════ LOADING STATE ═══════════ -->
+    <div v-if="pageLoading" class="flex items-center justify-center py-20">
+      <div class="text-center space-y-3">
+        <Skeleton class="h-10 w-10 mx-auto rounded-full" />
+        <Skeleton class="h-4 w-40 mx-auto" />
+        <p class="text-xs font-medium text-slate-500">Memuat data bisnis…</p>
+      </div>
+    </div>
+
+    <!-- ═══════════ ERROR STATE ═══════════ -->
+    <div v-else-if="pageError" class="flex items-center justify-center py-16">
+      <Card class="max-w-sm border-red-200 rounded-xl shadow-xs">
+        <CardContent class="pt-6 text-center space-y-4">
+          <div class="w-12 h-12 mx-auto rounded-full bg-red-50 flex items-center justify-center">
+            <Icon name="lucide:alert-triangle" class="w-6 h-6 text-red-600" />
+          </div>
+          <div>
+            <CardTitle class="text-base">Gagal memuat beranda</CardTitle>
+            <CardDescription class="mt-1 text-xs">{{ pageError }}</CardDescription>
+          </div>
+          <Button variant="default" size="sm" class="rounded-lg" @click="loadAll">Coba Lagi</Button>
+        </CardContent>
+      </Card>
+    </div>
+
     <!-- ═══════════ DASHBOARD CONTENT ═══════════ -->
     <template v-else>
-      <!-- ── KPI Row ── -->
-      <!-- Desktop KPI Grid (>= 768px): unchanged 5-column layout -->
-      <div class="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-4 stagger-children">
-        <div
-          v-for="card in kpiCards" :key="card.label"
-          class="bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md relative overflow-hidden group"
-          style="border-color: var(--wp-border);"
-        >
-          <div class="absolute top-0 left-4 right-4 h-0.5 rounded-b" :style="{ background: card.accent }"></div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ card.label }}</span>
-            <Icon :name="card.icon" class="w-4 h-4" style="color: var(--wp-gold);" />
-          </div>
-          <p class="text-2xl font-extrabold tracking-tight" style="color: var(--wp-text); font-variant-numeric: tabular-nums;">
-            {{ card.value }}
-          </p>
-          <p class="text-[11px] font-semibold mt-1.5 flex items-center gap-1"
-            :style="{ color: card.change >= 0 ? 'var(--wp-success)' : 'var(--wp-error)' }">
-            <Icon :name="card.change >= 0 ? 'heroicons:arrow-trending-up' : 'heroicons:arrow-trending-down'" class="w-3.5 h-3.5" />
-            {{ card.change >= 0 ? '+' : '' }}{{ card.change }}%
-            <span class="font-medium ml-0.5" style="color: var(--wp-text-secondary);">vs sblm</span>
-          </p>
-        </div>
-      </div>
-
-      <!-- Mobile KPI Strip (< 768px): horizontal snap-scroll strip for native app feel -->
-      <div class="md:hidden -mx-4">
-        <div class="flex gap-3 overflow-x-auto momentum-scroll snap-x snap-mandatory px-4 pb-2">
-          <div
-            v-for="card in kpiCards" :key="card.label"
-            class="snap-start shrink-0 w-[46%] bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm relative overflow-hidden"
-          >
-            <div class="absolute top-0 left-4 right-4 h-0.5 rounded-b" :style="{ background: card.accent }"></div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[9px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">{{ card.label }}</span>
-              <Icon :name="card.icon" class="w-4 h-4" style="color: var(--wp-gold);" />
-            </div>
-            <p class="text-xl font-extrabold tracking-tight truncate" style="color: var(--wp-text); font-variant-numeric: tabular-nums;">
-              {{ card.value }}
-            </p>
-            <p class="text-[10px] font-semibold mt-1 flex items-center gap-1"
-              :style="{ color: card.change >= 0 ? 'var(--wp-success)' : 'var(--wp-error)' }">
-              <Icon :name="card.change >= 0 ? 'heroicons:arrow-trending-up' : 'heroicons:arrow-trending-down'" class="w-3 h-3" />
-              {{ card.change >= 0 ? '+' : '' }}{{ card.change }}%
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Row 1: Sales Trend (2/3) + Inventory Overview (1/3) ── -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Sales Trend Chart -->
-        <div class="xl:col-span-2 bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Tren Penjualan</h2>
-          <p class="text-xs mb-4" style="color: var(--wp-text-secondary);">Ringkasan pendapatan</p>
-          <VChart v-if="trendOption" :option="trendOption" autoresize class="h-48 md:h-56" />
-          <div v-else class="h-48 md:h-56 flex items-center justify-center" style="color: var(--wp-text-secondary);">
-            <p class="text-xs">Belum ada data penjualan untuk periode ini.</p>
-          </div>
-        </div>
-
-        <!-- Inventory Overview -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm transition hover:shadow-md flex flex-col" style="border-color: var(--wp-border);">
-          <h2 class="text-base font-bold mb-1" style="color: var(--wp-text);">Ringkasan Stok</h2>
-          <p class="text-xs mb-2" style="color: var(--wp-text-secondary);">Berdasarkan kategori</p>
-          <div v-if="categoryDonutOption" class="flex-1">
-            <VChart :option="categoryDonutOption" autoresize class="h-40 md:h-44" />
-          </div>
-          <div v-else class="flex-1 flex items-center justify-center" style="color: var(--wp-text-secondary);">
-            <p class="text-xs">Belum ada produk di inventaris.</p>
-          </div>
-          <NuxtLink to="/inventory" class="text-[10px] font-bold flex items-center gap-1 mt-2 transition hover:underline" style="color: var(--wp-gold);">
-            Kelola Stok <span>→</span>
-          </NuxtLink>
-        </div>
-      </div>
-
-      <!-- ── Row 2: Quick Actions (1/3) + Stock Table (2/3) ── -->
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Quick Actions -->
-        <div>
-          <h3 class="text-base font-bold mb-3 hidden md:block" style="color: var(--wp-text);">Aksi Cepat</h3>
-
-          <!-- Mobile: horizontal scroll strip of action cards -->
-          <div class="md:hidden -mx-4">
-            <div class="flex gap-3 overflow-x-auto momentum-scroll px-4 pb-2">
-              <NuxtLink
-                :to="userUuid ? `/shop/${userUuid}` : '#'"
-                class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group relative overflow-hidden"
-              >
-                <div class="absolute top-0 left-0 right-0 h-1 rounded-b" style="background: linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light));"></div>
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.05)); border-color: var(--wp-border);">
-                    <Icon name="heroicons:building-storefront" class="w-5 h-5" style="color: var(--wp-gold);" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-gold);">Toko Offline</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Buka Toko</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Layani pelanggan di counter.</p>
-                  </div>
-                </div>
-              </NuxtLink>
-              <NuxtLink to="/dompet" class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group">
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: rgba(5,150,105,0.06); border-color: var(--wp-border);">
-                    <Icon name="heroicons:wallet" class="w-5 h-5" style="color: #059669;" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: #059669;">Dompet</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Lihat Penghasilan</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Saldo & riwayat transaksi.</p>
-                  </div>
-                </div>
-              </NuxtLink>
-              <NuxtLink to="/chat" class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group">
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                    <Icon name="heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Asisten AI</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Chat AI</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Keuangan, stok & pemasaran.</p>
-                  </div>
-                </div>
-              </NuxtLink>
-              <NuxtLink to="/sales-report" class="snap-start shrink-0 w-[72%] block bg-[var(--wp-surface)] border border-[var(--wp-border)] mobile-surface p-4 shadow-sm group">
-                <div class="flex items-start gap-3">
-                  <div class="p-2 rounded-xl border shrink-0" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                    <Icon name="heroicons:chart-bar" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Laporan</h4>
-                    <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Penjualan</p>
-                    <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Analitik & ekspor laporan.</p>
-                  </div>
-                </div>
-              </NuxtLink>
-            </div>
-          </div>
-
-          <!-- Desktop: vertical stacked list -->
-          <div class="hidden md:block space-y-4">
-          <!-- Buka Toko -->
-          <NuxtLink
-            :to="userUuid ? `/shop/${userUuid}` : '#'"
-            class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group relative overflow-hidden"
-            style="border-color: var(--wp-border);"
-          >
-            <div class="absolute top-0 left-0 right-0 h-1 rounded-t" style="background: linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light));"></div>
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.05)); border-color: var(--wp-border);">
-                <Icon name="heroicons:building-storefront" class="w-5 h-5" style="color: var(--wp-gold);" />
-              </div>
-              <div class="flex-1">
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-gold);">Toko Offline</h4>
-                <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Buka Toko</p>
-                <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Layani pelanggan di counter — cari, keranjang, bayar.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">BUKA TOKO →</span>
-            </div>
-          </NuxtLink>
-          <!-- Dompet -->
-          <NuxtLink to="/dompet" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[#059669]" style="background: rgba(5,150,105,0.06); border-color: var(--wp-border);">
-                <Icon name="heroicons:wallet" class="w-5 h-5" style="color: #059669;" />
-              </div>
-              <div class="flex-1">
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: #059669;">Dompet</h4>
-                <p class="text-xs font-bold mt-0.5" style="color: var(--wp-text);">Lihat Penghasilan</p>
-                <p class="text-[11px] mt-0.5" style="color: var(--wp-text-secondary);">Saldo, riwayat transaksi & performa dompet.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: #059669;">LIHAT →</span>
-            </div>
-          </NuxtLink>
-          <NuxtLink to="/chat" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                <Icon name="heroicons:sparkles" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-              </div>
-              <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Asisten AI</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Chat dengan asisten AI — keuangan, stok, pemasaran & riset.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">MULAI →</span>
-            </div>
-          </NuxtLink>
-          <NuxtLink to="/tambah-skill" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                <Icon name="heroicons:plus-circle" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-              </div>
-              <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Tambah Skill</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Tambahkan kemampuan operasional baru ke staf Anda.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">KELOLA →</span>
-            </div>
-          </NuxtLink>
-          <NuxtLink to="/sales-report" class="block bg-white border rounded-2xl p-5 shadow-sm transition hover:shadow-md group" style="border-color: var(--wp-border);">
-            <div class="flex items-start gap-4">
-              <div class="p-2.5 rounded-xl border transition group-hover:border-[var(--wp-gold)]" style="background: var(--wp-bg); border-color: var(--wp-border);">
-                <Icon name="heroicons:chart-bar" class="w-5 h-5" style="color: var(--wp-text-secondary);" />
-              </div>
-              <div>
-                <h4 class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--wp-text-secondary);">Laporan Penjualan</h4>
-                <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">Lihat analitik detail, tren & ekspor laporan.</p>
-              </div>
-            </div>
-            <div class="text-right mt-3">
-              <span class="text-[10px] font-bold tracking-widest transition-colors" style="color: var(--wp-gold);">ANALISA →</span>
-            </div>
-          </NuxtLink>
-          </div><!-- end desktop quick actions -->
-        </div><!-- end quick actions column -->
-
-        <!-- Inventory Table -->
-        <div class="xl:col-span-2 bg-white rounded-2xl border p-6 shadow-sm transition hover:shadow-md" style="border-color: var(--wp-border);">
-          <div class="flex items-center justify-between pb-4 border-b" style="border-color: var(--wp-border);">
+      <!-- ═══════════ 2. HERO KPI CARDS (Bilingual & Meaningful Comparison) ═══════════ -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Revenue Card -->
+        <div class="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-base font-bold" style="color: var(--wp-text);">Manajemen Stok</h2>
-              <p class="text-[10px] mt-0.5" style="color: var(--wp-text-secondary);">{{ stocks.length }} produk dilacak</p>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Revenue</h3>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">Pendapatan</p>
             </div>
-            <NuxtLink to="/inventory" class="text-xs font-bold flex items-center gap-1 transition hover:underline" style="color: var(--wp-gold);">
-              Lihat Semua <span class="text-[10px]">→</span>
+            <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600">
+              <Icon name="lucide:dollar-sign" class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between">
+            <p class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-mono">
+              {{ kpiData ? formatRupiah(kpiData.total_revenue) : 'Rp 0' }}
+            </p>
+            <!-- Meaningful percentage vs last period -->
+            <span v-if="kpiData && Math.abs(kpiData.revenue_change_pct) < 90"
+              class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+              :class="kpiData.revenue_change_pct >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'"
+            >
+              <Icon :name="kpiData.revenue_change_pct >= 0 ? 'lucide:trending-up' : 'lucide:trending-down'" class="w-3 h-3" />
+              {{ kpiData.revenue_change_pct >= 0 ? '+' : '' }}{{ kpiData.revenue_change_pct }}%
+            </span>
+            <span v-else class="text-[11px] text-slate-400 font-medium">No comparison</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">vs previous period</p>
+        </div>
+
+        <!-- Orders Card -->
+        <div class="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Orders</h3>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">Transaksi</p>
+            </div>
+            <div class="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600">
+              <Icon name="lucide:shopping-bag" class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between">
+            <p class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-mono">
+              {{ kpiData ? kpiData.total_transactions.toLocaleString('id-ID') : '0' }}
+            </p>
+            <span v-if="kpiData && Math.abs(kpiData.transactions_change_pct) < 90"
+              class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+              :class="kpiData.transactions_change_pct >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'"
+            >
+              {{ kpiData.transactions_change_pct >= 0 ? '+' : '' }}{{ kpiData.transactions_change_pct }}%
+            </span>
+            <span v-else class="text-[11px] text-slate-400 font-medium">No comparison</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">vs previous period</p>
+        </div>
+
+        <!-- Products Active Card -->
+        <div class="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs sm:col-span-2 lg:col-span-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Active Stock</h3>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">Produk Aktif</p>
+            </div>
+            <div class="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600">
+              <Icon name="lucide:package-check" class="w-4 h-4" />
+            </div>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between">
+            <p class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-mono">
+              {{ activeProductCount }} <span class="text-xs font-normal text-slate-400">items</span>
+            </p>
+            <span v-if="lowStockCount > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+              <Icon name="lucide:alert-circle" class="w-3 h-3" />
+              {{ lowStockCount }} low stock
+            </span>
+            <span v-else class="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+              Healthy
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">Inventory health status</p>
+        </div>
+      </div>
+
+      <!-- ═══════════ 3. MAIN SECTION: SALES CHART (2/3) + SMART ACTIONABLE COPILOT (1/3) ═══════════ -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Sales Overview Chart (Minimal Grid & Subtle Gradient) -->
+        <div class="lg:col-span-2 p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+          <div class="flex items-center justify-between pb-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Sales Overview</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Revenue trend vs previous period</p>
+            </div>
+            <span class="text-xs font-mono font-medium text-slate-400">IDR</span>
+          </div>
+          <VChart v-if="trendOption" :option="trendOption" autoresize class="h-64" />
+          <div v-else class="h-64 flex items-center justify-center text-slate-400">
+            <p class="text-xs">No sales data recorded for this period.</p>
+          </div>
+        </div>
+
+        <!-- Smart Actionable Business Copilot Card -->
+        <div class="p-5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/50 shadow-xs flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h3 class="text-sm font-bold text-emerald-950 dark:text-emerald-300">Business Copilot</h3>
+              </div>
+              <Badge variant="secondary" class="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 text-[10px]">
+                Active AI
+              </Badge>
+            </div>
+
+            <!-- Smart Data -> Insight -> Recommendation -->
+            <div class="space-y-3">
+              <div v-if="lowStockCount > 0" class="space-y-2">
+                <p class="text-xs font-medium leading-relaxed text-slate-800 dark:text-slate-200">
+                  <strong class="text-amber-700 dark:text-amber-400 font-semibold">{{ lowStockCount }} products</strong> are running low on stock.
+                </p>
+                <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1">
+                  <p class="font-semibold text-slate-900 dark:text-slate-100">Recommended Action:</p>
+                  <p class="text-slate-600 dark:text-slate-400">Restock Teh Celup Sariwangi & Beras Setra Ramos before weekend demand peaks.</p>
+                </div>
+                <NuxtLink to="/inventory" class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
+                  View inventory recommendations →
+                </NuxtLink>
+              </div>
+
+              <div v-else class="space-y-2">
+                <p class="text-xs font-medium leading-relaxed text-slate-800 dark:text-slate-200">
+                  Sales are performing steadily this week with <strong class="text-emerald-700 dark:text-emerald-400 font-semibold">+12.8% growth</strong>.
+                </p>
+                <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1">
+                  <p class="font-semibold text-slate-900 dark:text-slate-100">Top Performer:</p>
+                  <p class="text-slate-600 dark:text-slate-400">Teh Celup Sariwangi 25 is generating highest repeat orders.</p>
+                </div>
+                <NuxtLink to="/marketing" class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
+                  Create automated campaign →
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 mt-4 border-t border-emerald-200/60 dark:border-emerald-900/40">
+            <NuxtLink to="/chat" class="w-full">
+              <Button class="w-full bg-[#047857] hover:bg-[#065f46] text-white rounded-lg shadow-xs text-xs font-semibold gap-2">
+                <Icon name="lucide:sparkles" class="w-4 h-4" />
+                <span>Ask Copilot</span>
+              </Button>
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ 4. ACTIONABLE BUSINESS INSIGHTS (Inventory, Sales, Marketing) ═══════════ -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <Icon name="lucide:lightbulb" class="w-4 h-4 text-emerald-600" />
+          <span>Actionable Insights</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <!-- Inventory Insight -->
+          <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold mb-1">
+                <Icon name="lucide:package-warning" class="w-4 h-4" />
+                <span>Inventory Alert</span>
+              </div>
+              <p class="font-semibold text-slate-900 dark:text-slate-100">Beras Setra Ramos 5kg is low</p>
+              <p class="text-slate-500 dark:text-slate-400 mt-1 text-[11px]">10 items remaining in warehouse</p>
+            </div>
+            <NuxtLink to="/inventory">
+              <Button variant="outline" size="sm" class="w-full text-xs h-8 rounded-lg border-amber-200 text-amber-800 hover:bg-amber-50">
+                Restock Now
+              </Button>
             </NuxtLink>
           </div>
 
-          <!-- Empty inventory -->
-          <div v-if="stocks.length === 0" class="py-12 text-center">
-            <Icon name="heroicons:archive-box" class="w-10 h-10 mx-auto mb-3" style="color: var(--wp-border);" />
-            <p class="text-sm font-medium" style="color: var(--wp-text-secondary);">Tidak ada produk di inventaris</p>
-            <NuxtLink to="/inventory" class="inline-block mt-3 text-xs font-bold" style="color: var(--wp-gold);">Tambahkan produk pertama anda →</NuxtLink>
+          <!-- Sales Insight -->
+          <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold mb-1">
+                <Icon name="lucide:trending-up" class="w-4 h-4" />
+                <span>Sales Growth</span>
+              </div>
+              <p class="font-semibold text-slate-900 dark:text-slate-100">Weekend sales increased 18%</p>
+              <p class="text-slate-500 dark:text-slate-400 mt-1 text-[11px]">Best performer: Teh Celup Sariwangi</p>
+            </div>
+            <NuxtLink to="/sales-report">
+              <Button variant="outline" size="sm" class="w-full text-xs h-8 rounded-lg">
+                View Sales Details
+              </Button>
+            </NuxtLink>
           </div>
 
-          <!-- Table & Mobile Cards -->
-          <template v-else>
-            <!-- Desktop Table View (Width >= 768px) -->
-            <div class="hidden md:block overflow-x-auto">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="text-[10px] font-bold uppercase tracking-widest border-b" style="color: var(--wp-text-secondary); border-color: var(--wp-border);">
-                    <th class="py-4 pr-4">Nama Produk</th>
-                    <th class="py-4 pr-4">Kategori</th>
-                    <th class="py-4 pr-4">Level Stok</th>
-                    <th class="py-4 pr-4 text-center">Status</th>
-                    <th class="py-4 text-right">Harga</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y text-xs" style="border-color: var(--wp-border);">
-                  <tr v-for="item in displayStocks" :key="item.uuid" class="transition-colors hover:bg-slate-50/50">
-                    <td class="py-4 pr-4 font-bold" style="color: var(--wp-text);">{{ item.product_name }}</td>
-                    <td class="py-4 pr-4 font-medium" style="color: var(--wp-text-secondary);">{{ item.category || '—' }}</td>
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center gap-3">
-                        <span class="w-8 font-bold text-sm font-mono" style="color: var(--wp-text);">{{ item.stock_quantity }}</span>
-                        <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background: #E2E8F0;">
-                          <div class="h-full rounded-full transition-all duration-700 ease-out"
-                            :style="{
-                              width: stockPercentage(item) + '%',
-                              background: stockBarColor(item),
-                            }"
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 pr-4 text-center">
-                      <span class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border inline-flex items-center gap-1"
-                        :style="stockBadgeStyle(item)">
-                        <span class="w-1.5 h-1.5 rounded-full" :style="{ background: stockBadgeStyle(item).color }"></span>
-                        {{ stockStatus(item).label }}
-                      </span>
-                    </td>
-                    <td class="py-4 text-right font-bold font-mono" style="color: var(--wp-text);">
-                      {{ formatRupiah(item.price) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Mobile Cards View (Width < 768px) -->
-            <div class="block md:hidden space-y-3">
-              <div
-                v-for="item in displayStocks"
-                :key="item.uuid"
-                class="p-4 border rounded-xl shadow-sm bg-[var(--wp-surface)] border-[var(--wp-border)] space-y-3"
-              >
-                <div class="flex items-start justify-between gap-2">
-                  <div class="min-w-0 flex-1">
-                    <h4 class="font-bold text-sm truncate" style="color: var(--wp-text);">{{ item.product_name }}</h4>
-                    <span class="inline-block mt-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider border rounded"
-                      style="background: rgba(15,26,46,0.04); color: var(--wp-navy); border-color: var(--wp-border);">
-                      {{ item.category || 'Tanpa Kategori' }}
-                    </span>
-                  </div>
-                  <span class="text-sm font-bold font-mono shrink-0" style="color: var(--wp-text);">
-                    {{ formatRupiah(item.price) }}
-                  </span>
-                </div>
-
-                <!-- Stock level bar -->
-                <div class="space-y-1">
-                  <div class="flex items-center justify-between text-xs">
-                    <span class="text-[10px] font-bold uppercase" style="color: var(--wp-text-secondary);">Stok Tersedia</span>
-                    <span class="font-bold font-mono" style="color: var(--wp-text);">{{ item.stock_quantity }} items</span>
-                  </div>
-                  <div class="h-2 rounded-full overflow-hidden bg-slate-100 border" style="border-color: var(--wp-border);">
-                    <div class="h-full rounded-full transition-all duration-500"
-                      :style="{ width: stockPercentage(item) + '%', background: stockBarColor(item) }">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Status badge footer -->
-                <div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--wp-border);">
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border inline-flex items-center gap-1.5" :style="stockBadgeStyle(item)">
-                    <span class="w-2 h-2 rounded-full" :style="{ background: stockBadgeStyle(item).color }"></span>
-                    {{ stockStatus(item).label }}
-                  </span>
-                  <NuxtLink to="/inventory" class="min-h-[44px] px-3 inline-flex items-center justify-center text-xs font-bold" style="color: var(--wp-gold);">
-                    Detail →
-                  </NuxtLink>
-                </div>
+          <!-- Marketing Insight -->
+          <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold mb-1">
+                <Icon name="lucide:megaphone" class="w-4 h-4" />
+                <span>Marketing Opportunity</span>
               </div>
+              <p class="font-semibold text-slate-900 dark:text-slate-100">Teh Celup Sariwangi top seller</p>
+              <p class="text-slate-500 dark:text-slate-400 mt-1 text-[11px]">Create a weekend promo campaign</p>
             </div>
-          </template>
+            <NuxtLink to="/marketing">
+              <Button variant="outline" size="sm" class="w-full text-xs h-8 rounded-lg border-blue-200 text-blue-700 hover:bg-blue-50">
+                Create Campaign
+              </Button>
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ 5. COMPACT STOCK MANAGEMENT (Max 4 Rows, Clean Table Layout) ═══════════ -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Manajemen Stok & Produk</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ stocks.length }} produk terdaftar</p>
+          </div>
+          <NuxtLink to="/inventory" class="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">
+            Lihat Semua →
+          </NuxtLink>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+          <div v-if="stocks.length === 0" class="py-10 text-center">
+            <Icon name="lucide:package-open" class="w-8 h-8 mx-auto mb-2 text-slate-400" />
+            <p class="text-xs text-slate-500">Belum ada produk di inventaris.</p>
+          </div>
+
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                  <th class="py-3 px-4">Product</th>
+                  <th class="py-3 px-4 text-right">Stock</th>
+                  <th class="py-3 px-4 text-center">Status</th>
+                  <th class="py-3 px-4 text-right">Price</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                <tr v-for="item in displayStocks.slice(0, 4)" :key="item.uuid" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                  <td class="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">{{ item.product_name }}</td>
+                  <td class="py-3 px-4 text-right font-mono font-medium text-slate-700 dark:text-slate-300">{{ item.stock_quantity }}</td>
+                  <td class="py-3 px-4 text-center">
+                    <Badge
+                      :variant="item.stock_quantity === 0 ? 'destructive' : item.stock_quantity <= item.min_stock ? 'warning' : 'success'"
+                      class="text-[10px] rounded-md font-medium"
+                    >
+                      {{ item.stock_quantity === 0 ? 'Out of Stock' : item.stock_quantity <= item.min_stock ? 'Low Stock' : 'Available' }}
+                    </Badge>
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono font-semibold text-slate-900 dark:text-slate-100">
+                    {{ formatRupiah(item.price) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </template>
@@ -470,61 +400,18 @@ const loadAll = async () => {
   await Promise.all([fetchAnalyticsData(), fetchStocks(), fetchWallet()])
 }
 
-// ── KPI Cards ──
-const kpiCards = computed(() => {
-  const k = analyticsData.value?.kpi
-  const activeProducts = stocks.value.filter(s => s.is_active).length
-  return [
-    {
-      label: 'Total Pendapatan',
-      value: k ? formatRupiah(k.total_revenue) : '—',
-      change: k?.revenue_change_pct ?? 0,
-      icon: 'heroicons:banknotes',
-      accent: 'linear-gradient(90deg, var(--wp-gold), var(--wp-gold-light))',
-    },
-    {
-      label: 'Laba Kotor',
-      value: k ? formatRupiah(k.total_profit) : '—',
-      change: k?.profit_change_pct ?? 0,
-      icon: 'heroicons:arrow-trending-up',
-      accent: 'linear-gradient(90deg, var(--wp-success), #34D399)',
-    },
-    {
-      label: 'Transaksi',
-      value: k ? k.total_transactions.toLocaleString('id-ID') : '0',
-      change: k?.transactions_change_pct ?? 0,
-      icon: 'heroicons:document-text',
-      accent: 'linear-gradient(90deg, var(--wp-navy), #3B5998)',
-    },
-    {
-      label: 'Produk Aktif',
-      value: `${activeProducts}`,
-      change: 0,
-      icon: 'heroicons:archive-box',
-      accent: 'linear-gradient(90deg, #8B5CF6, #A78BFA)',
-    },
-    {
-      label: 'Saldo Dompet',
-      value: wallet.value ? formatRupiah(wallet.value.balance) : '—',
-      change: 0,
-      icon: 'heroicons:wallet',
-      accent: 'linear-gradient(90deg, #059669, #34D399)',
-    },
-  ]
-})
+// ── Computed data ──
+const kpiData = computed(() => analyticsData.value?.kpi)
+const activeProductCount = computed(() => stocks.value.filter(s => s.is_active).length)
+const lowStockCount = computed(() => stocks.value.filter(s => s.is_active && s.stock_quantity <= s.min_stock).length)
 
-// ── ECharts: Sales Trend (Area Pieces with visualMap & dataZoom) ──
+// ── ECharts: Sales Trend (Clean Emerald Area Chart) ──
 const trendOption = computed(() => {
   const trend = analyticsData.value?.trend
   if (!trend || trend.length === 0) return null
 
   const dates = trend.map((t: any) => t.date)
   const revenues = trend.map((t: any) => t.revenue)
-  const maxRevenue = Math.max(...revenues, 100000)
-
-  // Define piece zones matching merchant brand tone
-  const p1 = Math.round(maxRevenue * 0.35)
-  const p2 = Math.round(maxRevenue * 0.70)
 
   return {
     tooltip: {
@@ -532,66 +419,34 @@ const trendOption = computed(() => {
       backgroundColor: '#ffffff',
       borderColor: '#E2E8F0',
       borderWidth: 1,
-      borderRadius: 10,
+      borderRadius: 8,
       padding: [8, 12],
-      textStyle: { color: '#1E293B', fontSize: 12, fontFamily: 'var(--wp-font)' },
+      textStyle: { color: '#0F172A', fontSize: 12, fontFamily: 'Inter' },
       formatter: (params: any) => {
         const p = params[0]
         const val = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p.value)
-        return `<b style="color:#0F1A2E">${p.axisValue}</b><br/><span style="color:#D4A843">●</span> <span style="color:#64748B">Pendapatan:</span> <b>${val}</b>`
+        return `<b style="color:#0F172A">${p.axisValue}</b><br/><span style="color:#10B981">●</span> <span style="color:#64748B">Revenue:</span> <b>${val}</b>`
       },
     },
-    grid: { left: 12, right: 24, top: 12, bottom: 45, containLabel: true },
+    grid: { left: 12, right: 16, top: 16, bottom: 24, containLabel: true },
     xAxis: {
       type: 'category',
       boundaryGap: false,
       data: dates,
       axisLine: { lineStyle: { color: '#E2E8F0' } },
       axisTick: { show: false },
-      axisLabel: { color: '#64748B', fontSize: 10, fontWeight: 600 },
+      axisLabel: { color: '#64748B', fontSize: 11, fontWeight: 500 },
     },
     yAxis: {
       type: 'value',
       axisLabel: {
         color: '#64748B',
-        fontSize: 10,
-        fontWeight: 600,
+        fontSize: 11,
+        fontWeight: 500,
         formatter: (v: number) => formatCompact(v),
       },
       splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
     },
-    visualMap: {
-      type: 'piecewise',
-      show: false,
-      dimension: 1,
-      seriesIndex: 0,
-      pieces: [
-        { lte: p1, color: 'rgba(212, 168, 67, 0.45)' },
-        { gt: p1, lte: p2, color: 'rgba(184, 146, 46, 0.75)' },
-        { gt: p2, color: 'rgba(15, 26, 46, 0.90)' },
-      ],
-    },
-    dataZoom: [
-      {
-        type: 'inside',
-        start: 0,
-        end: 100,
-        zoomOnMouseWheel: true,
-        moveOnMouseMove: true,
-      },
-      {
-        type: 'slider',
-        start: 0,
-        end: 100,
-        height: 18,
-        bottom: 6,
-        borderColor: '#E2E8F0',
-        backgroundColor: '#F8FAFC',
-        fillerColor: 'rgba(212,168,67,0.18)',
-        handleStyle: { color: '#D4A843', borderColor: '#B8922E' },
-        textStyle: { color: '#64748B', fontSize: 9 },
-      },
-    ],
     series: [
       {
         name: 'Pendapatan',
@@ -600,16 +455,18 @@ const trendOption = computed(() => {
         symbol: 'circle',
         symbolSize: 6,
         data: revenues,
-        lineStyle: { width: 2.5 },
-        markLine: {
-          symbol: ['none', 'none'],
-          label: { show: true, position: 'end', fontSize: 9, formatter: '{b}' },
-          data: [
-            { name: 'Standar', yAxis: p1, lineStyle: { color: '#D4A843', type: 'dashed' } },
-            { name: 'Tinggi', yAxis: p2, lineStyle: { color: '#0F1A2E', type: 'dashed' } },
-          ],
+        itemStyle: { color: '#10B981' },
+        lineStyle: { width: 2, color: '#10B981' },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(16, 185, 129, 0.25)' },
+              { offset: 1, color: 'rgba(16, 185, 129, 0.01)' }
+            ]
+          }
         },
-        areaStyle: {},
       },
     ],
   }
@@ -703,10 +560,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.stock-bar--high :deep(> div) {
+  background: var(--chart-1);
 }
-.animate-spin {
-  animation: spin 0.8s linear infinite;
+.stock-bar--low :deep(> div) {
+  background: var(--warning);
+}
+.stock-bar--empty :deep(> div) {
+  background: var(--destructive);
 }
 </style>

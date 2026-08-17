@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
 
+  experimental: {
+    appManifest: false
+  },
+
   app: {
     head: {
       title: 'UMKM MERCHANT DASHBOARD',
@@ -32,17 +36,31 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode'
   ],
 
-  css: ['~/assets/css/main.css'],
+  components: [
+    {
+      path: '~/components/ui',
+      extensions: ['.vue'],
+      pathPrefix: false
+    },
+    {
+      path: '~/components',
+      extensions: ['.vue'],
+      pathPrefix: false
+    }
+  ],
+
+  css: ['~/assets/css/theme.css'],
 
   colorMode: {
     preference: 'light',
-    fallback: 'light'
+    fallback: 'light',
+    classSuffix: ''
   },
 
   fonts: {
     families: [
-      { name: 'Fira Sans', weights: [300, 400, 500, 600, 700, 800] },
-      { name: 'Fira Code', weights: [400, 500, 600, 700] }
+      { name: 'Inter', weights: [400, 500, 600, 700] },
+      { name: 'JetBrains Mono', weights: [400, 500, 600] }
     ]
   }
 })

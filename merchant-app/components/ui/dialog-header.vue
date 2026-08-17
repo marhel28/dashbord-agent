@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { cn } from '~/utils/cn'
+
+const props = defineProps<{
+  class?: string
+}>()
+
+import { defineOptions } from 'vue'
+defineOptions({ name: 'UiDialogHeader' })
+
+
+</script>
+
+<template>
+  <div :class="cn('flex flex-col space-y-1.5 text-center sm:text-left', props.class)">
+    <slot />
+  </div>
+</template>

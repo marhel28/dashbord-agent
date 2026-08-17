@@ -1,374 +1,242 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
+  <div class="space-y-6 animate-fade-in max-w-7xl mx-auto py-2">
+    <!-- ═══════════ 1. HEADER ═══════════ -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Otomatisasi & Pengingat</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Biar Business Copilot yang mengingat dan mengurus rutinitas harian toko Anda.
+        </p>
+      </div>
 
-    <!-- ═══ HEADER ═══ -->
-    <div class="flex items-center justify-between border-b pb-5" style="border-color: var(--wp-border);">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-             style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          <Icon name="heroicons:bolt" class="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 class="text-2xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Otomatisasi</h1>
-          <p class="text-xs font-medium mt-0.5" style="color: var(--wp-text-secondary);">
-            Atur pengingat otomatis &mdash; pakai AI atau atur manual
-          </p>
+      <!-- Action Button -->
+      <Button
+        class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold h-9 px-4 shadow-xs"
+        @click="openCreateModal()"
+      >
+        <Icon name="lucide:plus" class="w-4 h-4" />
+        <span>+ Buat Rutinitas Manual</span>
+      </Button>
+    </div>
+
+    <!-- ═══════════ 2. NATURAL LANGUAGE AI PROMPT BAR ═══════════ -->
+    <div class="p-5 rounded-xl bg-slate-900 text-white shadow-md space-y-3">
+      <div class="flex items-center gap-2">
+        <Icon name="lucide:sparkles" class="w-4 h-4 text-emerald-400" />
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">Asisten Pintar AI</span>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input
+          v-model="aiPromptInput"
+          type="text"
+          placeholder="Contoh: 'Tolong ingatkan saya cek rekap kasir setiap jam 9 malam'"
+          class="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/15 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400"
+          @keyup.enter="handleAiPromptSubmit"
+        />
+        <Button
+          class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold h-10 px-5 shrink-0"
+          :disabled="!aiPromptInput.trim() || creatingReminder"
+          @click="handleAiPromptSubmit"
+        >
+          <Icon name="lucide:arrow-right" class="w-4 h-4" />
+          <span>Buat via AI</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- ═══════════ 3. QUICK ACTION TEMPLATES ═══════════ -->
+    <div class="space-y-3">
+      <h2 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">Template Rutinitas Cepat</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div
+          v-for="tpl in quickTemplates"
+          :key="tpl.label"
+          @click="onQuickAdd(tpl)"
+          class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md cursor-pointer transition-all space-y-2 group"
+        >
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-[#047857]">
+            <Icon :name="tpl.icon" class="w-4 h-4" />
+          </div>
+          <div>
+            <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#047857] transition-colors">{{ tpl.label }}</h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{{ tpl.description }}</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ═══ TABS ═══ -->
-    <div class="border-b" style="border-color: var(--wp-border);">
-      <nav class="flex gap-0 -mb-px">
+    <!-- ═══════════ 4. TABS & WORKFLOW LIST ═══════════ -->
+    <div class="space-y-4">
+      <!-- Tabs -->
+      <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
         <button
           v-for="tab in tabs"
           :key="tab.id"
           @click="activeTab = tab.id"
-          class="inline-flex items-center gap-2 px-5 py-3 text-xs font-bold transition border-b-2"
-          :class="activeTab === tab.id ? 'border-[var(--wp-gold)]' : 'border-transparent hover:border-[var(--wp-border)]'"
-          :style="activeTab === tab.id ? 'color: var(--wp-navy);' : 'color: var(--wp-text-secondary);'"
+          :class="['px-4 py-2 text-xs font-semibold rounded-lg transition-all',
+            activeTab === tab.id ? 'bg-[#047857] text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800']"
         >
-          <Icon :name="tab.icon" class="w-4 h-4" />
-          {{ tab.label }}
-          <span v-if="tab.badge"
-                class="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
-                style="background: rgba(212,168,67,0.15); color: var(--wp-gold-dark);">
-            {{ tab.badge }}
-          </span>
-        </button>
-      </nav>
-    </div>
-
-    <!-- ═══════════ TAB 1: Pengingat ═══════════ -->
-    <div v-show="activeTab === 'reminders'" class="animate-fade-in space-y-5">
-
-      <!-- Quick Add Strip -->
-      <div class="bg-white border rounded-xl p-5 shadow-sm" style="border-color: var(--wp-border);">
-        <div class="flex items-center gap-2 mb-3">
-          <Icon name="heroicons:rocket-launch" class="w-4 h-4" style="color: var(--wp-gold);" />
-          <p class="text-xs font-black uppercase tracking-wider" style="color: var(--wp-navy);">Buat Cepat</p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <button
-            v-for="tpl in quickTemplates"
-            :key="tpl.label"
-            @click="onQuickAdd(tpl)"
-            :disabled="creatingReminder"
-            class="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-lg border transition hover:shadow-sm disabled:opacity-50 active:scale-95"
-            style="border-color: var(--wp-border); color: var(--wp-text); background: var(--wp-bg);"
-          >
-            <Icon :name="tpl.icon" class="w-4 h-4" style="color: var(--wp-gold);" />
-            {{ tpl.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Toolbar -->
-      <div class="flex items-center justify-between">
-        <p class="text-xs font-medium" style="color: var(--wp-text-secondary);">
-          <span class="font-bold" style="color: var(--wp-text);">{{ reminders.length }}</span> pengingat aktif
-        </p>
-        <button @click="openCreateModal()"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-lg text-white transition hover:shadow-md"
-                style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          <Icon name="heroicons:plus" class="w-4 h-4" />
-          Buat Pengingat
+          {{ tab.label }} ({{ tab.badge || 0 }})
         </button>
       </div>
 
-      <!-- Loading -->
-      <div v-if="loading" class="flex items-center justify-center py-20">
-        <div class="text-center">
-          <div class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
-               style="background: rgba(212,168,67,0.08);">
-            <Icon name="heroicons:arrow-path" class="w-6 h-6 animate-spin" style="color: var(--wp-gold);" />
+      <!-- TAB 1: PENGINGAT SAYA -->
+      <div v-if="activeTab === 'reminders'" class="space-y-4">
+        <!-- Loading State -->
+        <div v-if="loading" class="py-12 text-center">
+          <Icon name="lucide:loader-2" class="w-8 h-8 mx-auto text-emerald-600 animate-spin" />
+          <p class="text-xs text-slate-500 mt-2">Memuat daftar rutinitas toko...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="reminders.length === 0" class="py-16 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+          <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-[#047857] mx-auto flex items-center justify-center">
+            <Icon name="lucide:bell-off" class="w-6 h-6" />
           </div>
-          <p class="text-xs font-semibold" style="color: var(--wp-text-secondary);">Memuat pengingat...</p>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Belum Ada Rutinitas</h3>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Otomatiskan tugas harian Anda seperti pengingat stok atau laporan kasir sekarang.</p>
+          </div>
+          <Button
+            class="bg-[#047857] hover:bg-[#065f46] text-white rounded-lg text-xs font-semibold h-9 px-5"
+            @click="openCreateModal()"
+          >
+            + Buat Pengingat Manual
+          </Button>
         </div>
-      </div>
 
-      <!-- Empty State -->
-      <div v-else-if="reminders.length === 0"
-           class="bg-white border rounded-xl p-12 shadow-sm text-center"
-           style="border-color: var(--wp-border);">
-        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-             style="background: rgba(212,168,67,0.08);">
-          <Icon name="heroicons:bell-slash" class="w-8 h-8" style="color: var(--wp-gold);" />
-        </div>
-        <p class="text-sm font-bold mb-1" style="color: var(--wp-text);">Belum ada pengingat</p>
-        <p class="text-xs mb-5" style="color: var(--wp-text-secondary);">Buat pengingat pertama — pakai AI atau pilih template di atas.</p>
-        <button @click="openCreateModal()"
-                class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-lg text-white transition hover:shadow-md"
-                style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          <Icon name="heroicons:plus" class="w-4 h-4" />
-          Buat Pengingat
-        </button>
-      </div>
+        <!-- Active Reminders Grid -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div
+            v-for="r in reminders"
+            :key="r.reminder_id"
+            class="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+          >
+            <div class="space-y-3">
+              <!-- Top Row: Toggle + Schedule Badge -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <!-- Toggle Switch -->
+                  <button
+                    @click="toggleReminderActive(r)"
+                    :class="['w-9 h-5 rounded-full transition-colors relative p-0.5', r.disabled ? 'bg-slate-200 dark:bg-slate-800' : 'bg-[#047857]']"
+                  >
+                    <span :class="['w-4 h-4 rounded-full bg-white transition-transform block', r.disabled ? 'translate-x-0' : 'translate-x-4']"></span>
+                  </button>
+                  <span class="text-xs font-bold text-slate-900 dark:text-slate-100">
+                    {{ r.disabled ? 'Nonaktif' : 'Aktif' }}
+                  </span>
+                </div>
 
-      <!-- Reminder Cards -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
-        <div
-          v-for="r in reminders"
-          :key="r.reminder_id"
-          class="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition"
-          style="border-color: var(--wp-border);"
-        >
-          <!-- icon + schedule badges -->
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full"
-                    style="background: rgba(5,150,105,0.1); color: #047857;">
-                <Icon name="heroicons:clock" class="w-3 h-3" />
-                {{ r.cron_description || r.cron }}
-              </span>
-              <span v-if="r.once"
-                    class="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full"
-                    style="background: rgba(217,119,6,0.1); color: #B45309;">
-                <Icon name="heroicons:arrow-right-circle" class="w-2.5 h-2.5" />
-                Sekali
-              </span>
+                <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-mono">
+                  {{ r.cron_description || r.cron }}
+                </span>
+              </div>
+
+              <!-- Message Body -->
+              <div>
+                <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                  {{ r.message || '(Tanpa Pesan)' }}
+                </p>
+                <span class="text-[11px] text-slate-400 mt-1 block">
+                  Status Terakhir: Berhasil dijalankan
+                </span>
+              </div>
             </div>
-            <!-- action group -->
-            <div class="flex items-center gap-1 shrink-0">
-              <button @click="openEditModal(r)"
-                      class="w-11 h-11 min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center transition hover:bg-slate-100 active:bg-slate-200"
-                      style="color: var(--wp-text-secondary);"
-                      title="Edit">
-                <Icon name="heroicons:pencil" class="w-4 h-4" />
+
+            <!-- Bottom Actions -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                @click="onTriggerReminder(r.reminder_id)"
+                :disabled="isReminderTriggering(r.reminder_id)"
+                class="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5"
+              >
+                <Icon name="lucide:play" class="w-3.5 h-3.5" />
+                <span>Jalankan Sekarang</span>
               </button>
-              <button @click="onDeleteReminder(r.reminder_id)"
-                      :disabled="!r.reminder_id"
-                      class="w-11 h-11 min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center transition hover:bg-red-50 active:bg-red-100 disabled:opacity-40"
-                      style="color: #DC2626;"
-                      title="Hapus">
-                <Icon name="heroicons:trash" class="w-4 h-4" />
-              </button>
+
+              <div class="flex items-center gap-2">
+                <button @click="openEditModal(r)" class="p-1.5 text-slate-400 hover:text-slate-600">
+                  <Icon name="lucide:edit-2" class="w-4 h-4" />
+                </button>
+                <button @click="onDeleteReminder(r.reminder_id)" class="p-1.5 text-red-400 hover:text-red-600">
+                  <Icon name="lucide:trash-2" class="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
-
-          <!-- message -->
-          <p class="text-sm font-semibold mb-4 leading-snug" style="color: var(--wp-text);">
-            {{ r.message || '(tanpa pesan)' }}
-          </p>
-
-          <!-- run now -->
-          <button
-            @click="onTriggerReminder(r.reminder_id)"
-            :disabled="isReminderTriggering(r.reminder_id) || !r.reminder_id"
-            class="w-full py-2.5 min-h-[44px] text-xs font-bold rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
-            style="background: rgba(5,150,105,0.1); color: #059669;"
-          >
-            <Icon v-if="isReminderTriggering(r.reminder_id)" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-            <Icon v-else name="heroicons:play" class="w-4 h-4" />
-            {{ isReminderTriggering(r.reminder_id) ? 'Menjalankan...' : 'Jalankan Sekarang' }}
-          </button>
         </div>
       </div>
-    </div>
 
-    <!-- ═══════════ TAB 2: Cron Job Sistem ═══════════ -->
-    <div v-show="activeTab === 'system'" class="animate-fade-in space-y-4">
-      <p class="text-xs font-medium" style="color: var(--wp-text-secondary);">
-        Job sistem yang berjalan otomatis di background.
-      </p>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
+      <!-- TAB 2: TUGAS SISTEM BACKGROUND -->
+      <div v-else-if="activeTab === 'system'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div
           v-for="job in systemJobs"
           :key="job.task"
-          class="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition"
-          style="border-color: var(--wp-border);"
+          class="p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3"
         >
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                 style="background: rgba(212,168,67,0.1);">
-              <Icon name="heroicons:cog-6-tooth" class="w-4.5 h-4.5" style="color: var(--wp-gold-dark);" />
-            </div>
-            <span class="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full"
-                  style="background: rgba(5,150,105,0.1); color: #047857;">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Aktif
-            </span>
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Tugas Sistem</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           </div>
-          <h3 class="text-sm font-bold mb-1" style="color: var(--wp-text);">{{ job.task }}</h3>
-          <p class="text-[10px] mb-3 leading-relaxed" style="color: var(--wp-text-secondary);">{{ job.description }}</p>
-          <div class="flex items-center gap-1.5 text-[10px] font-bold" style="color: var(--wp-gold-dark);">
-            <Icon name="heroicons:clock" class="w-3 h-3" />
-            Tiap {{ job.schedule_human }}
+          <div>
+            <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100">{{ job.task }}</h3>
+            <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{{ job.description }}</p>
           </div>
+          <span class="text-[10px] font-mono text-slate-400 block pt-2 border-t border-slate-100 dark:border-slate-800">
+            Jadwal: Setiap {{ job.schedule_human }}
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- ═══ MODAL CREATE / EDIT ═══ -->
+    <!-- ═══════════ MODAL CREATE/EDIT ═══════════ -->
     <Teleport to="body">
-      <div v-if="showReminderModal"
-           class="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
-           style="background: rgba(0,0,0,0.5);"
-           @click.self="closeReminderModal">
-        <div class="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up"
-             style="background: var(--wp-surface);">
-
-          <!-- modal header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b" style="border-color: var(--wp-border);">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                   style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-                <Icon name="heroicons:bell" class="w-4 h-4 text-white" />
-              </div>
-              <h3 class="text-sm font-black uppercase tracking-wider" style="color: var(--wp-navy);">
-                {{ editingReminder ? 'Edit Pengingat' : 'Buat Pengingat Baru' }}
-              </h3>
-            </div>
-            <button @click="closeReminderModal()"
-                    class="w-8 h-8 rounded-lg flex items-center justify-center transition hover:bg-slate-100"
-                    style="color: var(--wp-text-secondary);">
-              <Icon name="heroicons:x-mark" class="w-4.5 h-4.5" />
+      <div v-if="showReminderModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs" @click.self="closeReminderModal">
+        <div class="w-full max-w-lg bg-white dark:bg-slate-900 rounded-xl p-6 shadow-2xl space-y-5 border border-slate-200 dark:border-slate-800">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">
+              {{ editingReminder ? 'Edit Rutinitas' : 'Buat Rutinitas Baru' }}
+            </h3>
+            <button @click="closeReminderModal()" class="text-slate-400 hover:text-slate-600">
+              <Icon name="lucide:x" class="w-4 h-4" />
             </button>
           </div>
 
-          <form @submit.prevent="onSubmitReminder" class="p-6 space-y-5">
-
-            <!-- Mode toggle -->
-            <div class="flex gap-2 p-1 rounded-xl" style="background: var(--wp-bg);">
-              <button type="button" @click="formMode = 'llm'"
-                      class="flex-1 inline-flex items-center justify-center gap-2 py-2 text-[10px] font-bold rounded-lg transition"
-                      :style="formMode === 'llm'
-                        ? 'background: var(--wp-surface); color: var(--wp-navy); box-shadow: 0 1px 4px rgba(0,0,0,0.08);'
-                        : 'color: var(--wp-text-secondary);'">
-                <Icon name="heroicons:sparkles" class="w-3.5 h-3.5" :style="formMode === 'llm' ? 'color: var(--wp-gold);' : ''" />
-                Pakai AI
-              </button>
-              <button type="button" @click="formMode = 'manual'"
-                      class="flex-1 inline-flex items-center justify-center gap-2 py-2 text-[10px] font-bold rounded-lg transition"
-                      :style="formMode === 'manual'
-                        ? 'background: var(--wp-surface); color: var(--wp-navy); box-shadow: 0 1px 4px rgba(0,0,0,0.08);'
-                        : 'color: var(--wp-text-secondary);'">
-                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" :style="formMode === 'manual' ? 'color: var(--wp-gold);' : ''" />
-                Atur Manual
-              </button>
+          <form @submit.prevent="onSubmitReminder" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Pesan Rutinitas / Tugas</label>
+              <textarea
+                v-model="reminderForm.message"
+                rows="3"
+                required
+                placeholder="Contoh: Ingatkan saya rekap kasir dan tutup buku toko"
+                class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:border-[#047857]"
+              ></textarea>
             </div>
 
-            <!-- LLM Mode -->
-            <div v-if="formMode === 'llm'" class="space-y-3">
-              <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider mb-1.5"
-                       style="color: var(--wp-text-secondary);">
-                  Ceritakan pengingat yang Anda inginkan
-                </label>
-                <textarea v-model="reminderForm.message" rows="3" required
-                          placeholder="contoh: ingatkan saya cek stok tiap jam 8 malam"
-                          class="w-full px-3 py-2.5 border rounded-xl text-xs outline-none resize-none transition focus:border-[var(--wp-gold)]"
-                          style="border-color: var(--wp-border); color: var(--wp-text); background: var(--wp-bg);">
-                </textarea>
-              </div>
-              <button type="button" @click="onParsePreview()"
-                      :disabled="!reminderForm.message || parsing"
-                      class="inline-flex items-center gap-2 px-4 py-2 text-[10px] font-bold rounded-lg border transition disabled:opacity-50 hover:border-[var(--wp-gold)]"
-                      style="border-color: var(--wp-border); color: var(--wp-text-secondary); background: var(--wp-bg);">
-                <Icon :name="parsing ? 'heroicons:arrow-path' : 'heroicons:eye'" class="w-3.5 h-3.5" :class="{ 'animate-spin': parsing }" />
-                {{ parsing ? 'Memproses...' : 'Preview Jadwal' }}
-              </button>
-              <!-- Preview result -->
-              <div v-if="parsedPreview" class="p-4 rounded-xl border" style="border-color: var(--wp-border); background: var(--wp-bg);">
-                <p class="text-[9px] font-bold uppercase tracking-wider mb-2" style="color: var(--wp-text-secondary);">Hasil Parse</p>
-                <p class="text-xs font-bold mb-1" style="color: var(--wp-text);">{{ parsedPreview.message }}</p>
-                <div class="flex items-center gap-1.5 text-[10px]" style="color: var(--wp-gold-dark);">
-                  <Icon name="heroicons:clock" class="w-3 h-3" />
-                  {{ parsedPreview.cron_description }}
-                </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Pilih Frekuensi Jadwal</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  v-for="t in scheduleTemplates"
+                  :key="t.cron"
+                  type="button"
+                  @click="reminderForm.cron = t.cron"
+                  :class="['p-2 rounded-lg text-xs font-medium border text-left transition-all',
+                    reminderForm.cron === t.cron ? 'border-[#047857] bg-emerald-50 text-[#047857] font-bold' : 'border-slate-200 text-slate-600']"
+                >
+                  {{ t.label }}
+                </button>
               </div>
             </div>
 
-            <!-- Manual Mode -->
-            <div v-if="formMode === 'manual'" class="space-y-4">
-              <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider mb-1.5"
-                       style="color: var(--wp-text-secondary);">Pesan Pengingat</label>
-                <textarea v-model="reminderForm.message" rows="2" required
-                          placeholder="Cek stok barang toko saya"
-                          class="w-full px-3 py-2.5 border rounded-xl text-xs outline-none resize-none transition focus:border-[var(--wp-gold)]"
-                          style="border-color: var(--wp-border); color: var(--wp-text); background: var(--wp-bg);">
-                </textarea>
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider mb-2"
-                       style="color: var(--wp-text-secondary);">Template Jadwal</label>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="t in scheduleTemplates"
-                    :key="t.cron"
-                    type="button"
-                    @click="reminderForm.cron = t.cron"
-                    class="px-3 py-1.5 text-[9px] font-bold rounded-full border transition"
-                    :style="reminderForm.cron === t.cron
-                      ? 'border-color: var(--wp-gold); background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);'
-                      : 'border-color: var(--wp-border); color: var(--wp-text-secondary);'"
-                  >
-                    {{ t.label }}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold uppercase tracking-wider mb-1.5"
-                       style="color: var(--wp-text-secondary);">Atau Masukkan Cron Manual</label>
-                <input v-model="reminderForm.cron" type="text" placeholder="0 20 * * *"
-                       class="w-full px-3 py-2 border rounded-xl text-xs outline-none transition focus:border-[var(--wp-gold)] font-mono"
-                       style="border-color: var(--wp-border); color: var(--wp-text); background: var(--wp-bg);" />
-              </div>
-              <label class="flex items-center gap-2.5 cursor-pointer select-none">
-                <input v-model="reminderForm.once" type="checkbox" id="once-toggle"
-                       class="w-4 h-4 rounded accent-[var(--wp-gold)]" />
-                <span class="text-[10px] font-medium" style="color: var(--wp-text-secondary);">
-                  Sekali jalan (auto-hapus setelah trigger)
-                </span>
-              </label>
-            </div>
-
-            <!-- Submit -->
-            <div class="flex gap-2 pt-1">
-              <button type="submit"
-                      :disabled="!reminderForm.message || creatingReminder"
-                      class="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white transition hover:shadow-md disabled:opacity-50"
-                      style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-                <Icon :name="creatingReminder ? 'heroicons:arrow-path' : 'heroicons:check'" class="w-4 h-4" :class="{ 'animate-spin': creatingReminder }" />
-                {{ creatingReminder ? 'Menyimpan...' : (editingReminder ? 'Simpan Perubahan' : 'Simpan Pengingat') }}
-              </button>
-              <button type="button" @click="closeReminderModal()"
-                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition hover:bg-slate-50"
-                      style="border-color: var(--wp-border); color: var(--wp-text-secondary);">
-                <Icon name="heroicons:x-mark" class="w-3.5 h-3.5" />
-                Batal
-              </button>
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button variant="outline" size="sm" type="button" @click="closeReminderModal()">Batal</Button>
+              <Button size="sm" class="bg-[#047857] hover:bg-[#065f46] text-white">Simpan Rutinitas</Button>
             </div>
           </form>
-        </div>
-      </div>
-    </Teleport>
-
-    <!-- ═══ TOAST ═══ -->
-    <Teleport to="body">
-      <div class="fixed top-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
-        <div v-for="toast in toasts" :key="toast.id"
-             class="bg-white border rounded-xl shadow-lg p-4 pr-10 relative min-w-[300px] animate-fade-in-up pointer-events-auto"
-             style="border-color: var(--wp-border);">
-          <!-- colored left stripe via icon -->
-          <div class="flex items-start gap-3">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                 :style="toast.type === 'success' ? 'background: rgba(5,150,105,0.1);' : toast.type === 'error' ? 'background: rgba(220,38,38,0.1);' : 'background: rgba(212,168,67,0.1);'">
-              <Icon :name="toast.type === 'success' ? 'heroicons:check-circle' : toast.type === 'error' ? 'heroicons:exclamation-circle' : 'heroicons:information-circle'"
-                    class="w-4 h-4"
-                    :style="toast.type === 'success' ? 'color: #059669;' : toast.type === 'error' ? 'color: #DC2626;' : 'color: var(--wp-gold);'" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs font-bold leading-tight" style="color: var(--wp-text);">{{ toast.title }}</p>
-              <p class="text-[10px] mt-0.5 leading-snug" style="color: var(--wp-text-secondary);">{{ toast.message }}</p>
-            </div>
-          </div>
-          <button @click="dismissToast(toast.id)"
-                  class="absolute top-2.5 right-2.5 w-6 h-6 rounded flex items-center justify-center transition hover:bg-slate-100"
-                  style="color: var(--wp-text-secondary);">
-            <Icon name="heroicons:x-mark" class="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
     </Teleport>
@@ -376,13 +244,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import Button from '~/components/ui/button.vue'
 import { useAutomation } from '~/composables/useAutomation'
 
 const {
   reminders, systemJobs, loading,
   fetchReminders, createReminder, updateReminder, deleteReminder,
-  triggerReminder, isReminderTriggering, parseNaturalLanguage,
+  triggerReminder, isReminderTriggering,
   fetchSystemJobs,
 } = useAutomation()
 
@@ -390,161 +259,105 @@ const activeTab = ref<'reminders' | 'system'>('reminders')
 const showReminderModal = ref(false)
 const creatingReminder = ref(false)
 const editingReminder = ref<any>(null)
-const formMode = ref<'llm' | 'manual'>('llm')
-const parsing = ref(false)
-const parsedPreview = ref<any>(null)
+const aiPromptInput = ref('')
 
 const reminderForm = reactive({
   message: '',
-  cron: '',
+  cron: '0 8 * * *',
   once: false,
 })
 
-const toasts = ref<Array<{ id: string; title: string; message: string; type: string }>>([])
-
 const tabs = computed(() => [
-  { id: 'reminders' as const, label: 'Pengingat Saya', icon: 'heroicons:bell', badge: reminders.value.length || undefined },
-  { id: 'system'    as const, label: 'Cron Job Sistem', icon: 'heroicons:cog-6-tooth', badge: systemJobs.value.length || undefined },
+  { id: 'reminders' as const, label: 'Rutinitas Saya', badge: reminders.value.length },
+  { id: 'system' as const, label: 'Tugas Sistem', badge: systemJobs.value.length },
 ])
 
-// ── Quick add templates (heroicons) ──────────────────────────────────
 const quickTemplates = [
-  { icon: 'heroicons:sun',             label: 'Pagi jam 8',       message: 'ingatkan saya cek stok setiap pagi jam 8' },
-  { icon: 'heroicons:moon',            label: 'Malam jam 8',      message: 'ingatkan saya cek stok setiap malam jam 8' },
-  { icon: 'heroicons:chart-bar',       label: 'Laporan mingguan', message: 'ingatkan saya laporan penjualan setiap minggu' },
-  { icon: 'heroicons:exclamation-triangle', label: 'Alert stok rendah', message: 'ingatkan saya cek stok yang menipis setiap hari' },
+  { icon: 'lucide:sun', label: 'Laporan Pagi (08:00)', description: 'Kirim ringkasan transaksi & pendapatan toko kemarin.', message: 'ingatkan saya rekap laporan pagi jam 8' },
+  { icon: 'lucide:moon', label: 'Tutup Kasir Malam', description: 'Pengingat hitung fisik uang kasir sebelum toko tutup.', message: 'ingatkan saya rekap kasir malam jam 8' },
+  { icon: 'lucide:package-warning', label: 'Cek Stok Menipis', description: 'Peringatan otomatis barang yang sisa kurang dari 5 pcs.', message: 'ingatkan saya cek barang stok menipis setiap hari' },
+  { icon: 'lucide:calendar-days', label: 'Laporan Mingguan', description: 'Ringkasan performa penjualan produk 7 hari terakhir.', message: 'ingatkan saya laporan penjualan mingguan' },
 ]
 
-// ── Schedule templates ────────────────────────────────────────────────
 const scheduleTemplates = [
-  { label: 'Tiap pagi jam 8',         cron: '0 8 * * *' },
-  { label: 'Tiap malam jam 8',        cron: '0 20 * * *' },
-  { label: 'Tiap Senin jam 8',        cron: '0 8 * * 1' },
-  { label: 'Tiap hari tengah malam',  cron: '0 0 * * *' },
-  { label: 'Tiap jam',                cron: '0 * * * *' },
+  { label: 'Tiap Pagi Jam 8', cron: '0 8 * * *' },
+  { label: 'Tiap Malam Jam 8', cron: '0 20 * * *' },
+  { label: 'Tiap Senin Jam 8', cron: '0 8 * * 1' },
+  { label: 'Setiap Jam', cron: '0 * * * *' },
 ]
 
-// ── Toast ─────────────────────────────────────────────────────────────
-function showToast(title: string, message: string, type = 'success') {
-  const id = Math.random().toString(36).substring(7)
-  toasts.value.push({ id, title, message, type })
-  setTimeout(() => dismissToast(id), 5000)
-}
-function dismissToast(id: string) {
-  toasts.value = toasts.value.filter(t => t.id !== id)
-}
-
-// ── Modal ─────────────────────────────────────────────────────────────
-function openCreateModal() {
-  editingReminder.value = null
-  reminderForm.message = ''
-  reminderForm.cron = ''
-  reminderForm.once = false
-  formMode.value = 'llm'
-  parsedPreview.value = null
-  showReminderModal.value = true
-}
-
-function openEditModal(r: any) {
-  editingReminder.value = r
-  reminderForm.message = r.message || ''
-  reminderForm.cron = r.cron || ''
-  reminderForm.once = r.once || false
-  formMode.value = 'manual'
-  parsedPreview.value = null
-  showReminderModal.value = true
-}
-
-function closeReminderModal() {
-  showReminderModal.value = false
-  editingReminder.value = null
-  parsedPreview.value = null
-}
-
-// ── Quick Add ─────────────────────────────────────────────────────────
-async function onQuickAdd(tpl: { message: string }) {
+const handleAiPromptSubmit = async () => {
+  if (!aiPromptInput.value.trim()) return
   creatingReminder.value = true
+  try {
+    await createReminder({ message: aiPromptInput.value })
+    aiPromptInput.value = ''
+    fetchReminders()
+  } catch (err) {
+    console.error(err)
+  } finally {
+    creatingReminder.value = false
+  }
+}
+
+const onQuickAdd = async (tpl: any) => {
   try {
     await createReminder({ message: tpl.message })
-    showToast('Pengingat Dibuat', 'Pengingat berhasil dijadwalkan via AI')
-  } catch (err: any) {
-    showToast('Gagal', err.message || 'Gagal membuat pengingat', 'error')
-  } finally {
-    creatingReminder.value = false
+    fetchReminders()
+  } catch (err) {
+    console.error(err)
   }
 }
 
-// ── Parse Preview ─────────────────────────────────────────────────────
-async function onParsePreview() {
-  if (!reminderForm.message) return
-  parsing.value = true
-  try {
-    const result = await parseNaturalLanguage(reminderForm.message)
-    parsedPreview.value = result
-    if (result) {
-      reminderForm.cron = result.cron
-      reminderForm.once = result.once
-    }
-  } catch {
-    showToast('Gagal', 'Tidak bisa memparse pesan. Coba mode manual.', 'error')
-  } finally {
-    parsing.value = false
-  }
+const toggleReminderActive = (r: any) => {
+  r.disabled = !r.disabled
 }
 
-// ── Create / Update ───────────────────────────────────────────────────
-async function onSubmitReminder() {
-  creatingReminder.value = true
+const openCreateModal = () => {
+  editingReminder.value = null
+  reminderForm.message = ''
+  reminderForm.cron = '0 8 * * *'
+  showReminderModal.value = true
+}
+
+const openEditModal = (r: any) => {
+  editingReminder.value = r
+  reminderForm.message = r.message
+  reminderForm.cron = r.cron
+  showReminderModal.value = true
+}
+
+const closeReminderModal = () => {
+  showReminderModal.value = false
+}
+
+const onSubmitReminder = async () => {
   try {
     if (editingReminder.value) {
-      await updateReminder(editingReminder.value.reminder_id, {
-        message: reminderForm.message,
-        cron: reminderForm.cron,
-        once: reminderForm.once,
-      })
-      showToast('Tersimpan', 'Pengingat berhasil diperbarui')
+      await updateReminder(editingReminder.value.reminder_id, reminderForm)
     } else {
-      await createReminder({
-        message: reminderForm.message,
-        cron: reminderForm.cron,
-        once: reminderForm.once,
-      })
-      showToast('Pengingat Dibuat', `"${reminderForm.message}" berhasil dijadwalkan`)
+      await createReminder(reminderForm)
     }
     closeReminderModal()
-  } catch (err: any) {
-    showToast('Gagal', err.message || 'Gagal menyimpan pengingat', 'error')
-  } finally {
-    creatingReminder.value = false
-  }
-}
-
-// ── Trigger / Delete ──────────────────────────────────────────────────
-async function onTriggerReminder(reminderId: string) {
-  try {
-    await triggerReminder(reminderId)
-    showToast('Pengingat Dijalankan', 'Laporan terbaru telah dikirim ke Telegram Anda')
-  } catch (err: any) {
-    showToast('Gagal', err.message || 'Gagal menjalankan pengingat', 'error')
-  }
-}
-
-async function onDeleteReminder(reminderId: string) {
-  if (!confirm('Hapus pengingat ini?')) return
-  try {
-    await deleteReminder(reminderId)
-    showToast('Dihapus', 'Pengingat berhasil dihapus')
-  } catch (err: any) {
-    showToast('Gagal', err.message || 'Gagal menghapus pengingat', 'error')
-  }
-}
-
-// ── Init ──────────────────────────────────────────────────────────────
-onMounted(async () => {
-  try {
-    await Promise.all([fetchReminders(), fetchSystemJobs()])
+    fetchReminders()
   } catch (err) {
-    console.error('Failed to load automation data:', err)
+    console.error(err)
   }
+}
+
+const onTriggerReminder = async (id: string) => {
+  await triggerReminder(id)
+}
+
+const onDeleteReminder = async (id: string) => {
+  if (confirm('Hapus rutinitas ini?')) {
+    await deleteReminder(id)
+    fetchReminders()
+  }
+}
+
+onMounted(() => {
+  fetchReminders()
+  fetchSystemJobs()
 })
 </script>

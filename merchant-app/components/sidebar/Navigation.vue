@@ -1,13 +1,3 @@
-<template>
-  <nav class="space-y-1.5">
-    <NuxtLink v-for="item in menuItems" :key="item.to" :to="item.to"
-      exact-active-class="nav-link nav-active" class="nav-link">
-      <Icon :name="item.icon" class="w-5 h-5" />
-      <span>{{ item.label }}</span>
-    </NuxtLink>
-  </nav>
-</template>
-
 <script setup>
 const menuItems = [
   { to: '/', icon: 'heroicons:rectangle-group', label: 'Dashboard' },
@@ -17,3 +7,18 @@ const menuItems = [
   { to: '/sales-report', icon: 'heroicons:chart-bar', label: 'Sales Reports' },
 ]
 </script>
+
+<template>
+  <nav class="space-y-1">
+    <NuxtLink
+      v-for="item in menuItems"
+      :key="item.to"
+      :to="item.to"
+      exact-active-class="bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+      class="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+    >
+      <Icon :name="item.icon" class="size-5 shrink-0" />
+      <span>{{ item.label }}</span>
+    </NuxtLink>
+  </nav>
+</template>

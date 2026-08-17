@@ -1,223 +1,204 @@
 <template>
-  <div class="min-h-screen font-sans flex flex-col md:flex-row text-slate-900" style="background-color: var(--wp-bg, #F4F6F9);">
+  <div class="min-h-screen font-sans flex flex-col md:flex-row text-foreground bg-background">
     <!-- ── Mobile Header Bar ── -->
-    <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-[var(--wp-border)] shrink-0 sticky top-0 z-[var(--wp-z-sticky)] pt-safe" style="background: var(--wp-surface);">
+    <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-border shrink-0 sticky top-0 z-50 pt-safe bg-card">
       <div class="flex items-center gap-2">
         <img :src="logoSrc" class="w-8 h-8 object-contain" alt="Nahkoda AI Logo" />
         <div>
-          <span class="font-black text-sm tracking-tight block leading-none" style="color: var(--wp-navy);">Nahkoda AI</span>
-          <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Business Copilot</span>
+          <span class="font-black text-sm tracking-tight block leading-none text-secondary">Nahkoda AI</span>
+          <span class="text-[7px] font-bold text-muted-foreground uppercase tracking-widest block mt-0.5">Business Copilot</span>
         </div>
       </div>
-      
+
       <!-- Logout / Mini User profile button for mobile header -->
       <div class="flex items-center gap-3">
         <NuxtLink to="/profile" v-if="user" class="flex items-center gap-2 hover:opacity-80 transition" title="Profil Saya">
-          <div v-if="user.photo_profile" class="w-7 h-7 rounded-full overflow-hidden border border-[var(--wp-border)]">
-             <img :src="user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
-          </div>
-          <span class="text-[10px] font-bold px-2.5 py-1 rounded" style="background: rgba(212,168,67,0.08); color: var(--wp-navy);">
+          <Avatar v-if="user.photo_profile" class="w-7 h-7">
+            <AvatarImage :src="user.photo_profile" alt="Profile" />
+          </Avatar>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded bg-accent text-accent-foreground">
             {{ user.name }}
           </span>
         </NuxtLink>
-        <button @click="handleLogout" class="p-1.5 border hover:bg-slate-50 dark:hover:bg-slate-800 transition" style="border-color: var(--wp-border); border-radius: 4px;" title="Logout">
-          <Icon name="heroicons:arrow-left-on-rectangle" class="w-4 h-4 text-slate-500" />
+        <button @click="handleLogout" class="p-1.5 border border-border rounded hover:bg-muted transition" title="Logout">
+          <Icon name="heroicons:arrow-left-on-rectangle" class="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
     </header>
 
     <!-- ── Sidebar (Desktop Devices >= 768px) ── -->
-    <aside class="w-64 bg-white border-r border-[var(--wp-border)] p-0 flex flex-col justify-between hidden md:flex shrink-0 sticky top-0 h-screen overflow-y-auto custom-scrollbar">
-      <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--wp-gold)] via-[var(--wp-gold-light)] to-[var(--wp-gold-dark)] opacity-80"></div>
-
-      <div class="p-6 pl-7">
-        <div class="flex items-center gap-3 mb-2">
-          <img :src="logoSrc" class="w-10 h-10 object-contain shrink-0" alt="Nahkoda AI Logo" />
+    <aside class="w-[232px] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 p-0 flex flex-col justify-between hidden md:flex shrink-0 sticky top-0 h-screen overflow-y-auto custom-scrollbar">
+      <div>
+        <!-- Brand Header (Dark Green Accent Box) -->
+        <div class="p-5 bg-[#003B32] text-white flex items-center gap-3">
+          <img :src="logoSrc" class="w-8 h-8 object-contain shrink-0" alt="Nahkoda AI Logo" />
           <div>
-            <h2 class="font-black text-lg tracking-tight leading-none" style="color: var(--wp-navy);">Nahkoda AI</h2>
-            <p class="text-[7px] font-extrabold uppercase tracking-wider mt-1 text-slate-400">Business Copilot untuk Membantu Merchant & Warung</p>
+            <h2 class="font-bold text-sm tracking-tight leading-none text-white">Nahkoda</h2>
+            <p class="text-[10px] font-medium text-emerald-300 mt-0.5">Business Copilot</p>
           </div>
         </div>
 
-        <!-- User Info -->
-        <NuxtLink to="/profile" v-if="user" class="mt-5 p-3 flex items-center gap-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer" style="background: rgba(212,168,67,0.06); border: 1px solid rgba(212,168,67,0.15); border-radius: 4px;" title="Lihat Profil">
-          <div v-if="user.photo_profile" class="w-10 h-10 rounded overflow-hidden shrink-0">
-             <img :src="user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
-          </div>
-          <div v-else class="w-10 h-10 flex shrink-0 items-center justify-center text-xs font-bold uppercase" style="background: var(--wp-navy); color: var(--wp-gold); border-radius: 4px;">
-            {{ user.name?.charAt(0) || 'U' }}
-          </div>
-          <div class="overflow-hidden">
-            <p class="text-xs font-bold truncate" style="color: var(--wp-text);">{{ user.name }}</p>
-            <p class="text-[10px] font-medium truncate" style="color: var(--wp-text-secondary);">{{ user.role === 'admin' ? 'Admin Utama' : user.store_name }}</p>
-          </div>
-        </NuxtLink>
-
-        <nav class="mt-6 space-y-1">
-          <NuxtLink to="/dashboard" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:rectangle-group" class="w-5 h-5" />
-            <span>Beranda</span>
+        <div class="p-4 space-y-5">
+          <!-- User Store Card -->
+          <NuxtLink to="/profile" v-if="user" class="p-2.5 flex items-center gap-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-lg" title="Lihat Profil">
+            <Avatar v-if="user.photo_profile" class="h-8 w-8 shrink-0 rounded-full">
+              <AvatarImage :src="user.photo_profile" alt="Profile" />
+            </Avatar>
+            <Avatar v-else class="h-8 w-8 shrink-0 rounded-full">
+              <AvatarFallback class="bg-emerald-100 text-emerald-800 text-xs font-bold uppercase">
+                {{ user.name?.charAt(0) || 'U' }}
+              </AvatarFallback>
+            </Avatar>
+            <div class="overflow-hidden">
+              <p class="text-xs font-semibold truncate text-slate-900 dark:text-slate-100">{{ user.name }}</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ user.role === 'admin' ? 'Admin Utama' : user.store_name }}</p>
+            </div>
           </NuxtLink>
 
-          <div class="pt-3 pb-1">
-            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">AI Copilot</p>
-            <NuxtLink to="/chat" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:sparkles" class="w-5 h-5" />
-              <span>Asisten AI</span>
-            </NuxtLink>
-            <NuxtLink to="/dompet" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:wallet" class="w-5 h-5" />
-              <span>Dompet</span>
-            </NuxtLink>
-            <NuxtLink v-if="isExpert" to="/knowledge-base" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:book-open" class="w-5 h-5" />
-              <span>Knowledge Base</span>
-            </NuxtLink>
-            <NuxtLink v-if="isExpert" to="/agents" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:user-group" class="w-5 h-5" />
-              <span>Toko</span>
-            </NuxtLink>
-            <NuxtLink to="/memory" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:cpu-chip" class="w-5 h-5" />
-              <span>Memory</span>
-            </NuxtLink>
-          </div>
+          <nav class="space-y-5">
+            <!-- OVERVIEW -->
+            <div>
+              <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">OVERVIEW</p>
+              <div class="space-y-0.5">
+                <NuxtLink to="/dashboard" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:layout-dashboard" class="w-4 h-4" />
+                  <span>Dashboard</span>
+                </NuxtLink>
+              </div>
+            </div>
 
-          <div class="pt-3 pb-1">
-            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Bisnis & Operasional</p>
-            <NuxtLink to="/sales-report" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:banknotes" class="w-5 h-5" />
-              <span>Laporan Penjualan</span>
-            </NuxtLink>
-            <NuxtLink to="/inventory" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:archive-box" class="w-5 h-5" />
-              <span>Stok Barang</span>
-            </NuxtLink>
-            <NuxtLink v-if="showCrm" to="/customers" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:user-group" class="w-5 h-5" />
-              <span>Pelanggan (CRM)</span>
-            </NuxtLink>
-            <NuxtLink to="/finance" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:currency-dollar" class="w-5 h-5" />
-              <span>Keuangan</span>
-            </NuxtLink>
-            <NuxtLink to="/marketing" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:megaphone" class="w-5 h-5" />
-              <span>Pemasaran</span>
-            </NuxtLink>
-          </div>
+            <!-- BUSINESS -->
+            <div>
+              <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">BUSINESS</p>
+              <div class="space-y-0.5">
+                <NuxtLink to="/inventory" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:package" class="w-4 h-4" />
+                  <span>Produk & Stok</span>
+                </NuxtLink>
+                <NuxtLink to="/sales-report" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:receipt-text" class="w-4 h-4" />
+                  <span>Penjualan</span>
+                </NuxtLink>
+                <NuxtLink to="/finance" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:circle-dollar-sign" class="w-4 h-4" />
+                  <span>Keuangan</span>
+                </NuxtLink>
+                <NuxtLink to="/dompet" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:wallet" class="w-4 h-4" />
+                  <span>Dompet</span>
+                </NuxtLink>
+                <NuxtLink to="/marketing" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:megaphone" class="w-4 h-4" />
+                  <span>Pemasaran</span>
+                </NuxtLink>
+                <NuxtLink v-if="showCrm" to="/customers" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:users" class="w-4 h-4" />
+                  <span>Pelanggan</span>
+                </NuxtLink>
+              </div>
+            </div>
 
-          <div class="pt-3 pb-1">
-            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Manajemen</p>
-            <NuxtLink to="/analytics" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:chart-bar" class="w-5 h-5" />
-              <span>Analitik</span>
-            </NuxtLink>
-            <NuxtLink to="/decision-support" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:light-bulb" class="w-5 h-5" />
-              <span>Keputusan</span>
-            </NuxtLink>
-            <NuxtLink v-if="isExpert" to="/operations" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:cog" class="w-5 h-5" />
-              <span>Operasional</span>
-            </NuxtLink>
-            <NuxtLink v-if="isExpert" to="/team" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:user-plus" class="w-5 h-5" />
-              <span>Tim</span>
-            </NuxtLink>
-          </div>
+            <!-- COPILOT -->
+            <div>
+              <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">COPILOT</p>
+              <div class="space-y-0.5">
+                <NuxtLink to="/chat" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:sparkles" class="w-4 h-4" />
+                  <span>Asisten AI</span>
+                </NuxtLink>
+                <NuxtLink to="/decision-support" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:lightbulb" class="w-4 h-4" />
+                  <span>AI Insights</span>
+                </NuxtLink>
+                <NuxtLink to="/automation" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:bot" class="w-4 h-4" />
+                  <span>Otomatisasi</span>
+                </NuxtLink>
+                <NuxtLink to="/memory" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:cpu" class="w-4 h-4" />
+                  <span>Memory</span>
+                </NuxtLink>
+              </div>
+            </div>
 
-          <div class="pt-3 pb-1">
-            <p class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Sistem</p>
-            <NuxtLink to="/automation" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:command-line" class="w-5 h-5" />
-              <span>Otomatisasi</span>
-            </NuxtLink>
-            <NuxtLink to="/konektor" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:puzzle-piece" class="w-5 h-5" />
-              <span>Konektor</span>
-            </NuxtLink>
-            <NuxtLink to="/documents" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:document-text" class="w-5 h-5" />
-              <span>Dokumen</span>
-            </NuxtLink>
-            <NuxtLink v-if="isExpert" to="/monitoring" exact-active-class="nav-active" class="nav-link">
-              <Icon name="heroicons:computer-desktop" class="w-5 h-5" />
-              <span>Monitoring</span>
-            </NuxtLink>
-          </div>
-        </nav>
+            <!-- SYSTEM -->
+            <div>
+              <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">SYSTEM</p>
+              <div class="space-y-0.5">
+                <NuxtLink to="/konektor" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:plug" class="w-4 h-4" />
+                  <span>Integrasi</span>
+                </NuxtLink>
+                <NuxtLink to="/documents" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:file-text" class="w-4 h-4" />
+                  <span>Dokumen</span>
+                </NuxtLink>
+                <NuxtLink to="/settings" exact-active-class="sidebar-clean-active" class="sidebar-clean-link">
+                  <Icon name="lucide:settings" class="w-4 h-4" />
+                  <span>Pengaturan</span>
+                </NuxtLink>
+              </div>
+            </div>
+          </nav>
+        </div>
       </div>
 
-      <div class="p-6 pl-7 space-y-4 border-t border-[var(--wp-border)]">
-        <button class="w-full py-3 text-xs font-bold shadow-sm transition flex items-center justify-center gap-2" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white; border-radius: 4px;">
-          <Icon name="heroicons:plus" class="w-4 h-4" />
-          <span>Tingkatkan Paket</span>
+      <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+        <button @click="handleLogout" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition text-slate-600 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-950/40">
+          <Icon name="lucide:log-out" class="w-4 h-4" />
+          <span>Keluar</span>
         </button>
-        <div class="space-y-1">
-          <NuxtLink to="/settings" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:cog-6-tooth" class="w-4 h-4" />
-            <span>Settings</span>
-          </NuxtLink>
-          <NuxtLink to="/help" exact-active-class="nav-active" class="nav-link">
-            <Icon name="heroicons:question-mark-circle" class="w-4 h-4" />
-            <span>Help</span>
-          </NuxtLink>
-          <button @click="handleLogout" class="w-full flex items-center gap-3 px-4 py-2.5 rounded text-xs font-semibold transition text-left" style="color: var(--wp-text-secondary);">
-            <Icon name="heroicons:arrow-left-on-rectangle" class="w-4 h-4" />
-            <span>Keluar</span>
-          </button>
-        </div>
       </div>
     </aside>
 
     <!-- ── Main Area ── -->
     <div class="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
-      <header class="h-16 bg-white/80 backdrop-blur-md border-b border-[var(--wp-border)] px-8 items-center justify-between shrink-0 sticky top-0 z-[var(--wp-z-sticky)] hidden md:flex">
+      <header class="h-16 bg-card/80 backdrop-blur-md border-b border-border px-8 items-center justify-between shrink-0 sticky top-0 z-50 hidden md:flex">
         <!-- Global Search -->
         <GlobalSearch />
         <div class="flex items-center gap-4">
-          <span class="text-[11px] font-bold px-3.5 py-1.5 tracking-wide select-none" style="background: var(--wp-navy); color: white;">
-            Asisten AI
-          </span>
-          <NuxtLink to="/notifikasi" class="relative p-2 transition" style="color: var(--wp-text-secondary);">
+          <Badge variant="secondary" class="tracking-wide">Asisten AI</Badge>
+          <NuxtLink to="/notifikasi" class="relative p-2 transition text-muted-foreground hover:text-foreground">
             <Icon name="heroicons:bell" class="w-5 h-5" />
-            <span v-if="unreadCount > 0" class="absolute top-1 right-1 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-bold text-white shadow" style="background: var(--wp-navy);">
+            <span v-if="unreadCount > 0" class="absolute top-1 right-1 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-bold text-secondary-foreground shadow bg-secondary">
               {{ unreadCount > 9 ? '9+' : unreadCount }}
             </span>
           </NuxtLink>
-          <button class="p-2 transition" style="color: var(--wp-text-secondary);">
+          <button class="p-2 transition text-muted-foreground hover:text-foreground">
             <Icon name="heroicons:question-mark-circle" class="w-5 h-5" />
           </button>
-          <NuxtLink to="/profile" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold shadow-sm select-none transition-transform hover:scale-105 border-2 border-transparent hover:border-[var(--wp-gold)]" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); color: white;" title="Profil Saya">
-            <template v-if="user?.photo_profile">
-              <img :src="user.photo_profile" alt="Profile" class="w-full h-full object-cover" />
-            </template>
-            <template v-else>
-              {{ user?.name?.charAt(0) || 'U' }}
-            </template>
+          <NuxtLink to="/profile" class="ring-2 ring-transparent hover:ring-primary rounded-full transition-transform hover:scale-105" title="Profil Saya">
+            <Avatar class="h-8 w-8">
+              <AvatarImage v-if="user?.photo_profile" :src="user.photo_profile" alt="Profile" />
+              <AvatarFallback class="bg-primary text-primary-foreground text-xs font-bold">
+                {{ user?.name?.charAt(0) || 'U' }}
+              </AvatarFallback>
+            </Avatar>
           </NuxtLink>
         </div>
       </header>
 
-      <main class="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 md:pb-6" :style="{ paddingBottom: 'calc(6rem + var(--wp-safe-area-bottom))' }">
+      <main class="flex-1 overflow-y-auto p-4 sm:p-8 pb-24 md:pb-6" :style="{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' }">
         <slot />
       </main>
     </div>
+
+    <!-- ── Global Agentic AI Floating Chatbot Widget ── -->
+    <FloatingChatWidget />
 
     <!-- ── Draggable Floating Telegram Action Button ── -->
     <div
       ref="telegramButton"
       @mousedown="startDrag"
       @touchstart="startDrag"
-      class="fixed z-40 flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-lg transition-transform hover:scale-105 active:scale-95 group cursor-move select-none bottom-20 md:bottom-6"
+      class="fixed z-40 flex items-center justify-center w-14 h-14 bg-[#26A5E4] hover:bg-[#208bbf] text-white shadow-xl transition-transform hover:scale-105 active:scale-95 group cursor-move select-none bottom-20 md:bottom-6"
       :style="{
         borderRadius: '9999px',
-        boxShadow: '0 4px 16px rgba(38, 165, 228, 0.4)',
+        boxShadow: '0 8px 24px rgba(38, 165, 228, 0.4)',
         left: position.x !== null ? position.x + 'px' : 'auto',
         top: position.y !== null ? position.y + 'px' : 'auto',
-        right: position.x === null ? '24px' : 'auto',
-        bottom: position.y === null ? '80px' : 'auto'
+        right: position.x === null ? '90px' : 'auto',
+        bottom: position.y === null ? '24px' : 'auto'
       }"
       title="Geser untuk memindahkan, klik untuk membuka Telegram Bot"
     >
@@ -239,12 +220,12 @@
 
     <!-- ── Toast Notifications ── -->
     <div class="fixed top-4 right-4 z-[1000] flex flex-col gap-2 pointer-events-none">
-      <div v-for="toast in activeToasts" :key="toast.id" class="bg-white border-l-4 shadow-lg rounded p-4 pr-10 relative pointer-events-auto min-w-[300px] animate-fade-in-up" :style="`border-color: var(--wp-border); border-left-color: ${toast.type === 'NEW_TRANSACTION' ? 'var(--wp-navy)' : '#10B981'};`">
-        <button @click="dismissToast(toast.id)" class="absolute top-2 right-2 text-slate-400 hover:text-slate-600">
+      <div v-for="toast in activeToasts" :key="toast.id" class="bg-card border-l-4 border-border shadow-lg rounded-md p-4 pr-10 relative pointer-events-auto min-w-[300px] animate-fade-in-up" :style="`border-left-color: ${toast.type === 'NEW_TRANSACTION' ? 'var(--secondary)' : 'var(--success)'};`">
+        <button @click="dismissToast(toast.id)" class="absolute top-2 right-2 text-muted-foreground hover:text-foreground">
           <Icon name="heroicons:x-mark" class="w-4 h-4" />
         </button>
-        <h4 class="text-sm font-bold text-slate-800">{{ toast.title }}</h4>
-        <p class="text-xs text-slate-600 mt-1">{{ toast.message }}</p>
+        <h4 class="text-sm font-bold text-card-foreground">{{ toast.title }}</h4>
+        <p class="text-xs text-muted-foreground mt-1">{{ toast.message }}</p>
       </div>
     </div>
   </div>
@@ -293,10 +274,10 @@ let startOffset = { x: 0, y: 0 }
 const startDrag = (event: MouseEvent | TouchEvent) => {
   isDragging = true
   dragStartTime = Date.now()
-  
+
   const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX
   const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY
-  
+
   const rect = telegramButton.value?.getBoundingClientRect()
   if (rect) {
     startOffset.x = clientX - rect.left
@@ -311,22 +292,22 @@ const startDrag = (event: MouseEvent | TouchEvent) => {
 
 const onDrag = (event: MouseEvent | TouchEvent) => {
   if (!isDragging) return
-  
+
   // Prevent scrolling on mobile during drag gesture
   if (event.cancelable) event.preventDefault()
-  
+
   const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX
   const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY
-  
+
   // Constrain inside viewport boundaries
   const buttonWidth = 56 // w-14
   const buttonHeight = 56 // h-14
   let x = clientX - startOffset.x
   let y = clientY - startOffset.y
-  
+
   x = Math.max(10, Math.min(window.innerWidth - buttonWidth - 10, x))
   y = Math.max(10, Math.min(window.innerHeight - buttonHeight - 10, y))
-  
+
   position.x = x
   position.y = y
 }
@@ -444,38 +425,63 @@ const connectWebSocket = () => {
 </script>
 
 <style>
+.sidebar-clean-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  color: #475569; /* slate-600 */
+  text-decoration: none;
+}
+.sidebar-clean-link:hover {
+  background: #f1f5f9; /* slate-100 */
+  color: #0f172a; /* slate-900 */
+}
+.dark .sidebar-clean-link {
+  color: #94a3b8;
+}
+.dark .sidebar-clean-link:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+.sidebar-clean-link.sidebar-clean-active {
+  background: #d1fae5; /* emerald-100 (#D1FAE5) */
+  color: #047857; /* emerald-700 (#047857) */
+  font-weight: 600;
+}
+.sidebar-clean-link.sidebar-clean-active svg,
+.sidebar-clean-link.sidebar-clean-active .icon {
+  color: #047857;
+}
+
 .nav-link {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
   font-size: 0.8125rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  color: var(--wp-text-secondary);
+  font-weight: 500;
+  transition: all 0.15s ease;
+  color: var(--muted-foreground);
   text-decoration: none;
 }
 .nav-link:hover {
-  background: var(--wp-bg);
-  color: var(--wp-text);
+  background: var(--muted);
+  color: var(--foreground);
 }
 .nav-link.nav-active {
-  background: rgba(212, 168, 67, 0.10);
-  color: #B8922E;
-  font-weight: 700;
-}
-.dark-mode .nav-link.nav-active {
-  background: rgba(232, 196, 106, 0.15);
-  color: var(--wp-gold);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font-weight: 600;
 }
 .nav-link.nav-active svg,
 .nav-link.nav-active .icon {
-  color: #D4A843;
-}
-.dark-mode .nav-link.nav-active svg,
-.dark-mode .nav-link.nav-active .icon {
-  color: var(--wp-gold);
+  color: var(--primary);
 }
 
 /* Mobile Nav Styles */
@@ -485,24 +491,17 @@ const connectWebSocket = () => {
   align-items: center;
   justify-content: center;
   flex: 1;
-  color: var(--wp-text-secondary);
+  color: var(--muted-foreground);
   transition: all 0.15s ease;
   text-decoration: none;
   height: 100%;
 }
 .mobile-nav-link.mobile-nav-active {
-  color: #B8922E;
-}
-.dark-mode .mobile-nav-link.mobile-nav-active {
-  color: var(--wp-gold);
+  color: var(--sidebar-accent-foreground);
 }
 .mobile-nav-link.mobile-nav-active svg,
 .mobile-nav-link.mobile-nav-active .icon {
-  color: #D4A843;
-}
-.dark-mode .mobile-nav-link.mobile-nav-active svg,
-.dark-mode .mobile-nav-link.mobile-nav-active .icon {
-  color: var(--wp-gold);
+  color: var(--sidebar-primary);
 }
 
 /* Custom Scrollbar for Sidebar */
@@ -516,7 +515,7 @@ const connectWebSocket = () => {
   background-color: rgba(0,0,0,0.1);
   border-radius: 10px;
 }
-.dark-mode .custom-scrollbar::-webkit-scrollbar-thumb {
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(255,255,255,0.1);
 }
 </style>
