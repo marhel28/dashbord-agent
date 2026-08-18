@@ -1,23 +1,22 @@
 <template>
   <div class="relative w-full max-w-sm" ref="searchContainer">
-    <Icon name="heroicons:magnifying-glass" class="absolute left-3.5 top-2.5 w-4 h-4" style="color: var(--wp-text-secondary);" />
+    <Icon name="heroicons:magnifying-glass" class="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
     <input 
       type="text" 
       v-model="searchQuery"
       @focus="isFocused = true"
       placeholder="Cari menu, barang, atau bantuan..." 
-      class="w-full pl-10 pr-10 py-2 rounded text-xs transition border outline-none focus:border-[var(--wp-gold)]" 
-      style="background-color: var(--wp-bg); border-color: var(--wp-border); color: var(--wp-text);" 
+      class="w-full pl-10 pr-10 py-2 rounded-lg text-xs transition border outline-none bg-slate-100/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-emerald-500 dark:focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500/20" 
       @keydown.esc="closeSearch"
     />
-    <button v-if="searchQuery" @click="clearSearch" class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 transition">
+    <button v-if="searchQuery" @click="clearSearch" class="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
       <Icon name="heroicons:x-mark" class="w-4 h-4" />
     </button>
 
     <!-- Dropdown -->
     <div 
       v-if="isFocused && searchQuery.trim().length >= 2" 
-      class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-[var(--wp-border)] rounded-md shadow-xl overflow-hidden z-[1050] max-h-96 flex flex-col"
+      class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden z-[1050] max-h-96 flex flex-col"
     >
       <div v-if="isLoading" class="p-4 flex items-center justify-center text-slate-400">
         <Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin" />
@@ -25,14 +24,14 @@
 
       <div v-else class="overflow-y-auto">
         <!-- Hasil Menu / Pintasan -->
-        <div v-if="menuResults.length > 0" class="border-b border-[var(--wp-border)]">
-          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-800/50">
+        <div v-if="menuResults.length > 0" class="border-b border-slate-200 dark:border-slate-700/60">
+          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/70">
             Menu Navigasi
           </div>
           <ul>
             <li v-for="menu in menuResults" :key="menu.path">
               <NuxtLink :to="menu.path" @click="closeSearch" class="flex items-center gap-3 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
-                <Icon :name="menu.icon" class="w-4 h-4 text-slate-400" />
+                <Icon :name="menu.icon" class="w-4 h-4 text-slate-400 dark:text-slate-400" />
                 <span class="text-xs font-bold text-slate-700 dark:text-slate-200">{{ menu.name }}</span>
               </NuxtLink>
             </li>
@@ -41,7 +40,7 @@
 
         <!-- Hasil Barang / Stok -->
         <div v-if="productResults.length > 0">
-          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50 dark:bg-slate-800/50">
+          <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/70">
             Saran Barang
           </div>
           <ul>
@@ -49,11 +48,11 @@
               <button @click="goToProduct(prod)" class="w-full text-left flex items-center justify-between px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
                 <div class="flex-1 min-w-0 pr-4">
                   <h4 class="text-xs font-bold text-slate-800 dark:text-white truncate">{{ prod.name }}</h4>
-                  <p class="text-[10px] text-slate-500 truncate">{{ prod.category_name || 'Tanpa Kategori' }}</p>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ prod.category_name || 'Tanpa Kategori' }}</p>
                 </div>
                 <div class="text-right shrink-0">
-                  <span class="text-xs font-bold text-emerald-600">Rp {{ prod.selling_price.toLocaleString('id-ID') }}</span>
-                  <p class="text-[10px] text-slate-400">Stok: {{ prod.quantity }}</p>
+                  <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Rp {{ prod.selling_price.toLocaleString('id-ID') }}</span>
+                  <p class="text-[10px] text-slate-400 dark:text-slate-400">Stok: {{ prod.quantity }}</p>
                 </div>
               </button>
             </li>
@@ -61,8 +60,8 @@
         </div>
 
         <!-- State: Tidak ada hasil -->
-        <div v-if="menuResults.length === 0 && productResults.length === 0" class="p-6 text-center text-slate-500">
-          <Icon name="heroicons:magnifying-glass" class="w-8 h-8 mx-auto mb-2 opacity-50" />
+        <div v-if="menuResults.length === 0 && productResults.length === 0" class="p-6 text-center text-slate-500 dark:text-slate-400">
+          <Icon name="heroicons:magnifying-glass" class="w-8 h-8 mx-auto mb-2 opacity-50 text-slate-400 dark:text-slate-500" />
           <p class="text-xs">Tidak ditemukan hasil untuk "<strong>{{ searchQuery }}</strong>"</p>
         </div>
       </div>

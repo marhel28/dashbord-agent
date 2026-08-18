@@ -29,12 +29,12 @@
     <!-- ── Sidebar (Desktop Devices >= 768px) ── -->
     <aside class="w-[232px] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 p-0 flex flex-col justify-between hidden md:flex shrink-0 sticky top-0 h-screen overflow-y-auto custom-scrollbar">
       <div>
-        <!-- Brand Header (Dark Green Accent Box) -->
-        <div class="p-5 bg-[#003B32] text-white flex items-center gap-3">
+        <!-- Brand Header (Seamless with Sidebar) -->
+        <div class="p-5 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 flex items-center gap-3">
           <img :src="logoSrc" class="w-8 h-8 object-contain shrink-0" alt="Nahkoda AI Logo" />
           <div>
-            <h2 class="font-bold text-sm tracking-tight leading-none text-white">Nahkoda</h2>
-            <p class="text-[10px] font-medium text-emerald-300 mt-0.5">Business Copilot</p>
+            <h2 class="font-bold text-sm tracking-tight leading-none text-slate-900 dark:text-white">Nahkoda</h2>
+            <p class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">Business Copilot</p>
           </div>
         </div>
 
@@ -153,18 +153,32 @@
 
     <!-- ── Main Area ── -->
     <div class="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
-      <header class="h-16 bg-card/80 backdrop-blur-md border-b border-border px-8 items-center justify-between shrink-0 sticky top-0 z-50 hidden md:flex">
+      <header class="h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 items-center justify-between shrink-0 sticky top-0 z-50 hidden md:flex">
         <!-- Global Search -->
         <GlobalSearch />
-        <div class="flex items-center gap-4">
-          <Badge variant="secondary" class="tracking-wide">Asisten AI</Badge>
-          <NuxtLink to="/notifikasi" class="relative p-2 transition text-muted-foreground hover:text-foreground">
+        <div class="flex items-center gap-3">
+          <div class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 flex items-center gap-1.5 shadow-2xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Asisten AI</span>
+          </div>
+
+          <!-- Quick Dark / Light Mode Toggle -->
+          <button 
+            @click="toggleTheme" 
+            class="p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800" 
+            :title="colorMode.value === 'dark' ? 'Ganti ke Light Mode' : 'Ganti ke Dark Mode'"
+          >
+            <Icon v-if="colorMode.value === 'dark'" name="lucide:sun" class="w-5 h-5 text-amber-400" />
+            <Icon v-else name="lucide:moon" class="w-5 h-5 text-slate-600" />
+          </button>
+
+          <NuxtLink to="/notifikasi" class="relative p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800" title="Notifikasi">
             <Icon name="heroicons:bell" class="w-5 h-5" />
-            <span v-if="unreadCount > 0" class="absolute top-1 right-1 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-bold text-secondary-foreground shadow bg-secondary">
+            <span v-if="unreadCount > 0" class="absolute top-1 right-1 w-3.5 h-3.5 flex items-center justify-center rounded-full text-[8px] font-bold text-white shadow bg-emerald-500">
               {{ unreadCount > 9 ? '9+' : unreadCount }}
             </span>
           </NuxtLink>
-          <button class="p-2 transition text-muted-foreground hover:text-foreground">
+          <button class="p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800" title="Bantuan">
             <Icon name="heroicons:question-mark-circle" class="w-5 h-5" />
           </button>
           <NuxtLink to="/profile" class="ring-2 ring-transparent hover:ring-primary rounded-full transition-transform hover:scale-105" title="Profil Saya">
@@ -240,6 +254,10 @@ import { navigateTo } from '#app'
 const { user, isAuthenticated, checkAuth, logout: doLogout } = useAuth()
 const { loadNotifications, addNotification, unreadCount } = useNotificationStore()
 const colorMode = useColorMode()
+
+const toggleTheme = () => {
+  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+}
 
 const logoSrc = computed(() => {
   return colorMode.value === 'dark' ? '/logo_darkmode.png' : '/logo_lightmode.png'
@@ -456,6 +474,15 @@ const connectWebSocket = () => {
 .sidebar-clean-link.sidebar-clean-active svg,
 .sidebar-clean-link.sidebar-clean-active .icon {
   color: #047857;
+}
+.dark .sidebar-clean-link.sidebar-clean-active {
+  background: rgba(16, 185, 129, 0.12); /* Soft translucent glow */
+  color: #34d399; /* Emerald 400 */
+  font-weight: 600;
+}
+.dark .sidebar-clean-link.sidebar-clean-active svg,
+.dark .sidebar-clean-link.sidebar-clean-active .icon {
+  color: #34d399;
 }
 
 .nav-link {

@@ -33,16 +33,16 @@
 
     <!-- ═══════════ ERROR STATE ═══════════ -->
     <div v-else-if="pageError" class="flex items-center justify-center py-16">
-      <Card class="max-w-sm border-red-200 rounded-xl shadow-xs">
+      <Card class="max-w-sm bg-white dark:bg-slate-800 border border-red-200 dark:border-red-500/20 rounded-xl shadow-lg dark:shadow-slate-950/40">
         <CardContent class="pt-6 text-center space-y-4">
-          <div class="w-12 h-12 mx-auto rounded-full bg-red-50 flex items-center justify-center">
-            <Icon name="lucide:alert-triangle" class="w-6 h-6 text-red-600" />
+          <div class="w-12 h-12 mx-auto rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-600 dark:text-red-400">
+            <Icon name="lucide:alert-triangle" class="w-6 h-6" />
           </div>
           <div>
-            <CardTitle class="text-base">Gagal memuat beranda</CardTitle>
-            <CardDescription class="mt-1 text-xs">{{ pageError }}</CardDescription>
+            <CardTitle class="text-base font-bold text-slate-900 dark:text-slate-100">Gagal memuat beranda</CardTitle>
+            <CardDescription class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ pageError }}</CardDescription>
           </div>
-          <Button variant="default" size="sm" class="rounded-lg" @click="loadAll">Coba Lagi</Button>
+          <Button variant="default" size="sm" class="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-slate-950 font-semibold shadow-xs" @click="loadAll">Coba Lagi</Button>
         </CardContent>
       </Card>
     </div>

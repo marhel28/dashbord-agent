@@ -95,7 +95,7 @@
             :key="mode.value"
             @click="colorMode.preference = mode.value"
             :class="['p-3 rounded-lg border text-xs font-semibold flex items-center justify-center gap-2 transition-all',
-              colorMode.preference === mode.value ? 'border-[#047857] bg-emerald-50 text-[#047857] dark:bg-emerald-950 dark:text-emerald-300 font-bold shadow-xs' : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900']"
+              colorMode.preference === mode.value ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400 font-bold shadow-xs' : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/60']"
           >
             <Icon :name="mode.icon" class="w-4 h-4" />
             <span>{{ mode.label }}</span>

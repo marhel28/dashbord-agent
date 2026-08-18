@@ -37,15 +37,15 @@
 
     <!-- ═══════════ 3. ERROR STATE ═══════════ -->
     <div v-else-if="error" class="flex items-center justify-center py-16">
-      <div class="text-center space-y-4 max-w-sm border border-red-200 p-6 bg-white dark:bg-slate-900 rounded-xl shadow-xs">
-        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-red-50 text-red-600">
+      <div class="text-center space-y-4 max-w-sm border border-red-200 dark:border-red-500/20 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-950/40">
+        <div class="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400">
           <Icon name="lucide:alert-triangle" class="w-6 h-6" />
         </div>
         <div>
           <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Gagal Memuat Data Dompet</h3>
-          <p class="text-xs text-slate-500 mt-1">{{ error }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ error }}</p>
         </div>
-        <Button variant="default" size="sm" @click="fetchPerformance()" class="rounded-lg text-xs">Coba Lagi</Button>
+        <Button variant="default" size="sm" @click="fetchPerformance()" class="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-slate-950 font-semibold shadow-xs text-xs">Coba Lagi</Button>
       </div>
     </div>
 
