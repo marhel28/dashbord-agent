@@ -47,22 +47,33 @@
 
     <!-- ═══════════ 3. QUICK ACTION TEMPLATES ═══════════ -->
     <div class="space-y-3">
-      <h2 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">Template Rutinitas Cepat</h2>
+      <div class="flex items-center justify-between">
+        <h2 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">Template Rutinitas Cepat</h2>
+        <span class="text-[11px] text-slate-500 dark:text-slate-400">Klik template untuk langsung mengaktifkan ke backend</span>
+      </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-        <div
+        <button
           v-for="tpl in quickTemplates"
           :key="tpl.label"
           @click="onQuickAdd(tpl)"
-          class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md cursor-pointer transition-all space-y-2 group"
+          :disabled="quickAdding === tpl.label"
+          type="button"
+          class="text-left p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 shadow-xs hover:shadow-md hover:border-emerald-500/50 dark:hover:border-emerald-500/50 cursor-pointer transition-all space-y-2 group relative overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-[#047857]">
-            <Icon :name="tpl.icon" class="w-4 h-4" />
+          <div class="flex items-center justify-between">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <Icon v-if="quickAdding === tpl.label" name="lucide:loader-2" class="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+              <Icon v-else :name="tpl.icon" class="w-4 h-4" />
+            </div>
+            <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+              <span>+ Aktifkan</span>
+            </span>
           </div>
           <div>
-            <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#047857] transition-colors">{{ tpl.label }}</h3>
+            <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ tpl.label }}</h3>
             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{{ tpl.description }}</p>
           </div>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -234,11 +245,34 @@
 
             <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button variant="outline" size="sm" type="button" @click="closeReminderModal()">Batal</Button>
-              <Button size="sm" class="bg-[#047857] hover:bg-[#065f46] text-white">Simpan Rutinitas</Button>
+              <Button size="sm" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">Simpan Rutinitas</Button>
             </div>
           </form>
         </div>
       </div>
+    </Teleport>
+
+    <!-- ═══════════ TOAST NOTIFICATION ═══════════ -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="transform translate-y-4 opacity-0"
+        enter-to-class="transform translate-y-0 opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="transform translate-y-0 opacity-100"
+        leave-to-class="transform translate-y-4 opacity-0"
+      >
+        <div
+          v-if="toastMessage"
+          class="fixed bottom-6 right-6 z-[120] px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs font-semibold"
+          :class="toastType === 'error' ? 'bg-red-900 text-red-100 border border-red-700' : 'bg-slate-900 dark:bg-slate-800 text-white border border-slate-700 dark:border-slate-700'"
+        >
+          <div class="w-5 h-5 rounded-full flex items-center justify-center" :class="toastType === 'error' ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'">
+            <Icon :name="toastType === 'error' ? 'lucide:alert-circle' : 'lucide:check-circle-2'" class="w-4 h-4" />
+          </div>
+          <span>{{ toastMessage }}</span>
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>
@@ -258,8 +292,17 @@ const {
 const activeTab = ref<'reminders' | 'system'>('reminders')
 const showReminderModal = ref(false)
 const creatingReminder = ref(false)
+const quickAdding = ref<string | null>(null)
 const editingReminder = ref<any>(null)
 const aiPromptInput = ref('')
+const toastMessage = ref('')
+const toastType = ref<'success' | 'error'>('success')
+
+const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+  toastMessage.value = msg
+  toastType.value = type
+  setTimeout(() => { toastMessage.value = '' }, 3500)
+}
 
 const reminderForm = reactive({
   message: '',
@@ -273,15 +316,39 @@ const tabs = computed(() => [
 ])
 
 const quickTemplates = [
-  { icon: 'lucide:sun', label: 'Laporan Pagi (08:00)', description: 'Kirim ringkasan transaksi & pendapatan toko kemarin.', message: 'ingatkan saya rekap laporan pagi jam 8' },
-  { icon: 'lucide:moon', label: 'Tutup Kasir Malam', description: 'Pengingat hitung fisik uang kasir sebelum toko tutup.', message: 'ingatkan saya rekap kasir malam jam 8' },
-  { icon: 'lucide:package-warning', label: 'Cek Stok Menipis', description: 'Peringatan otomatis barang yang sisa kurang dari 5 pcs.', message: 'ingatkan saya cek barang stok menipis setiap hari' },
-  { icon: 'lucide:calendar-days', label: 'Laporan Mingguan', description: 'Ringkasan performa penjualan produk 7 hari terakhir.', message: 'ingatkan saya laporan penjualan mingguan' },
+  { 
+    icon: 'lucide:sun', 
+    label: 'Laporan Pagi (08:00)', 
+    description: 'Kirim ringkasan transaksi & pendapatan toko kemarin.', 
+    message: 'Kirim ringkasan transaksi & pendapatan toko kemarin', 
+    cron: '0 8 * * *' 
+  },
+  { 
+    icon: 'lucide:moon', 
+    label: 'Tutup Kasir Malam', 
+    description: 'Pengingat hitung fisik uang kasir sebelum toko tutup.', 
+    message: 'Pengingat hitung fisik uang kasir sebelum toko tutup', 
+    cron: '0 21 * * *' 
+  },
+  { 
+    icon: 'lucide:package-warning', 
+    label: 'Cek Stok Menipis', 
+    description: 'Peringatan otomatis barang yang sisa kurang dari 5 pcs.', 
+    message: 'Peringatan otomatis barang yang sisa kurang dari 5 pcs', 
+    cron: '0 9 * * *' 
+  },
+  { 
+    icon: 'lucide:calendar-days', 
+    label: 'Laporan Mingguan', 
+    description: 'Ringkasan performa penjualan produk 7 hari terakhir.', 
+    message: 'Ringkasan performa penjualan produk 7 hari terakhir', 
+    cron: '0 8 * * 1' 
+  },
 ]
 
 const scheduleTemplates = [
   { label: 'Tiap Pagi Jam 8', cron: '0 8 * * *' },
-  { label: 'Tiap Malam Jam 8', cron: '0 20 * * *' },
+  { label: 'Tiap Malam Jam 9', cron: '0 21 * * *' },
   { label: 'Tiap Senin Jam 8', cron: '0 8 * * 1' },
   { label: 'Setiap Jam', cron: '0 * * * *' },
 ]
@@ -291,21 +358,32 @@ const handleAiPromptSubmit = async () => {
   creatingReminder.value = true
   try {
     await createReminder({ message: aiPromptInput.value })
+    showToast('Rutinitas AI berhasil dibuat!', 'success')
     aiPromptInput.value = ''
     fetchReminders()
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
+    showToast(`Gagal membuat via AI: ${err?.message || 'Terjadi kesalahan'}`, 'error')
   } finally {
     creatingReminder.value = false
   }
 }
 
 const onQuickAdd = async (tpl: any) => {
+  quickAdding.value = tpl.label
   try {
-    await createReminder({ message: tpl.message })
-    fetchReminders()
-  } catch (err) {
-    console.error(err)
+    await createReminder({ 
+      message: tpl.message,
+      cron: tpl.cron,
+      once: false
+    })
+    await fetchReminders()
+    showToast(`Rutinitas "${tpl.label}" berhasil diaktifkan!`, 'success')
+  } catch (err: any) {
+    console.error('Failed to add quick routine:', err)
+    showToast(`Gagal mengaktifkan rutinitas: ${err?.message || 'Terjadi kesalahan'}`, 'error')
+  } finally {
+    quickAdding.value = null
   }
 }
 
@@ -335,24 +413,37 @@ const onSubmitReminder = async () => {
   try {
     if (editingReminder.value) {
       await updateReminder(editingReminder.value.reminder_id, reminderForm)
+      showToast('Rutinitas berhasil diperbarui!', 'success')
     } else {
       await createReminder(reminderForm)
+      showToast('Rutinitas baru berhasil disimpan!', 'success')
     }
     closeReminderModal()
     fetchReminders()
-  } catch (err) {
+  } catch (err: any) {
     console.error(err)
+    showToast(`Gagal menyimpan: ${err?.message || 'Terjadi kesalahan'}`, 'error')
   }
 }
 
 const onTriggerReminder = async (id: string) => {
-  await triggerReminder(id)
+  try {
+    const res = await triggerReminder(id)
+    showToast(res || 'Rutinitas berhasil dijalankan sekarang!', 'success')
+  } catch (err: any) {
+    showToast(`Gagal menjalankan rutinitas: ${err?.message || 'Terjadi kesalahan'}`, 'error')
+  }
 }
 
 const onDeleteReminder = async (id: string) => {
   if (confirm('Hapus rutinitas ini?')) {
-    await deleteReminder(id)
-    fetchReminders()
+    try {
+      await deleteReminder(id)
+      showToast('Rutinitas berhasil dihapus!', 'success')
+      fetchReminders()
+    } catch (err: any) {
+      showToast(`Gagal menghapus: ${err?.message || 'Terjadi kesalahan'}`, 'error')
+    }
   }
 }
 
