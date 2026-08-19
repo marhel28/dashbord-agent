@@ -20,6 +20,10 @@
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.4; }
 }
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.02); }
+}
 @keyframes sound-wave {
   0%, 100% { transform: scaleY(0.3); }
   50%      { transform: scaleY(1); }
@@ -52,6 +56,9 @@
 }
 .animate-pulse-dot {
   animation: pulse-dot 1.5s ease-in-out infinite;
+}
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
 }
 
 /* Stagger children */

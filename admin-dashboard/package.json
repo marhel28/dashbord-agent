@@ -20,10 +20,16 @@
     "@vue-flow/minimap": "^1.5.0",
     "ag-grid-community": "^36.0.1",
     "ag-grid-vue3": "^36.0.1",
+    "apexcharts": "^6.10.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "echarts": "^6.1.0",
     "maplibre-gl": "^4.5.0",
     "nuxt": "^3.12.4",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss-animate": "^1.0.7",
     "vue": "^3.4.31",
-    "vue-echarts": "^8.0.1"
+    "vue-echarts": "^8.0.1",
+    "vue3-apexcharts": "^1.11.1"
   }
 }

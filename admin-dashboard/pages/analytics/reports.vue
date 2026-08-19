@@ -1,147 +1,101 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
+  <div class="space-y-8 animate-fade-in max-w-7xl mx-auto py-2 pb-10">
     <!-- Header with Tabs -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight text-slate-800">Reports Generation</h1>
-        <p class="text-sm mt-1 text-slate-500">Generate, download, and schedule automated platform reports.</p>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Ekspor Laporan & Otomatisasi</h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Buat, unduh, dan jadwalkan pengiriman berkas audit ekosistem secara berkala.</p>
       </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b">
-      <NuxtLink to="/analytics" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap">Overview</NuxtLink>
-      <NuxtLink to="/analytics/finance" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap">Finance</NuxtLink>
-      <NuxtLink to="/analytics/merchants" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap">Merchants</NuxtLink>
-      <NuxtLink to="/analytics/ai-usage" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap">AI & Usage</NuxtLink>
-      <NuxtLink to="/analytics/catalog" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap">Catalog Insights</NuxtLink>
-      <NuxtLink to="/analytics/reports" class="px-4 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600 whitespace-nowrap">Reports</NuxtLink>
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 custom-scrollbar">
+      <NuxtLink to="/analytics" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg whitespace-nowrap">Overview</NuxtLink>
+      <NuxtLink to="/analytics/finance" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg whitespace-nowrap">Keuangan</NuxtLink>
+      <NuxtLink to="/analytics/merchants" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg whitespace-nowrap">Pedagang</NuxtLink>
+      <NuxtLink to="/analytics/ai-usage" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg whitespace-nowrap">Penggunaan AI</NuxtLink>
+      <NuxtLink to="/analytics/catalog" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg whitespace-nowrap">Katalog Produk</NuxtLink>
+      <NuxtLink to="/analytics/reports" class="px-4 py-2 text-xs font-semibold bg-emerald-600 text-white rounded-lg whitespace-nowrap shadow-xs">Laporan</NuxtLink>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
       <!-- Report Generators List -->
       <div class="lg:col-span-2 space-y-4">
-        
         <!-- Merchant Export Card -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm flex items-start gap-4 hover:border-blue-300 transition-colors">
-          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <Icon name="heroicons:users" class="w-8 h-8" />
+        <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-6 shadow-xs flex items-start gap-4 hover:border-emerald-500/50 transition-all">
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
+            <Icon name="lucide:users" class="w-7 h-7" />
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-bold text-slate-800">Master Merchant Data (CSV)</h3>
-            <p class="text-sm text-slate-500 mt-1 mb-4">Export all registered merchants, verification status, contact info, and total revenue into a spreadsheet. Processed via Celery background worker.</p>
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Master Data Pedagang Terpadu (CSV)</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 leading-relaxed">Ekspor seluruh data pedagang terdaftar, status verifikasi, koordinat GPS, dan akumulasi omzet ke format spreadsheet siap olah.</p>
             
             <div v-if="merchantExportState === 'idle'" class="flex gap-2">
-              <button @click="triggerMerchantExport" class="px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-slate-700 flex items-center gap-2">
-                <Icon name="heroicons:play" class="w-4 h-4" />
-                Generate Now
-              </button>
+              <Button size="sm" @click="triggerMerchantExport" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg gap-2 shadow-xs">
+                <Icon name="lucide:play" class="w-3.5 h-3.5" />
+                <span>Buat Berkas Sekarang</span>
+              </Button>
             </div>
             
-            <div v-else-if="merchantExportState === 'processing'" class="flex items-center gap-3 text-blue-600 font-medium">
-              <Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin" />
-              Processing via Celery Worker...
+            <div v-else-if="merchantExportState === 'processing'" class="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <Icon name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+              <span>Memproses berkas via background worker...</span>
             </div>
             
             <div v-else-if="merchantExportState === 'done'" class="flex gap-2">
-              <a :href="merchantDownloadUrl" class="px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 flex items-center gap-2">
-                <Icon name="heroicons:arrow-down-tray" class="w-4 h-4" />
-                Download CSV
+              <a :href="merchantDownloadUrl" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-xs">
+                <Icon name="lucide:download" class="w-3.5 h-3.5" />
+                <span>Unduh File CSV</span>
               </a>
-              <button @click="merchantExportState = 'idle'" class="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-bold rounded-lg hover:bg-slate-200">
-                Dismiss
-              </button>
+              <Button variant="outline" size="sm" @click="merchantExportState = 'idle'" class="text-xs rounded-lg">
+                Tutup
+              </Button>
             </div>
           </div>
         </div>
 
         <!-- Financial Export Card -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm flex items-start gap-4 hover:border-emerald-300 transition-colors">
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-            <Icon name="heroicons:banknotes" class="w-8 h-8" />
+        <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-6 shadow-xs flex items-start gap-4 hover:border-blue-500/50 transition-all">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl">
+            <Icon name="lucide:banknote" class="w-7 h-7" />
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-bold text-slate-800">Platform Financial Report (PDF)</h3>
-            <p class="text-sm text-slate-500 mt-1 mb-4">A complete breakdown of platform revenue, merchant payouts, and net margins for the current month. Ready for accounting.</p>
-            <button class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 flex items-center gap-2">
-              <Icon name="heroicons:document-text" class="w-4 h-4" />
-              Generate PDF (Coming Soon)
-            </button>
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Laporan Rekonsiliasi Finansial & Fee</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 leading-relaxed">Rekapitulasi total GMV, biaya transaksi, dan riwayat penarikan dana dompet digital pedagang.</p>
+            <Button variant="outline" size="sm" class="text-xs rounded-lg gap-1.5">
+              <Icon name="lucide:file-text" class="w-3.5 h-3.5" />
+              <span>Generate PDF Rekapitulasi</span>
+            </Button>
           </div>
         </div>
-
-        <!-- AI Audit Report Card -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm flex items-start gap-4 hover:border-purple-300 transition-colors">
-          <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
-            <Icon name="heroicons:sparkles" class="w-8 h-8" />
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-slate-800">AI Quality & Hallucination Log (CSV)</h3>
-            <p class="text-sm text-slate-500 mt-1 mb-4">Export all 1-2 star rated AI interactions and failed Copilot workflows for prompt engineering improvements.</p>
-            <button class="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 flex items-center gap-2">
-              <Icon name="heroicons:code-bracket" class="w-4 h-4" />
-              Export AI Logs (Coming Soon)
-            </button>
-          </div>
-        </div>
-
       </div>
 
       <!-- Right Column: Scheduled Reports -->
       <div class="space-y-6">
-        <div class="bg-white border rounded-2xl p-6 shadow-sm">
-          <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <Icon name="heroicons:clock" class="w-5 h-5 text-blue-600" />
-            Automated Schedules
+        <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-6 shadow-xs space-y-4">
+          <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Icon name="lucide:clock" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Jadwal Rutinitas Otomatis</span>
           </h2>
-          <p class="text-sm text-slate-500 mb-4">These reports are automatically processed by Celery Beat and delivered via Telegram/Email.</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Laporan otomatis disiapkan oleh daemon background scheduler dan dikirim ke kanal admin.</p>
           
           <div class="space-y-3">
-            <div class="flex items-center justify-between p-3 border rounded-xl bg-slate-50">
-              <div class="flex items-center gap-3">
-                <Icon name="heroicons:document-chart-bar" class="w-5 h-5 text-slate-400" />
-                <div>
-                  <div class="text-sm font-bold text-slate-800">Daily Platform Summary</div>
-                  <div class="text-xs text-slate-500">Every 08:00 AM</div>
-                </div>
+            <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/60">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Laporan Pagi (08:00 WIB)</span>
+                <Badge variant="outline" class="text-[9px] font-mono text-emerald-600 dark:text-emerald-400">AKTIF</Badge>
               </div>
-              <div class="w-8 h-4 bg-blue-600 rounded-full flex items-center p-0.5">
-                <div class="w-3 h-3 bg-white rounded-full translate-x-4"></div>
-              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Ringkasan transaksi ekosistem hari kemarin.</p>
             </div>
 
-            <div class="flex items-center justify-between p-3 border rounded-xl bg-slate-50">
-              <div class="flex items-center gap-3">
-                <Icon name="heroicons:exclamation-circle" class="w-5 h-5 text-rose-400" />
-                <div>
-                  <div class="text-sm font-bold text-slate-800">Global Stockout Alert</div>
-                  <div class="text-xs text-slate-500">Every 2 Hours</div>
-                </div>
+            <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/60">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Rekap Mingguan (Senin 07:00)</span>
+                <Badge variant="outline" class="text-[9px] font-mono text-emerald-600 dark:text-emerald-400">AKTIF</Badge>
               </div>
-              <div class="w-8 h-4 bg-blue-600 rounded-full flex items-center p-0.5">
-                <div class="w-3 h-3 bg-white rounded-full translate-x-4"></div>
-              </div>
-            </div>
-            
-            <div class="flex items-center justify-between p-3 border rounded-xl bg-slate-50">
-              <div class="flex items-center gap-3">
-                <Icon name="heroicons:users" class="w-5 h-5 text-slate-400" />
-                <div>
-                  <div class="text-sm font-bold text-slate-800">Weekly Merchant Churn</div>
-                  <div class="text-xs text-slate-500">Every Monday</div>
-                </div>
-              </div>
-              <div class="w-8 h-4 bg-slate-200 rounded-full flex items-center p-0.5">
-                <div class="w-3 h-3 bg-white rounded-full"></div>
-              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Performa 7 hari terakhir seluruh toko aktif.</p>
             </div>
           </div>
-          
-          <button class="w-full mt-4 py-2 border border-dashed border-slate-300 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 flex justify-center items-center gap-2">
-            <Icon name="heroicons:plus" class="w-4 h-4" />
-            Add Schedule
-          </button>
         </div>
       </div>
     </div>
@@ -152,46 +106,38 @@
 import { ref } from 'vue'
 import { api } from '~/utils/api'
 
-// States for Merchant Export
-const merchantExportState = ref<'idle'|'processing'|'done'>('idle')
+const merchantExportState = ref<'idle' | 'processing' | 'done'>('idle')
 const merchantDownloadUrl = ref('')
-const merchantTaskId = ref('')
-
-let pollInterval: any = null
 
 const triggerMerchantExport = async () => {
   merchantExportState.value = 'processing'
   try {
-    const res = await api.post('/admin/merchants/export-csv')
+    const res = await api.post('/admin/merchants/export-csv', {})
     if (res && res.task_id) {
-      merchantTaskId.value = res.task_id
-      pollMerchantExport()
+      pollExport(res.task_id)
     } else {
       merchantExportState.value = 'idle'
-      alert('Failed to start export task')
+      alert('Gagal memulai tugas ekspor.')
+    }
+  } catch (e) {
+    console.error(e)
+    merchantExportState.value = 'idle'
+  }
+}
+
+const pollExport = async (taskId: string) => {
+  try {
+    const res = await api.get(`/admin/merchants/export-csv/status/${taskId}`)
+    if (res.status === 'completed') {
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' })
+      merchantDownloadUrl.value = URL.createObjectURL(blob)
+      merchantExportState.value = 'done'
+    } else {
+      setTimeout(() => pollExport(taskId), 2000)
     }
   } catch (err) {
     console.error(err)
     merchantExportState.value = 'idle'
   }
-}
-
-const pollMerchantExport = () => {
-  pollInterval = setInterval(async () => {
-    try {
-      const res = await api.get(`/admin/merchants/export-csv/status/${merchantTaskId.value}`)
-      if (res.status === 'SUCCESS' && res.download_url) {
-        clearInterval(pollInterval)
-        merchantDownloadUrl.value = 'http://localhost:8000' + res.download_url
-        merchantExportState.value = 'done'
-      } else if (res.status === 'FAILURE' || res.status === 'REVOKED') {
-        clearInterval(pollInterval)
-        merchantExportState.value = 'idle'
-        alert('Task failed to complete.')
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }, 1000)
 }
 </script>

@@ -1,56 +1,60 @@
 <template>
-  <div class="animate-fade-in max-w-4xl mx-auto space-y-6">
+  <div class="animate-fade-in max-w-4xl mx-auto space-y-8 py-2 pb-10">
+    <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-xl font-black uppercase tracking-tight" style="color: var(--wp-navy);">Profil Admin</h1>
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Kelola informasi akun dan kata sandi Anda</p>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+          Profil Administrator
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola informasi identitas akun dan keamanan kata sandi Anda</p>
       </div>
     </div>
 
     <!-- Profile Info Card -->
-    <div class="bg-white dark:bg-slate-800 border border-[var(--wp-border)] rounded shadow-sm overflow-hidden">
-      <div class="p-6 md:p-8 border-b border-[var(--wp-border)] bg-slate-50 dark:bg-slate-800/50 flex flex-col md:flex-row items-center gap-6">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl shadow-xs overflow-hidden">
+      <div class="p-6 md:p-8 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/70 dark:bg-slate-900/50 flex flex-col md:flex-row items-center gap-6">
         <!-- Profile Picture Area -->
         <div class="relative group flex flex-col items-center gap-3">
           <div class="relative">
-            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-slate-700 shadow-md bg-white">
-              <img :src="photoPreview || user?.photo_profile || logoSrc" alt="Profile" class="w-full h-full object-cover p-2" />
+            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-md bg-white dark:bg-slate-700 flex items-center justify-center">
+              <img :src="photoPreview || user?.photo_profile || logoSrc" alt="Profile" class="w-full h-full object-cover" />
             </div>
             <!-- Loading overlay -->
-            <div v-if="photoUploading" class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-              <Icon name="heroicons:arrow-path" class="w-6 h-6 text-white animate-spin" />
+            <div v-if="photoUploading" class="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+              <Icon name="lucide:loader-2" class="w-6 h-6 text-white animate-spin" />
             </div>
           </div>
           <!-- Photo upload controls -->
           <div class="flex flex-col items-center gap-2">
             <input type="file" accept="image/*" @change="handlePhotoChange" class="hidden" ref="photoInput" />
             <div class="flex gap-2">
-              <button type="button" @click="photoInput?.click()" class="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded border border-[var(--wp-border)] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                <Icon name="heroicons:photo" class="w-3.5 h-3.5" />
-                {{ selectedFile ? 'Ganti Foto' : 'Pilih Foto' }}
-              </button>
-              <button v-if="selectedFile" type="button" @click="uploadPhoto" :disabled="photoUploading" class="inline-flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded text-white transition-colors" style="background: var(--wp-gold);">
-                <Icon name="heroicons:check" class="w-3.5 h-3.5" />
-                {{ photoUploading ? 'Mengupload...' : 'Simpan Foto' }}
-              </button>
+              <Button type="button" variant="outline" size="sm" @click="photoInput?.click()" class="text-xs h-8 px-3 rounded-lg gap-1.5">
+                <Icon name="lucide:image" class="w-3.5 h-3.5" />
+                <span>{{ selectedFile ? 'Ganti Foto' : 'Pilih Foto' }}</span>
+              </Button>
+              <Button v-if="selectedFile" type="button" size="sm" @click="uploadPhoto" :disabled="photoUploading" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-3 rounded-lg gap-1.5 shadow-xs">
+                <Icon v-if="photoUploading" name="lucide:loader-2" class="w-3.5 h-3.5 animate-spin" />
+                <Icon v-else name="lucide:check" class="w-3.5 h-3.5" />
+                <span>{{ photoUploading ? 'Mengunggah...' : 'Simpan Foto' }}</span>
+              </Button>
             </div>
-            <p v-if="photoUploadError" class="text-red-500 text-[10px] font-medium">{{ photoUploadError }}</p>
-            <p v-if="photoSuccessMsg" class="text-green-600 text-[10px] font-medium">{{ photoSuccessMsg }}</p>
+            <p v-if="photoUploadError" class="text-red-500 text-xs font-medium">{{ photoUploadError }}</p>
+            <p v-if="photoSuccessMsg" class="text-emerald-600 dark:text-emerald-400 text-xs font-medium">{{ photoSuccessMsg }}</p>
           </div>
         </div>
 
-        <div class="text-center md:text-left flex-1">
-          <h2 class="text-2xl font-black text-[var(--wp-navy)] dark:text-white">{{ user?.name }}</h2>
-          <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Administrator Utama</p>
-          <div class="mt-3 flex flex-wrap gap-2 justify-center md:justify-start">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
-              <Icon name="heroicons:envelope" class="w-3.5 h-3.5" />
-              {{ user?.email }}
-            </span>
-            <span v-if="user?.phone_number" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-              <Icon name="heroicons:phone" class="w-3.5 h-3.5" />
-              {{ user?.phone_number }}
-            </span>
+        <div class="text-center md:text-left flex-1 space-y-2">
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ user?.name }}</h2>
+          <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Super Administrator</p>
+          <div class="pt-1 flex flex-wrap gap-2 justify-center md:justify-start">
+            <Badge variant="outline" class="gap-1.5 text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              <Icon name="lucide:mail" class="w-3.5 h-3.5 text-slate-400" />
+              <span>{{ user?.email }}</span>
+            </Badge>
+            <Badge v-if="user?.phone_number" variant="outline" class="gap-1.5 text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              <Icon name="lucide:phone" class="w-3.5 h-3.5 text-slate-400" />
+              <span>{{ user?.phone_number }}</span>
+            </Badge>
           </div>
         </div>
       </div>
@@ -59,72 +63,72 @@
       <div class="p-6 md:p-8">
         <form @submit.prevent="handleUpdateProfile" class="space-y-5">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="space-y-1.5">
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Nama Lengkap</label>
-              <input v-model="form.name" type="text" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required />
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Lengkap</label>
+              <input v-model="form.name" type="text" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" required />
             </div>
-            <div class="space-y-1.5">
-              <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Nomor Telepon</label>
-              <input v-model="form.phone_number" type="text" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" />
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nomor Telepon</label>
+              <input v-model="form.phone_number" type="text" class="w-full px-3 py-2 text-xs font-mono border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" />
             </div>
           </div>
 
           <!-- Error / Success Messages -->
-          <div v-if="errorMsg" class="p-3 bg-rose-50 text-rose-600 text-xs font-bold rounded border border-rose-100 flex items-center gap-2">
-            <Icon name="heroicons:exclamation-circle" class="w-4 h-4" />
+          <div v-if="errorMsg" class="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-medium rounded-lg border border-red-200 dark:border-red-900/50 flex items-center gap-2">
+            <Icon name="lucide:alert-circle" class="w-4 h-4 shrink-0" />
             <span>{{ errorMsg }}</span>
           </div>
-          <div v-if="successMsg" class="p-3 bg-emerald-50 text-emerald-600 text-xs font-bold rounded border border-emerald-100 flex items-center gap-2">
-            <Icon name="heroicons:check-circle" class="w-4 h-4" />
+          <div v-if="successMsg" class="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-xs font-medium rounded-lg border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-2">
+            <Icon name="lucide:check-circle-2" class="w-4 h-4 shrink-0" />
             <span>{{ successMsg }}</span>
           </div>
 
-          <div class="pt-4 flex justify-end">
-            <button type="submit" :disabled="isSubmitting" class="px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark)); border-radius: 4px;">
-              <Icon v-if="isSubmitting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <Icon v-else name="heroicons:check" class="w-4 h-4" />
+          <div class="pt-2 flex justify-end">
+            <Button type="submit" :disabled="isSubmitting" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg px-5 shadow-xs flex items-center gap-2">
+              <Icon v-if="isSubmitting" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+              <Icon v-else name="lucide:check" class="w-4 h-4" />
               <span>{{ isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan' }}</span>
-            </button>
+            </Button>
           </div>
         </form>
       </div>
     </div>
 
     <!-- Change Password Card -->
-    <div class="bg-white dark:bg-slate-800 border border-[var(--wp-border)] rounded shadow-sm overflow-hidden mt-6">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl shadow-xs overflow-hidden">
       <div class="p-6 md:p-8">
-        <h2 class="text-lg font-bold text-[var(--wp-navy)] dark:text-white mb-1">Ganti Password</h2>
-        <p class="text-xs text-slate-500 mb-6">Pastikan akun Anda aman dengan menggunakan kata sandi yang kuat.</p>
+        <h2 class="text-base font-bold text-slate-900 dark:text-slate-100 mb-0.5">Keamanan & Ganti Password</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">Pastikan akun Anda aman dengan menggunakan kata sandi kombinasi huruf dan angka yang kuat.</p>
         
         <form @submit.prevent="handleChangePassword" class="space-y-4 max-w-xl">
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Password Lama</label>
-            <input v-model="passForm.old_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required />
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password Lama</label>
+            <input v-model="passForm.old_password" type="password" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" required />
           </div>
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Password Baru</label>
-            <input v-model="passForm.new_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required minlength="8" />
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Password Baru</label>
+            <input v-model="passForm.new_password" type="password" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" required minlength="8" />
           </div>
-          <div class="space-y-1.5">
-            <label class="block text-[10px] font-bold uppercase tracking-widest text-slate-500">Konfirmasi Password Baru</label>
-            <input v-model="passForm.confirm_password" type="password" class="w-full px-3 py-2 text-sm border border-[var(--wp-border)] bg-[var(--wp-bg)] text-[var(--wp-text)] rounded focus:outline-none focus:border-[var(--wp-gold)] transition-colors" required minlength="8" />
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Konfirmasi Password Baru</label>
+            <input v-model="passForm.confirm_password" type="password" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" required minlength="8" />
           </div>
 
-          <div v-if="passErrorMsg" class="p-3 bg-rose-50 text-rose-600 text-xs font-bold rounded border border-rose-100 flex items-center gap-2">
-            <Icon name="heroicons:exclamation-circle" class="w-4 h-4" />
+          <div v-if="passErrorMsg" class="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-medium rounded-lg border border-red-200 dark:border-red-900/50 flex items-center gap-2">
+            <Icon name="lucide:alert-circle" class="w-4 h-4 shrink-0" />
             <span>{{ passErrorMsg }}</span>
           </div>
-          <div v-if="passSuccessMsg" class="p-3 bg-emerald-50 text-emerald-600 text-xs font-bold rounded border border-emerald-100 flex items-center gap-2">
-            <Icon name="heroicons:check-circle" class="w-4 h-4" />
+          <div v-if="passSuccessMsg" class="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-xs font-medium rounded-lg border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-2">
+            <Icon name="lucide:check-circle-2" class="w-4 h-4 shrink-0" />
             <span>{{ passSuccessMsg }}</span>
           </div>
 
           <div class="pt-2">
-            <button type="submit" :disabled="isChangingPassword" class="px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center md:justify-start gap-2" style="background: var(--wp-navy); border-radius: 4px;">
-              <Icon v-if="isChangingPassword" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-              <Icon v-else name="heroicons:key" class="w-4 h-4" />
+            <Button type="submit" :disabled="isChangingPassword" class="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg px-5 shadow-xs flex items-center gap-2">
+              <Icon v-if="isChangingPassword" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+              <Icon v-else name="lucide:key" class="w-4 h-4" />
               <span>{{ isChangingPassword ? 'Memproses...' : 'Perbarui Password' }}</span>
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -139,7 +143,6 @@ import { useRouter } from 'vue-router'
 import { api } from '~/utils/api'
 
 const { user, fetchMe, updateProfile } = useAuth()
-const config = useRuntimeConfig()
 const router = useRouter()
 const colorMode = useColorMode()
 
@@ -174,7 +177,6 @@ const isChangingPassword = ref(false)
 const passErrorMsg = ref('')
 const passSuccessMsg = ref('')
 
-
 onMounted(async () => {
   if (!user.value) {
     try {
@@ -205,12 +207,9 @@ const handleUpdateProfile = async () => {
   try {
     await updateProfile(form.value)
     successMsg.value = 'Profil berhasil diperbarui!'
-    
-    // Clear success message after 3 seconds
     setTimeout(() => {
       successMsg.value = ''
     }, 3000)
-
   } catch (error: any) {
     errorMsg.value = error.message || 'Terjadi kesalahan sistem'
   } finally {
@@ -218,7 +217,6 @@ const handleUpdateProfile = async () => {
   }
 }
 
-// Photo upload handlers
 const handlePhotoChange = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
@@ -249,7 +247,6 @@ const uploadPhoto = async () => {
   try {
     const formData = new FormData()
     formData.append('file', selectedFile.value)
-    // Adjust api endpoint according to your backend for admin profile picture
     const result = await api.post('/stocks/upload-image', formData, { headers: {} as any })
     await updateProfile({ photo_profile: result.url })
     photoSuccessMsg.value = 'Foto profil berhasil diperbarui!'

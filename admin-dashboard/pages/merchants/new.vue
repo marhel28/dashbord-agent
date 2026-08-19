@@ -1,103 +1,114 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-10">
+  <div class="space-y-8 animate-fade-in max-w-4xl mx-auto py-2 pb-10">
     <!-- Header -->
     <div class="flex items-center gap-4">
-      <NuxtLink to="/merchants" class="p-2 border rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white">
-        <Icon name="heroicons:arrow-left" class="w-5 h-5" />
+      <NuxtLink to="/merchants" class="p-2 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors bg-white dark:bg-slate-900 shadow-2xs">
+        <Icon name="lucide:arrow-left" class="w-5 h-5" />
       </NuxtLink>
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight text-slate-800">Tambah Pedagang Baru</h1>
-        <p class="text-sm mt-1 text-slate-500">Daftarkan merchant baru secara manual sebagai admin.</p>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+          Tambah Pedagang Baru
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Daftarkan merchant baru secara manual sebagai admin platform.</p>
       </div>
     </div>
 
     <!-- Success result (one-time temp password) -->
-    <div v-if="created" class="bg-white border border-emerald-200 rounded-2xl p-6 shadow-sm space-y-4">
+    <div v-if="created" class="bg-white dark:bg-slate-800 border border-emerald-200/80 dark:border-emerald-900/60 rounded-xl p-6 sm:p-8 shadow-xs space-y-6">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-          <Icon name="heroicons:check-circle" class="w-5 h-5 text-emerald-600" />
+        <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
+          <Icon name="lucide:check-circle" class="w-6 h-6" />
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800">Merchant Berhasil Dibuat</h3>
-          <p class="text-sm text-slate-500">Bagikan kata sandi sementara ke merchant.</p>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Merchant Berhasil Didaftarkan</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Bagikan kredensial dan kata sandi sementara ke pemilik toko.</p>
         </div>
       </div>
 
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-        <p class="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">Penting!</p>
-        <p class="text-sm text-amber-800">Simpan kata sandi di bawah ini. Kata sandi <strong>tidak akan ditampilkan lagi</strong> setelah Anda meninggalkan halaman ini.</p>
+      <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/40 rounded-xl p-4">
+        <p class="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+          <Icon name="lucide:alert-triangle" class="w-4 h-4 text-amber-600" />
+          <span>Pemberitahuan Kunci Keamanan</span>
+        </p>
+        <p class="text-xs text-amber-700 dark:text-amber-400">Simpan kata sandi di bawah ini. Kata sandi <strong>tidak akan ditampilkan lagi</strong> setelah Anda meninggalkan halaman ini.</p>
       </div>
 
       <div class="space-y-3">
-        <div class="flex items-center justify-between border-b pb-3">
-          <span class="text-sm text-slate-500">Email</span>
-          <span class="text-sm font-semibold text-slate-800">{{ created.email }}</span>
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-3">
+          <span class="text-xs text-slate-500 dark:text-slate-400">Email Akun</span>
+          <span class="text-xs font-bold text-slate-900 dark:text-slate-100">{{ created.email }}</span>
         </div>
-        <div class="flex items-center justify-between border-b pb-3">
-          <span class="text-sm text-slate-500">Kata Sandi Sementara</span>
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-3">
+          <span class="text-xs text-slate-500 dark:text-slate-400">Kata Sandi Sementara</span>
           <div class="flex items-center gap-2">
-            <code class="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg tracking-wide">{{ created.temp_password }}</code>
-            <button @click="copyPassword" class="px-3 py-1 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1">
-              <Icon name="heroicons:clipboard" class="w-3.5 h-3.5" />
-              {{ copied ? 'Tersalin!' : 'Salin' }}
-            </button>
+            <code class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-200/60 dark:border-emerald-900/40">{{ created.temp_password }}</code>
+            <Button size="sm" variant="outline" @click="copyPassword" class="text-xs h-8 px-3 rounded-lg gap-1">
+              <Icon :name="copied ? 'lucide:check' : 'lucide:copy'" class="w-3.5 h-3.5" />
+              <span>{{ copied ? 'Tersalin!' : 'Salin' }}</span>
+            </Button>
           </div>
         </div>
       </div>
 
       <div class="flex gap-3 pt-2">
-        <NuxtLink :to="`/merchants/${created.uuid}`" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2">
-          <Icon name="heroicons:arrow-right" class="w-4 h-4" />
-          Lihat Detail Merchant
+        <NuxtLink :to="`/merchants/${created.uuid}`">
+          <Button class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg gap-2 shadow-xs">
+            <span>Buka Profil Pedagang</span>
+            <Icon name="lucide:arrow-right" class="w-4 h-4" />
+          </Button>
         </NuxtLink>
-        <NuxtLink to="/merchants" class="px-5 py-2 text-sm font-bold rounded-xl border bg-white text-slate-700 hover:bg-slate-50 transition-colors">
-          Kembali ke Daftar
+        <NuxtLink to="/merchants">
+          <Button variant="outline" class="text-xs rounded-lg">
+            Kembali ke Daftar
+          </Button>
         </NuxtLink>
       </div>
     </div>
 
     <!-- Create form -->
-    <form v-else @submit.prevent="createMerchant" class="bg-white border rounded-2xl p-6 shadow-sm max-w-2xl space-y-5">
+    <form v-else @submit.prevent="createMerchant" class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-6 sm:p-8 shadow-xs space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Pemilik <span class="text-red-500">*</span></label>
-          <input v-model="form.name" type="text" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="cth: Budi Santoso" />
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Pemilik <span class="text-red-500">*</span></label>
+          <input v-model="form.name" type="text" required class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 outline-none transition-all" placeholder="cth: Budi Santoso" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Toko <span class="text-red-500">*</span></label>
-          <input v-model="form.store_name" type="text" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="cth: Toko Berkah" />
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nama Toko <span class="text-red-500">*</span></label>
+          <input v-model="form.store_name" type="text" required class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 outline-none transition-all" placeholder="cth: Toko Berkah Jaya" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Email <span class="text-red-500">*</span></label>
-          <input v-model="form.email" type="email" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="cth: budi@example.com" />
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Email <span class="text-red-500">*</span></label>
+          <input v-model="form.email" type="email" required class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 outline-none transition-all" placeholder="cth: budi@gmail.com" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Telepon <span class="text-red-500">*</span></label>
-          <input v-model="form.phone_number" type="tel" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="cth: 081234567890" />
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nomor Telepon <span class="text-red-500">*</span></label>
+          <input v-model="form.phone_number" type="tel" required class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 outline-none transition-all font-mono" placeholder="cth: 081234567890" />
         </div>
         <div class="md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label>
-          <select v-model="form.category_store" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Kategori Usaha</label>
+          <select v-model="form.category_store" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none">
             <option v-for="cat in STORE_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
           </select>
         </div>
         <div class="md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Alamat <span class="text-red-500">*</span></label>
-          <textarea v-model="form.address" rows="2" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Alamat lengkap toko"></textarea>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Alamat Fisik Lengkap <span class="text-red-500">*</span></label>
+          <textarea v-model="form.address" rows="2" required class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" placeholder="Alamat lengkap toko / warung..."></textarea>
         </div>
         <div class="md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Deskripsi</label>
-          <textarea v-model="form.description" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Deskripsi singkat toko (opsional)"></textarea>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">Deskripsi Singkat</label>
+          <textarea v-model="form.description" rows="2" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" placeholder="Deskripsi mengenai produk & spesialisasi (opsional)"></textarea>
         </div>
       </div>
 
-      <div class="flex items-center gap-3 pt-2">
-        <button type="submit" :disabled="saving" class="px-5 py-2 text-sm font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2">
-          <Icon v-if="saving" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-          {{ saving ? 'Membuat...' : 'Buat Merchant' }}
-        </button>
-        <NuxtLink to="/merchants" class="px-5 py-2 text-sm font-bold rounded-xl border bg-white text-slate-700 hover:bg-slate-50 transition-colors">
-          Batal
+      <div class="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-700/60">
+        <Button type="submit" :disabled="saving" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg px-5 shadow-xs flex items-center gap-2">
+          <Icon v-if="saving" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+          <span>{{ saving ? 'Mendaftarkan...' : 'Daftarkan Pedagang' }}</span>
+        </Button>
+        <NuxtLink to="/merchants">
+          <Button variant="outline" class="text-xs rounded-lg">
+            Batal
+          </Button>
         </NuxtLink>
       </div>
     </form>

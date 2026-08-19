@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { cn } from '~/utils/cn'
-
-const props = defineProps<{
-  class?: string
-}>()
-
 import { defineOptions } from 'vue'
 defineOptions({ name: 'UiSeparator' })
 
+const props = defineProps<{
+  class?: string
+  orientation?: 'horizontal' | 'vertical'
+  decorative?: boolean
+}>()
 
+const orientation = props.orientation ?? 'horizontal'
+const decorative = props.decorative ?? true
 </script>
 
 <template>

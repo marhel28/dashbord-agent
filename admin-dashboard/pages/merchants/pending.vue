@@ -1,85 +1,120 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
+  <div class="space-y-8 animate-fade-in max-w-7xl mx-auto py-2 pb-10">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-extrabold tracking-tight text-slate-800">Menunggu Verifikasi</h1>
-        <p class="text-sm mt-1 text-slate-500">Tinjau dan setujui pedagang baru sebelum mereka dapat berjualan.</p>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+          Menunggu Verifikasi
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Tinjau dan setujui pedagang baru sebelum mereka dapat mulai bertransaksi di ekosistem.
+        </p>
+      </div>
+
+      <div>
+        <Button variant="outline" size="sm" class="text-xs h-9 gap-1.5 rounded-lg" @click="fetchMerchants">
+          <Icon name="lucide:refresh-cw" class="w-3.5 h-3.5" :class="{ 'animate-spin': loading }" />
+          <span>Segarkan Data</span>
+        </Button>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white border border-[var(--wp-border)] rounded-sm shadow-sm overflow-hidden flex flex-col">
-      <div class="p-4 border-b border-[var(--wp-border)] flex justify-between items-center bg-slate-50/50">
-        <h2 class="font-bold text-[var(--wp-navy)] text-sm">Menunggu Persetujuan</h2>
-        <button @click="fetchMerchants" class="text-slate-500 hover:text-[var(--wp-navy)] p-2 rounded-sm transition-colors">
-          <Icon name="heroicons:arrow-path" class="w-5 h-5" />
-        </button>
+    <!-- Table Container -->
+    <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl shadow-xs overflow-hidden flex flex-col">
+      <div class="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-700/60 flex justify-between items-center bg-slate-50/70 dark:bg-slate-900/50">
+        <div class="flex items-center gap-2">
+          <h2 class="font-bold text-slate-900 dark:text-slate-100 text-sm">Antrean Persetujuan</h2>
+          <Badge variant="secondary" class="font-mono text-[10px]">{{ total }} Menunggu</Badge>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-slate-600">
-          <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 font-bold border-b border-[var(--wp-border)] tracking-wider">
+        <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+          <thead class="bg-slate-50 dark:bg-slate-900/80 text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700/60 tracking-wider">
             <tr>
-              <th class="px-5 py-3">Pedagang</th>
-              <th class="px-5 py-3">Kategori</th>
-              <th class="px-5 py-3">Kontak</th>
-              <th class="px-5 py-3">Tanggal Terdaftar</th>
-              <th class="px-5 py-3 text-right">Aksi</th>
+              <th class="px-5 py-3.5">Pedagang</th>
+              <th class="px-5 py-3.5">Kategori</th>
+              <th class="px-5 py-3.5">Kontak</th>
+              <th class="px-5 py-3.5">Tanggal Terdaftar</th>
+              <th class="px-5 py-3.5 text-right">Tindakan</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-if="loading" class="border-b border-[var(--wp-border)]">
-              <td colspan="5" class="px-5 py-12 text-center text-slate-400">
-                <Icon name="heroicons:arrow-path" class="w-8 h-8 animate-spin mx-auto mb-2" />
-                <p>Memuat pedagang yang tertunda...</p>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700/60">
+            <tr v-if="loading">
+              <td colspan="5" class="px-5 py-16 text-center text-slate-400">
+                <Icon name="lucide:loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600 dark:text-emerald-400" />
+                <p class="font-medium">Memuat pedagang yang tertunda...</p>
               </td>
             </tr>
-            <tr v-else-if="merchants.length === 0" class="border-b border-[var(--wp-border)]">
-              <td colspan="5" class="px-5 py-12 text-center text-slate-400">
-                <Icon name="heroicons:check-circle" class="w-12 h-12 mx-auto mb-3" style="color: var(--wp-gold); opacity: 0.8;" />
-                <p class="font-bold text-[var(--wp-navy)]">Semua sudah selesai!</p>
-                <p class="text-xs mt-1">Tidak ada pedagang yang menunggu verifikasi.</p>
+            <tr v-else-if="merchants.length === 0">
+              <td colspan="5" class="px-5 py-16 text-center text-slate-400">
+                <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-3">
+                  <Icon name="lucide:check-circle-2" class="w-6 h-6" />
+                </div>
+                <p class="font-bold text-slate-900 dark:text-slate-100 text-sm">Semua antrean bersih!</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tidak ada pedagang yang sedang menunggu verifikasi.</p>
               </td>
             </tr>
-            <tr v-for="m in merchants" :key="m.uuid" class="border-b border-[var(--wp-border)] hover:bg-slate-50/50 transition-colors">
+            <tr v-for="m in merchants" :key="m.uuid" class="hover:bg-slate-50/60 dark:hover:bg-slate-700/30 transition-colors">
               <td class="px-5 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-sm bg-slate-200 shrink-0 overflow-hidden">
-                    <img v-if="m.photo_profile" :src="m.photo_profile" class="w-full h-full object-cover" />
-                    <div v-else class="w-full h-full flex items-center justify-center text-white font-bold uppercase" style="background: var(--wp-navy);">{{ m.name.charAt(0) }}</div>
-                  </div>
+                  <Avatar class="h-9 w-9 shrink-0">
+                    <AvatarImage v-if="m.photo_profile" :src="m.photo_profile" alt="Store" />
+                    <AvatarFallback class="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 font-bold uppercase text-xs">
+                      {{ m.name.charAt(0) }}
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
-                    <p class="font-bold text-[var(--wp-navy)]">{{ m.store_name || m.name }}</p>
-                    <p class="text-xs text-slate-500">{{ m.store_name ? m.name : 'Tidak Ada Nama Toko' }}</p>
+                    <p class="font-bold text-slate-900 dark:text-slate-100 text-xs">{{ m.store_name || m.name }}</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ m.store_name ? m.name : 'Nama Pemilik Belum Diatur' }}</p>
                   </div>
                 </div>
               </td>
               <td class="px-5 py-4 font-medium">
-                <span class="px-2.5 py-1 rounded text-[10px] font-bold tracking-wider" style="background: rgba(212,168,67,0.1); color: var(--wp-gold-dark);">
+                <Badge variant="outline" class="text-[10px] uppercase font-bold border-emerald-500/20 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400">
                   {{ m.category_store || 'TANPA KATEGORI' }}
-                </span>
+                </Badge>
               </td>
-              <td class="px-5 py-4 text-xs space-y-1">
-                <div class="flex items-center gap-2"><Icon name="heroicons:envelope" class="w-3 h-3 text-slate-400"/> {{ m.email }}</div>
-                <div class="flex items-center gap-2" v-if="m.phone_number"><Icon name="heroicons:phone" class="w-3 h-3 text-slate-400"/> {{ m.phone_number }}</div>
+              <td class="px-5 py-4 text-xs space-y-0.5 font-mono">
+                <div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <Icon name="lucide:mail" class="w-3.5 h-3.5 text-slate-400 shrink-0"/>
+                  <span>{{ m.email }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-slate-600 dark:text-slate-300" v-if="m.phone_number">
+                  <Icon name="lucide:phone" class="w-3.5 h-3.5 text-slate-400 shrink-0"/>
+                  <span>{{ m.phone_number }}</span>
+                </div>
               </td>
-              <td class="px-5 py-4 whitespace-nowrap text-xs">
+              <td class="px-5 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
                 {{ new Date(m.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
               </td>
               <td class="px-5 py-4 text-right">
-                <div class="flex justify-end items-center gap-2">
-                  <NuxtLink :to="`/merchants/${m.uuid}`" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Lihat Detail">
-                    <Icon name="heroicons:eye" class="w-4 h-4" />
+                <div class="flex justify-end items-center gap-1.5">
+                  <NuxtLink :to="`/merchants/${m.uuid}`">
+                    <Button variant="ghost" size="sm" class="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100" title="Lihat Detail">
+                      <Icon name="lucide:eye" class="w-4 h-4" />
+                    </Button>
                   </NuxtLink>
-                  <button @click="rejectMerchant(m.uuid)" :disabled="actionLoading === m.uuid" class="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50" title="Tolak">
-                    <Icon name="heroicons:x-mark" class="w-4 h-4" />
-                  </button>
-                  <button @click="approveMerchant(m.uuid)" :disabled="actionLoading === m.uuid" class="px-3 py-1.5 text-xs font-bold text-white shadow-sm rounded transition-colors disabled:opacity-50 flex items-center gap-1" style="background: var(--wp-navy);">
-                    <Icon v-if="actionLoading === m.uuid" name="heroicons:arrow-path" class="w-3 h-3 animate-spin" />
-                    <Icon v-else name="heroicons:check" class="w-3 h-3" />
-                    Setujui
-                  </button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    @click="rejectMerchant(m.uuid)" 
+                    :disabled="actionLoading === m.uuid" 
+                    class="h-8 w-8 p-0 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" 
+                    title="Tolak"
+                  >
+                    <Icon name="lucide:x" class="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    @click="approveMerchant(m.uuid)" 
+                    :disabled="actionLoading === m.uuid" 
+                    class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold h-8 px-3 rounded-lg shadow-xs flex items-center gap-1.5"
+                  >
+                    <Icon v-if="actionLoading === m.uuid" name="lucide:loader-2" class="w-3 h-3 animate-spin" />
+                    <Icon v-else name="lucide:check" class="w-3 h-3" />
+                    <span>Setujui</span>
+                  </Button>
                 </div>
               </td>
             </tr>
@@ -88,17 +123,17 @@
       </div>
 
       <!-- Pagination -->
-      <div class="p-4 border-t flex items-center justify-between bg-white">
-        <p class="text-xs text-slate-500">
-          Menampilkan <span class="font-bold">{{ merchants.length }}</span> dari <span class="font-bold">{{ total }}</span> pedagang tertunda
+      <div class="p-4 border-t border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between bg-slate-50/40 dark:bg-slate-900/40">
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Menampilkan <span class="font-bold text-slate-900 dark:text-slate-100">{{ merchants.length }}</span> dari <span class="font-bold text-slate-900 dark:text-slate-100">{{ total }}</span> pedagang tertunda
         </p>
         <div class="flex gap-2">
-          <button @click="prevPage" :disabled="page === 1" class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition-colors">
+          <Button variant="outline" size="sm" @click="prevPage" :disabled="page === 1" class="text-xs rounded-lg">
             Sebelumnya
-          </button>
-          <button @click="nextPage" :disabled="page >= totalPages" class="px-3 py-1.5 text-xs font-bold border rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:hover:bg-white transition-colors">
+          </Button>
+          <Button variant="outline" size="sm" @click="nextPage" :disabled="page >= totalPages" class="text-xs rounded-lg">
             Selanjutnya
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -137,7 +172,6 @@ const approveMerchant = async (uuid: string) => {
   actionLoading.value = uuid
   try {
     await api.post(`/admin/merchants/${uuid}/approve`, {})
-    // Remove from local list or refetch
     fetchMerchants()
   } catch (err) {
     console.error("Failed to approve", err)

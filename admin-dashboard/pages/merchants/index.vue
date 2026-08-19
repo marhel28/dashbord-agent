@@ -1,311 +1,305 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-10">
+  <div class="space-y-8 animate-fade-in max-w-7xl mx-auto py-2 pb-12">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black tracking-tight" style="color: var(--wp-navy);">Database Pedagang</h1>
-        <p class="text-sm mt-1 text-slate-500 font-medium">Kelola, cari, dan ekspor semua data pedagang yang terdaftar.</p>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+          Database Pedagang
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Kelola, cari, dan ekspor semua data pedagang yang terdaftar di ekosistem.
+        </p>
       </div>
+
       <div class="flex items-center gap-3">
-        <button @click="exportCSV" :disabled="exporting" class="px-5 py-2 text-xs font-bold rounded-xl text-white transition-transform hover:scale-105 flex items-center gap-2 disabled:opacity-50"
-          style="background: linear-gradient(135deg, var(--wp-gold), var(--wp-gold-dark));">
-          <Icon v-if="exporting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-          <Icon v-else name="heroicons:arrow-down-tray" class="w-4 h-4" />
-          {{ exporting ? 'Mengekspor...' : 'Ekspor CSV' }}
-        </button>
+        <NuxtLink to="/merchants/new">
+          <Button class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs h-9 px-4 shadow-xs shadow-emerald-900/20 flex items-center gap-2">
+            <Icon name="lucide:user-plus" class="w-4 h-4" />
+            <span>+ Tambah Pedagang</span>
+          </Button>
+        </NuxtLink>
+        <Button 
+          @click="exportCSV" 
+          :disabled="exporting" 
+          variant="outline"
+          class="rounded-lg text-xs h-9 px-4 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 disabled:opacity-50"
+        >
+          <Icon v-if="exporting" name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+          <Icon v-else name="lucide:download" class="w-4 h-4" />
+          <span>{{ exporting ? 'Mengekspor...' : 'Ekspor CSV' }}</span>
+        </Button>
       </div>
     </div>
 
-    <!-- Advanced Data Grid (AG Grid) -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col h-[720px]">
-      <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <!-- Native Table Container -->
+    <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl shadow-xs overflow-hidden flex flex-col">
+      <!-- Search & Filters -->
+      <div class="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-700/60 bg-slate-50/70 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="text-base font-bold text-slate-900 dark:text-white">Daftar Utama Pedagang</h2>
-            <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded-full dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
-              Live Manticore Search
-            </span>
+            <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Daftar Utama Pedagang</h2>
+            <Badge variant="outline" class="text-[10px] font-mono border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40">
+              {{ totalCount }} Pedagang
+            </Badge>
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola dan telusuri seluruh mitra pedagang terdaftar secara presisi.</p>
         </div>
+
         <div class="flex items-center gap-3">
           <div class="relative">
-            <Icon name="heroicons:magnifying-glass" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input type="text" v-model="gridSearch" @focus="showSuggestions = true" @blur="hideSuggestionsDelay" placeholder="Cari nama toko, pemilik, telepon..." class="pl-9 pr-3 py-2 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-lg w-72 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all shadow-sm" />
-            
-            <!-- Suggestions Dropdown -->
-            <div v-if="showSuggestions && suggestions.length > 0" class="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden z-50">
-              <div class="px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700/50">Rekomendasi Pencarian</div>
-              <ul>
-                <li v-for="s in suggestions" :key="s" @click="applySuggestion(s)" class="px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer flex items-center gap-2 transition-colors">
-                  <Icon name="heroicons:sparkles" class="w-3.5 h-3.5 text-amber-500" />
-                  {{ s }}
-                </li>
-              </ul>
-            </div>
+            <Icon name="lucide:search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input 
+              type="text" 
+              v-model="gridSearch" 
+              placeholder="Cari nama toko, pemilik, telepon..." 
+              class="pl-9 pr-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg w-64 sm:w-72 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all shadow-2xs" 
+            />
           </div>
-          <button @click="fetchMerchants" class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm transition-colors flex items-center justify-center" title="Refresh Data">
-            <Icon name="heroicons:arrow-path" class="w-4 h-4" :class="{'animate-spin': loading}" />
-          </button>
+
+          <Button variant="outline" size="sm" class="rounded-lg h-9 w-9 p-0 border-slate-200 dark:border-slate-700" @click="fetchMerchants" title="Refresh Data">
+            <Icon name="lucide:refresh-cw" class="w-4 h-4" :class="{'animate-spin': loading}" />
+          </Button>
         </div>
       </div>
       
-      <div class="flex-1 w-full h-full p-3 relative bg-slate-50/30 dark:bg-slate-900/40">
-        <div v-if="loading" class="absolute inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs z-10 flex items-center justify-center">
-          <div class="bg-white dark:bg-slate-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 border border-slate-200 dark:border-slate-700">
-            <Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-amber-500" />
-            <span class="text-xs font-bold text-slate-700 dark:text-slate-200">Memuat Data Pedagang...</span>
-          </div>
+      <!-- Table Body -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+          <thead class="bg-slate-50/90 dark:bg-slate-900/80 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-200/80 dark:border-slate-700/60 tracking-wider">
+            <tr>
+              <th class="px-5 py-3.5">Nama Toko & Email</th>
+              <th class="px-5 py-3.5">Pemilik</th>
+              <th class="px-5 py-3.5">Kategori</th>
+              <th class="px-5 py-3.5">Status</th>
+              <th class="px-5 py-3.5">Kontak</th>
+              <th class="px-5 py-3.5 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700/60">
+            <tr v-if="loading" v-for="i in 5" :key="i">
+              <td colspan="6" class="px-5 py-4">
+                <Skeleton class="h-8 w-full rounded" />
+              </td>
+            </tr>
+
+            <tr v-else-if="paginatedMerchants.length === 0">
+              <td colspan="6" class="px-5 py-12 text-center text-slate-400">
+                <Icon name="lucide:search-x" class="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <span>Tidak ada pedagang yang cocok dengan kata kunci pencarian.</span>
+              </td>
+            </tr>
+
+            <tr 
+              v-else 
+              v-for="m in paginatedMerchants" 
+              :key="m.uuid || m.id" 
+              class="hover:bg-slate-50/70 dark:hover:bg-slate-700/25 transition-colors cursor-pointer"
+              @click="navigateTo(`/merchants/${m.uuid || m.id}`)"
+            >
+              <!-- Nama Toko -->
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-3">
+                  <div 
+                    class="w-9 h-9 rounded-lg flex items-center justify-center font-mono font-bold text-xs shrink-0 border"
+                    :style="{ 
+                      backgroundColor: getAvatarColor(m.store_name || m.name).bg, 
+                      color: getAvatarColor(m.store_name || m.name).text, 
+                      borderColor: getAvatarColor(m.store_name || m.name).border 
+                    }"
+                  >
+                    {{ getInitials(m.store_name || m.name) }}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-bold text-slate-900 dark:text-slate-100 truncate text-[13px]">
+                      {{ m.store_name || m.name || 'Merchant Tanpa Nama' }}
+                    </div>
+                    <div class="text-[11px] text-slate-400 truncate">
+                      {{ m.email || m.phone_number || 'Belum ada email' }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Pemilik -->
+              <td class="px-5 py-3.5 font-medium text-slate-800 dark:text-slate-200">
+                {{ m.name || '-' }}
+              </td>
+
+              <!-- Kategori -->
+              <td class="px-5 py-3.5">
+                <span v-if="m.category_store" class="inline-block px-2.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] uppercase rounded border border-emerald-500/20">
+                  {{ m.category_store }}
+                </span>
+                <span v-else class="text-slate-400 italic text-[11px]">Tanpa Kategori</span>
+              </td>
+
+              <!-- Status -->
+              <td class="px-5 py-3.5">
+                <span v-if="m.is_verified === false || m.status === 'pending'" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-xs"></span>
+                  MENUNGGU
+                </span>
+                <span v-else class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-xs"></span>
+                  TERVERIFIKASI
+                </span>
+              </td>
+
+              <!-- Kontak -->
+              <td class="px-5 py-3.5 font-mono text-[11.5px] text-slate-600 dark:text-slate-300">
+                {{ m.phone_number || '-' }}
+              </td>
+
+              <!-- Aksi -->
+              <td class="px-5 py-3.5 text-right" @click.stop>
+                <NuxtLink :to="`/merchants/${m.uuid || m.id}`">
+                  <Button variant="outline" size="sm" class="text-xs h-7 px-2.5 rounded-md gap-1 bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50">
+                    <span>Detail</span>
+                    <Icon name="lucide:arrow-right" class="w-3 h-3" />
+                  </Button>
+                </NuxtLink>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="p-4 border-t border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div>
+          Menampilkan <span class="font-bold text-slate-900 dark:text-slate-100">{{ (currentPage - 1) * pageSize + 1 }}</span> - 
+          <span class="font-bold text-slate-900 dark:text-slate-100">{{ Math.min(currentPage * pageSize, filteredMerchants.length) }}</span> dari 
+          <span class="font-bold text-slate-900 dark:text-slate-100">{{ filteredMerchants.length }}</span> pedagang
         </div>
-        <ag-grid-vue
-          class="ag-theme-quartz w-full h-full custom-ag-grid"
-          :columnDefs="colDefs"
-          :rowData="merchants"
-          :defaultColDef="defaultColDef"
-          :pagination="true"
-          :paginationPageSize="20"
-          :animateRows="true"
-          rowSelection="single"
-          :rowHeight="64"
-          :headerHeight="44"
-          @row-clicked="onRowClicked"
-        >
-        </ag-grid-vue>
+
+        <div class="flex items-center gap-1.5 self-center sm:self-auto">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            :disabled="currentPage === 1" 
+            @click="currentPage--"
+            class="h-8 px-2.5 rounded-lg text-xs"
+          >
+            &larr; Prev
+          </Button>
+
+          <span class="px-3 py-1 font-mono font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+            {{ currentPage }} / {{ totalPages }}
+          </span>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            :disabled="currentPage >= totalPages" 
+            @click="currentPage++"
+            class="h-8 px-2.5 rounded-lg text-xs"
+          >
+            Next &rarr;
+          </Button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '~/utils/api'
-import { AgGridVue } from 'ag-grid-vue3'
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community'
-ModuleRegistry.registerModules([AllCommunityModule])
 
-import 'ag-grid-community/styles/ag-grid.css'
-import 'ag-grid-community/styles/ag-theme-quartz.css'
-import { useDebounceFn } from '@vueuse/core'
-
-const router = useRouter()
-const merchants = ref([])
+const merchants = ref<any[]>([])
 const loading = ref(true)
 const gridSearch = ref('')
 const exporting = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(15)
 
-const suggestions = ref<string[]>([])
-const showSuggestions = ref(false)
-
-const hideSuggestionsDelay = () => {
-  setTimeout(() => {
-    showSuggestions.value = false
-  }, 200)
-}
-
-const applySuggestion = (s: string) => {
-  gridSearch.value = s
-  showSuggestions.value = false
-  fetchMerchants()
-}
-
-const colDefs = ref([
-  { 
-    field: 'store_name', 
-    headerName: 'Nama Toko / Email', 
-    flex: 2.2, 
-    filter: true, 
-    sortable: true,
-    cellRenderer: (p: any) => {
-      const initials = (p.value || '?').substring(0, 2).toUpperCase()
-      const name = p.value || 'Tanpa Nama'
-      const email = p.data?.email || 'Belum ada email'
-      
-      const imgHtml = p.data?.photo_profile 
-        ? `<img src="${p.data.photo_profile}" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid rgba(226, 232, 240, 0.8); flex-shrink: 0;" />`
-        : `<div style="width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #0F1A2E, #1E293B); color: #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; border: 1px solid rgba(245, 158, 11, 0.2);">${initials}</div>`
-      
-      return `<div style="display: flex; align-items: center; gap: 12px; height: 100%; width: 100%; cursor: pointer;">
-                ${imgHtml}
-                <div style="display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-width: 0;">
-                  <span style="font-weight: 700; color: var(--wp-navy, #0f172a); font-size: 13px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span>
-                  <span style="font-size: 11px; color: #64748b; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${email}</span>
-                </div>
-              </div>`
-    }
-  },
-  { 
-    field: 'name', 
-    headerName: 'Pemilik', 
-    flex: 1.3, 
-    filter: true, 
-    sortable: true,
-    cellRenderer: (p: any) => {
-      const ownerName = p.value || 'N/A'
-      return `<div style="display: flex; align-items: center; gap: 8px; height: 100%; color: #334155; font-weight: 600; font-size: 12.5px;">
-                <div style="width: 24px; height: 24px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                  <svg style="width: 13px; height: 13px; color: #64748b;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                </div>
-                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${ownerName}</span>
-              </div>`
-    }
-  },
-  { 
-    field: 'category_store', 
-    headerName: 'Kategori', 
-    flex: 1.2, 
-    filter: true, 
-    sortable: true,
-    cellRenderer: (p: any) => {
-      if (!p.value) return '<span style="color: #94a3b8; font-style: italic; font-size: 11px;">Tanpa Kategori</span>'
-      return `<div style="display: flex; align-items: center; height: 100%;">
-                <span style="background: #f1f5f9; color: #334155; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                  ${p.value}
-                </span>
-              </div>`
-    }
-  },
-  {
-    field: 'is_verified',
-    headerName: 'Status',
-    flex: 1.1,
-    sortable: true,
-    cellRenderer: (p: any) => {
-      const isVerified = p.value === true || p.data?.is_verified === true
-      if (isVerified) {
-        return `<div style="display: flex; align-items: center; height: 100%;">
-                  <span style="display: inline-flex; align-items: center; gap: 5px; background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 800; border: 1px solid #a7f3d0; text-transform: uppercase;">
-                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #10b981;"></span>
-                    Terverifikasi
-                  </span>
-                </div>`
-      }
-      return `<div style="display: flex; align-items: center; height: 100%;">
-                <span style="display: inline-flex; align-items: center; gap: 5px; background: #fffbeb; color: #b45309; padding: 3px 8px; border-radius: 6px; font-size: 10.5px; font-weight: 800; border: 1px solid #fde68a; text-transform: uppercase;">
-                  <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #f59e0b;"></span>
-                  Menunggu
-                </span>
-              </div>`
-    }
-  },
-  { 
-    field: 'phone_number', 
-    headerName: 'Kontak', 
-    flex: 1.2,
-    cellRenderer: (p: any) => {
-      if (!p.value) return '<span style="color: #cbd5e1; font-size: 12px;">-</span>'
-      return `<div style="display: flex; align-items: center; gap: 6px; color: #0f172a; font-weight: 600; font-family: monospace; font-size: 12px; height: 100%;">
-                <svg style="width: 13px; height: 13px; color: #10b981; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                ${p.value}
-              </div>`
-    }
-  },
-  { 
-    field: 'actions', 
-    headerName: '', 
-    width: 60,
-    sortable: false, 
-    filter: false,
-    cellRenderer: (p: any) => {
-      return `<div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-                <button style="background: transparent; border: none; cursor: pointer; color: #64748b; padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.15s;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a';" onmouseout="this.style.background='transparent'; this.style.color='#64748b';">
-                  <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>`
-    }
-  }
-])
-
-const defaultColDef = ref({
-  resizable: true,
-  minWidth: 110,
+const filteredMerchants = computed(() => {
+  if (!gridSearch.value.trim()) return merchants.value
+  const q = gridSearch.value.toLowerCase().trim()
+  return merchants.value.filter(m => 
+    (m.store_name || '').toLowerCase().includes(q) ||
+    (m.name || '').toLowerCase().includes(q) ||
+    (m.email || '').toLowerCase().includes(q) ||
+    (m.phone_number || '').includes(q) ||
+    (m.category_store || '').toLowerCase().includes(q)
+  )
 })
 
-const onRowClicked = (event: any) => {
-  if (event.data && event.data.uuid) {
-    router.push(`/merchants/${event.data.uuid}`)
-  }
+const totalCount = computed(() => filteredMerchants.value.length)
+const totalPages = computed(() => Math.ceil(filteredMerchants.value.length / pageSize.value) || 1)
+
+const paginatedMerchants = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredMerchants.value.slice(start, start + pageSize.value)
+})
+
+const getInitials = (name: string) => {
+  if (!name) return 'TK'
+  return (name.replace(/^(Toko|Warung|Kios)\s+/i, '').substring(0, 2) || 'TK').toUpperCase()
+}
+
+const getAvatarColor = (name: string) => {
+  const palettes = [
+    { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' },
+    { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa', border: 'rgba(59, 130, 246, 0.3)' },
+    { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' },
+    { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa', border: 'rgba(139, 92, 246, 0.3)' },
+    { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6', border: 'rgba(236, 72, 153, 0.3)' },
+    { bg: 'rgba(20, 184, 166, 0.15)', text: '#2dd4bf', border: 'rgba(20, 184, 166, 0.3)' }
+  ]
+  let hash = 0
+  for (let i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return palettes[Math.abs(hash) % palettes.length]
 }
 
 const fetchMerchants = async () => {
   loading.value = true
   try {
-    const res = await api.get(`/admin/merchants?limit=1000&search=${encodeURIComponent(gridSearch.value)}`)
+    const res: any = await api.get('/admin/merchants?limit=1000')
     if (res && res.data) {
       merchants.value = res.data
     }
   } catch (err) {
-    console.error("Failed to fetch merchants", err)
+    console.error("Failed to load merchants", err)
   } finally {
     loading.value = false
   }
 }
 
-const fetchSuggestions = async () => {
-  if (gridSearch.value.length < 2) {
-    suggestions.value = []
-    return
-  }
+const exportCSV = async () => {
+  exporting.value = true
   try {
-    const res = await api.get(`/admin/merchants/suggest?q=${encodeURIComponent(gridSearch.value)}`)
-    suggestions.value = res || []
+    const res: any = await api.post('/admin/merchants/export-csv', {})
+    if (res && res.task_id) {
+      pollExport(res.task_id)
+    } else {
+      exporting.value = false
+      alert('Gagal memulai tugas ekspor.')
+    }
   } catch (e) {
     console.error(e)
-  }
-}
-
-const debouncedSearch = useDebounceFn(() => {
-  fetchMerchants()
-  fetchSuggestions()
-}, 300)
-
-watch(gridSearch, () => {
-  debouncedSearch()
-})
-
-const exportCSV = async () => {
-  if (exporting.value) return
-  exporting.value = true
-  
-  try {
-    const res = await api.post('/admin/merchants/export-csv', {})
-    if (res && res.task_id) {
-      pollExportStatus(res.task_id)
-    } else {
-      alert("Failed to start export task")
-      exporting.value = false
-    }
-  } catch (err) {
-    console.error("Failed to export", err)
-    alert("An error occurred starting the export.")
     exporting.value = false
   }
 }
 
-const pollExportStatus = async (taskId: string) => {
+const pollExport = async (taskId: string) => {
   try {
-    const res = await api.get(`/admin/merchants/export-csv/status/${taskId}`)
+    const res: any = await api.get(`/admin/merchants/export-csv/status/${taskId}`)
     if (res.status === 'completed') {
       const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', `merchants_export_${new Date().getTime()}.csv`)
+      link.href = URL.createObjectURL(blob)
+      link.setAttribute('download', `merchants_export_${new Date().toISOString().slice(0,10)}.csv`)
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       exporting.value = false
     } else {
-      setTimeout(() => pollExportStatus(taskId), 2000)
+      setTimeout(() => pollExport(taskId), 2000)
     }
   } catch (err) {
-    console.error("Failed to check export status", err)
+    console.error(err)
     exporting.value = false
-    alert("Export failed.")
   }
 }
 
@@ -313,66 +307,3 @@ onMounted(() => {
   fetchMerchants()
 })
 </script>
-
-<style>
-/* Clean & Crisp AG Grid Styling for Professional Data Tables */
-.custom-ag-grid.ag-theme-quartz {
-  --ag-font-family: inherit;
-  --ag-background-color: #ffffff;
-  --ag-header-background-color: #f8fafc;
-  --ag-header-foreground-color: #475569;
-  --ag-odd-row-background-color: #ffffff;
-  --ag-row-border-color: #f1f5f9;
-  --ag-header-column-separator-display: none;
-  --ag-font-size: 13px;
-  --ag-row-hover-color: #f8fafc;
-  --ag-selected-row-background-color: #eff6ff;
-  --ag-borders: solid;
-  --ag-border-color: #e2e8f0;
-  --ag-row-border-width: 1px;
-}
-
-.custom-ag-grid.ag-theme-quartz .ag-header {
-  border-bottom: 2px solid #e2e8f0 !important;
-}
-
-.custom-ag-grid.ag-theme-quartz .ag-header-cell {
-  padding-left: 14px;
-  padding-right: 14px;
-}
-
-.custom-ag-grid.ag-theme-quartz .ag-header-cell-label {
-  font-weight: 700 !important;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  font-size: 11px;
-  color: #475569;
-}
-
-.custom-ag-grid.ag-theme-quartz .ag-row {
-  transition: background-color 0.15s ease;
-  border-bottom: 1px solid #f1f5f9;
-  cursor: pointer;
-}
-
-.custom-ag-grid.ag-theme-quartz .ag-cell {
-  padding-left: 14px;
-  padding-right: 14px;
-  display: flex;
-  align-items: center;
-}
-
-.custom-ag-grid.ag-theme-quartz .ag-cell:focus {
-  border: none !important;
-  outline: none !important;
-}
-
-.custom-ag-grid.ag-theme-quartz ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.custom-ag-grid.ag-theme-quartz ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-</style>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { defineOptions } from 'vue'
-defineOptions({ name: 'UiDialog' })
+defineOptions({ name: 'UiDialog', inheritAttrs: false })
 
-
+const open = defineModel<boolean>('open', { default: false })
 </script>
 
 <template>

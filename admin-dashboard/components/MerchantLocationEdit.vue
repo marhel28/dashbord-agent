@@ -1,28 +1,28 @@
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
       <!-- Header -->
-      <div class="px-6 py-4 border-b bg-slate-50 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-800">Edit Lokasi Merchant</h3>
-        <button @click="$emit('close')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-500">
-          <Icon name="heroicons:x-mark" class="w-5 h-5" />
-        </button>
+      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Edit Titik Lokasi Pedagang</h3>
+        <Button variant="ghost" size="sm" @click="$emit('close')" class="h-8 w-8 p-0 rounded-lg text-slate-500">
+          <Icon name="lucide:x" class="w-4 h-4" />
+        </Button>
       </div>
 
       <!-- Body -->
       <div class="p-6 space-y-4">
-        <p class="text-sm text-slate-500">
-          Atur lokasi untuk <strong>{{ merchant.store_name || merchant.name }}</strong>.
-          Klik pada peta untuk menentukan koordinat, atau masukkan manual.
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Atur lokasi GPS untuk <strong class="text-slate-900 dark:text-slate-100">{{ merchant.store_name || merchant.name }}</strong>.
+          Klik pada peta untuk menentukan koordinat, atau masukkan nilai manual.
         </p>
 
         <!-- Address -->
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">Alamat</label>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat Fisik</label>
           <textarea
             v-model="form.address"
             rows="2"
-            class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+            class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none resize-none"
             placeholder="Masukkan alamat lengkap..."
           ></textarea>
         </div>
@@ -30,63 +30,63 @@
         <!-- Coordinates -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Latitude</label>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Latitude</label>
             <input
               v-model.number="form.latitude"
               type="number"
               step="any"
               min="-90"
               max="90"
-              class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              class="w-full px-3 py-2 text-xs font-mono border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none"
               placeholder="-6.2088"
             />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Longitude</label>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Longitude</label>
             <input
               v-model.number="form.longitude"
               type="number"
               step="any"
               min="-180"
               max="180"
-              class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              class="w-full px-3 py-2 text-xs font-mono border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none"
               placeholder="106.8456"
             />
           </div>
         </div>
 
         <!-- Mini Map Picker -->
-        <div class="rounded-xl overflow-hidden border h-[200px] relative">
+        <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 h-[200px] relative bg-slate-100 dark:bg-slate-800">
           <div ref="pickerMapContainer" class="w-full h-full"></div>
-          <div v-if="mapLoading" class="absolute inset-0 bg-white/80 flex items-center justify-center">
-            <Icon name="heroicons:arrow-path" class="w-5 h-5 animate-spin text-blue-500" />
+          <div v-if="mapLoading" class="absolute inset-0 bg-white/80 dark:bg-slate-900/80 flex items-center justify-center">
+            <Icon name="lucide:loader-2" class="w-5 h-5 animate-spin text-emerald-600 dark:text-emerald-400" />
           </div>
         </div>
 
         <p class="text-[11px] text-slate-400 text-center">
-          Klik pada peta untuk mengatur koordinat. Geser untuk menggeser marker.
+          Klik pada peta untuk mengatur koordinat. Geser marker biru untuk penyesuaian halus.
         </p>
       </div>
 
       <!-- Footer -->
-      <div class="px-6 py-4 border-t bg-slate-50 flex gap-3 justify-end">
-        <button @click="resetLocation" class="px-4 py-2 text-sm font-bold rounded-xl border bg-white text-slate-700 hover:bg-slate-50">
-          Reset
-        </button>
-        <button @click="$emit('close')" class="px-4 py-2 text-sm font-bold rounded-xl border bg-white text-slate-700 hover:bg-slate-50">
+      <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 flex gap-2 justify-end">
+        <Button variant="outline" size="sm" @click="resetLocation" class="text-xs rounded-lg">
+          Reset Titik
+        </Button>
+        <Button variant="outline" size="sm" @click="$emit('close')" class="text-xs rounded-lg">
           Batal
-        </button>
-        <button @click="saveLocation" :disabled="saving" class="px-4 py-2 text-sm font-bold rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
-          <Icon v-if="saving" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-          {{ saving ? 'Menyimpan...' : 'Simpan' }}
-        </button>
+        </Button>
+        <Button size="sm" @click="saveLocation" :disabled="saving" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5">
+          <Icon v-if="saving" name="lucide:loader-2" class="w-3.5 h-3.5 animate-spin" />
+          <span>{{ saving ? 'Menyimpan...' : 'Simpan Lokasi' }}</span>
+        </Button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { api } from '~/utils/api'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -138,21 +138,18 @@ const initPickerMap = () => {
 
   pickerMap.addControl(new maplibregl.NavigationControl(), 'top-right')
 
-  // Add marker
   const el = document.createElement('div')
-  el.className = 'w-5 h-5 bg-blue-500 rounded-full border-2 border-white shadow-md cursor-move'
+  el.className = 'w-5 h-5 bg-emerald-500 rounded-full border-2 border-white shadow-md cursor-move'
   marker = new maplibregl.Marker({ element: el, draggable: true })
     .setLngLat([lng, lat])
     .addTo(pickerMap!)
 
-  // Update form when marker dragged
   marker.on('dragend', () => {
     const lngLat = marker!.getLngLat()
     form.value.latitude = Math.round(lngLat.lat * 1000000) / 1000000
     form.value.longitude = Math.round(lngLat.lng * 1000000) / 1000000
   })
 
-  // Update marker when clicking map
   pickerMap.on('click', (e) => {
     const { lat, lng } = e.lngLat
     form.value.latitude = Math.round(lat * 1000000) / 1000000
@@ -198,7 +195,6 @@ const resetLocation = async () => {
   }
 }
 
-// Sync marker when form inputs change manually
 watch([() => form.value.latitude, () => form.value.longitude], ([lat, lng]) => {
   if (lat && lng && marker && pickerMap) {
     marker.setLngLat([lng, lat])

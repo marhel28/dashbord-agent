@@ -1,45 +1,48 @@
 <template>
-  <div class="space-y-6 animate-fade-in" v-if="!loading && merchant">
+  <div class="space-y-8 animate-fade-in max-w-7xl mx-auto py-2 pb-10" v-if="!loading && merchant">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-4">
-        <NuxtLink to="/merchants" class="p-2 border rounded-xl hover:bg-slate-50 text-slate-500 transition-colors bg-white">
-          <Icon name="heroicons:arrow-left" class="w-5 h-5" />
+        <NuxtLink to="/merchants" class="p-2 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors bg-white dark:bg-slate-900 shadow-2xs">
+          <Icon name="lucide:arrow-left" class="w-5 h-5" />
         </NuxtLink>
         <div>
-          <h1 class="text-2xl font-extrabold tracking-tight text-slate-800">{{ merchant.store_name || merchant.name }}</h1>
-          <p class="text-sm mt-1 text-slate-500">Detail & Analitik Pedagang</p>
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+            {{ merchant.store_name || merchant.name }}
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Detail Profil & Analitik Pedagang</p>
         </div>
       </div>
-      <div class="flex gap-2">
-        <button @click="showDeleteConfirm = true" class="px-4 py-2 text-xs font-bold rounded-xl border bg-white text-red-600 border-red-100 hover:bg-red-50 transition-colors shadow-sm flex items-center gap-2">
-          <Icon name="heroicons:trash" class="w-3.5 h-3.5" />
-          Hapus
-        </button>
+
+      <div class="flex items-center gap-2">
+        <Button variant="destructive" size="sm" @click="showDeleteConfirm = true" class="rounded-lg text-xs gap-1.5 shadow-xs">
+          <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
+          <span>Nonaktifkan</span>
+        </Button>
       </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 space-y-4">
+    <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 max-w-md w-full space-y-4">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-            <Icon name="heroicons:exclamation-triangle" class="w-5 h-5 text-red-600" />
+          <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center">
+            <Icon name="lucide:alert-triangle" class="w-5 h-5" />
           </div>
-          <h3 class="text-lg font-bold text-slate-800">Nonaktifkan Merchant?</h3>
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Nonaktifkan Pedagang?</h3>
         </div>
-        <p class="text-sm text-slate-600">
-          Apakah Anda yakin ingin menonaktifkan <strong>{{ merchant.store_name || merchant.name }}</strong>?
-          Merchant tidak akan bisa login lagi, tetapi data (stok, transaksi, wallet) tetap tersimpan.
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          Apakah Anda yakin ingin menonaktifkan <strong class="text-slate-900 dark:text-slate-100">{{ merchant.store_name || merchant.name }}</strong>?
+          Merchant tidak akan bisa login lagi, tetapi seluruh riwayat transaksi & inventaris tetap tersimpan.
         </p>
-        <div class="flex gap-3 justify-end pt-2">
-          <button @click="showDeleteConfirm = false" class="px-4 py-2 text-sm font-bold rounded-xl border bg-white text-slate-700 hover:bg-slate-50">
+        <div class="flex gap-2 justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
+          <Button variant="outline" size="sm" @click="showDeleteConfirm = false" class="rounded-lg text-xs">
             Batal
-          </button>
-          <button @click="deleteMerchant" :disabled="deleting" class="px-4 py-2 text-sm font-bold rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 flex items-center gap-2">
-            <Icon v-if="deleting" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-            {{ deleting ? 'Menonaktifkan...' : 'Ya, Nonaktifkan' }}
-          </button>
+          </Button>
+          <Button variant="destructive" size="sm" @click="deleteMerchant" :disabled="deleting" class="rounded-lg text-xs gap-1.5 shadow-xs">
+            <Icon v-if="deleting" name="lucide:loader-2" class="w-3.5 h-3.5 animate-spin" />
+            <span>{{ deleting ? 'Menonaktifkan...' : 'Ya, Nonaktifkan' }}</span>
+          </Button>
         </div>
       </div>
     </div>
@@ -47,186 +50,190 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left Column: Profile Card -->
       <div class="lg:col-span-1 space-y-6">
-        <div class="bg-white border rounded-2xl p-6 shadow-sm text-center relative">
-          <button v-if="!editing" @click="startEdit" class="absolute top-4 right-4 px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1">
-            <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
-            Edit
-          </button>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-6 shadow-xs text-center relative">
+          <Button v-if="!editing" variant="outline" size="sm" @click="startEdit" class="absolute top-4 right-4 text-xs h-8 px-3 rounded-lg gap-1.5">
+            <Icon name="lucide:edit-2" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Edit</span>
+          </Button>
 
           <!-- View mode -->
-          <div v-if="!editing">
-            <div class="w-24 h-24 mx-auto rounded-full bg-slate-200 border-4 border-white shadow-md overflow-hidden mb-4">
+          <div v-if="!editing" class="space-y-4">
+            <div class="w-24 h-24 mx-auto rounded-full bg-slate-100 dark:bg-slate-700 border-4 border-white dark:border-slate-900 shadow-md overflow-hidden flex items-center justify-center">
               <img v-if="merchant.photo_profile" :src="merchant.photo_profile" class="w-full h-full object-cover" />
-              <div v-else class="w-full h-full flex items-center justify-center text-slate-400 font-bold uppercase text-3xl">
+              <div v-else class="w-full h-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold uppercase text-3xl">
                 {{ merchant.name.charAt(0) }}
               </div>
             </div>
-            <h2 class="text-lg font-bold text-slate-800">{{ merchant.store_name || merchant.name }}</h2>
-            <p class="text-sm text-slate-500 mb-4">{{ merchant.name }}</p>
 
-            <div class="flex flex-wrap justify-center gap-1.5 mb-6">
-              <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100">
-                {{ merchant.category_store || 'Tanpa Kategori' }}
-              </span>
-              <span v-if="merchant.store_type" class="inline-block px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold border border-purple-100">
-                {{ merchant.store_type }}
-              </span>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ merchant.store_name || merchant.name }}</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ merchant.name }}</p>
             </div>
 
-            <div class="space-y-3 text-left border-t pt-4">
-              <div class="flex items-center gap-3 text-sm">
-                <Icon name="heroicons:envelope" class="w-4 h-4 text-slate-400" />
-                <span class="text-slate-700">{{ merchant.email }}</span>
+            <div class="flex flex-wrap justify-center gap-1.5">
+              <Badge variant="secondary" class="font-medium text-xs">
+                {{ merchant.category_store || 'Tanpa Kategori' }}
+              </Badge>
+              <Badge v-if="merchant.store_type" variant="outline" class="text-xs border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40">
+                {{ merchant.store_type }}
+              </Badge>
+            </div>
+
+            <div class="space-y-3 text-left border-t border-slate-100 dark:border-slate-700/60 pt-4 text-xs">
+              <div class="flex items-center gap-3">
+                <Icon name="lucide:mail" class="w-4 h-4 text-slate-400 shrink-0" />
+                <span class="text-slate-700 dark:text-slate-300 truncate">{{ merchant.email }}</span>
               </div>
-              <div class="flex items-center gap-3 text-sm">
-                <Icon name="heroicons:phone" class="w-4 h-4 text-slate-400" />
-                <span class="text-slate-700">{{ merchant.phone_number || '-' }}</span>
+              <div class="flex items-center gap-3">
+                <Icon name="lucide:phone" class="w-4 h-4 text-slate-400 shrink-0" />
+                <span class="text-slate-700 dark:text-slate-300 font-mono">{{ merchant.phone_number || '-' }}</span>
               </div>
-              <div class="flex items-center gap-3 text-sm">
-                <Icon name="heroicons:calendar" class="w-4 h-4 text-slate-400" />
-                <span class="text-slate-700">Bergabung {{ new Date(merchant.created_at).toLocaleDateString() }}</span>
+              <div class="flex items-center gap-3">
+                <Icon name="lucide:calendar" class="w-4 h-4 text-slate-400 shrink-0" />
+                <span class="text-slate-700 dark:text-slate-300">Bergabung {{ new Date(merchant.created_at).toLocaleDateString('id-ID') }}</span>
               </div>
             </div>
           </div>
 
           <!-- Edit mode -->
-          <div v-else class="text-left">
-            <h2 class="text-lg font-bold text-slate-800 mb-4 text-center">Edit Data Pedagang</h2>
+          <div v-else class="text-left space-y-3">
+            <h2 class="text-base font-bold text-slate-900 dark:text-slate-100 text-center mb-3">Edit Data Pedagang</h2>
             <div class="space-y-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Pemilik</label>
-                <input v-model="editForm.name" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Pemilik</label>
+                <input v-model="editForm.name" type="text" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Toko</label>
-                <input v-model="editForm.store_name" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Nama Toko</label>
+                <input v-model="editForm.store_name" type="text" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Telepon</label>
-                <input v-model="editForm.phone_number" type="tel" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Telepon</label>
+                <input v-model="editForm.phone_number" type="tel" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none font-mono" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Kategori Usaha</label>
-                <select v-model="editForm.category_store" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kategori Usaha</label>
+                <select v-model="editForm.category_store" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none">
                   <option v-for="cat in STORE_CATEGORIES" :key="cat" :value="cat">{{ cat }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Tipe Toko / Jenis Usaha</label>
-                <select v-model="editForm.store_type" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tipe Toko / Jenis Usaha</label>
+                <select v-model="editForm.store_type" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none">
                   <option v-for="st in STORE_TYPES" :key="st" :value="st">{{ st }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Alamat</label>
-                <textarea v-model="editForm.address" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"></textarea>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Alamat</label>
+                <textarea v-model="editForm.address" rows="2" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none"></textarea>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Deskripsi</label>
-                <textarea v-model="editForm.description" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"></textarea>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Deskripsi</label>
+                <textarea v-model="editForm.description" rows="2" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-lg focus:border-emerald-500 outline-none"></textarea>
               </div>
             </div>
-            <div class="flex gap-2 mt-4">
-              <button @click="saveEdit" :disabled="saving" class="flex-1 px-4 py-2 text-sm font-bold rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
-                <Icon v-if="saving" name="heroicons:arrow-path" class="w-4 h-4 animate-spin" />
-                {{ saving ? 'Menyimpan...' : 'Simpan' }}
-              </button>
-              <button @click="cancelEdit" class="px-4 py-2 text-sm font-bold rounded-xl border bg-white text-slate-700 hover:bg-slate-50">
+
+            <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60">
+              <Button size="sm" @click="saveEdit" :disabled="saving" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg">
+                <Icon v-if="saving" name="lucide:loader-2" class="w-3.5 h-3.5 animate-spin" />
+                <span>{{ saving ? 'Menyimpan...' : 'Simpan' }}</span>
+              </Button>
+              <Button variant="outline" size="sm" @click="cancelEdit" class="text-xs rounded-lg">
                 Batal
-              </button>
+              </Button>
             </div>
           </div>
         </div>
 
         <!-- Description -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm" v-if="merchant.description">
-          <h3 class="text-sm font-bold mb-2">Tentang Toko</h3>
-          <p class="text-sm text-slate-600 leading-relaxed">{{ merchant.description }}</p>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-5 shadow-xs" v-if="merchant.description">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Tentang Toko</h3>
+          <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{{ merchant.description }}</p>
         </div>
       </div>
 
       <!-- Right Column: Wallet + Location & Stats -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Wallet Card -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-bold flex items-center gap-2">
-              <Icon name="heroicons:wallet" class="w-5 h-5 text-emerald-500" />
-              Dompet Merchant
+        <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Icon name="lucide:wallet" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Dompet & Keuangan Merchant</span>
             </h3>
-            <button @click="fetchWallet" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
-              <Icon name="heroicons:arrow-path" class="w-3.5 h-3.5" :class="{'animate-spin': walletLoading}" />
-              Refresh
-            </button>
+            <Button variant="ghost" size="sm" @click="fetchWallet" class="text-xs h-8 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 gap-1">
+              <Icon name="lucide:refresh-cw" class="w-3.5 h-3.5" :class="{'animate-spin': walletLoading}" />
+              <span>Refresh</span>
+            </Button>
           </div>
 
-          <div class="grid grid-cols-3 gap-4 mb-4">
-            <div class="bg-emerald-50 rounded-xl p-4 text-center">
-              <p class="text-xs text-emerald-600 font-semibold mb-1">Saldo</p>
-              <p class="text-lg font-black text-emerald-700">Rp {{ formatRupiah(wallet.balance || 0) }}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 rounded-xl p-4 text-center">
+              <p class="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mb-1">Saldo Tersedia</p>
+              <p class="text-lg font-bold text-emerald-900 dark:text-emerald-300 font-mono">Rp {{ formatRupiah(wallet.balance || 0) }}</p>
             </div>
-            <div class="bg-blue-50 rounded-xl p-4 text-center">
-              <p class="text-xs text-blue-600 font-semibold mb-1">Total Pendapatan</p>
-              <p class="text-lg font-black text-blue-700">Rp {{ formatRupiah(wallet.total_earned || 0) }}</p>
+            <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 rounded-xl p-4 text-center">
+              <p class="text-[11px] text-blue-700 dark:text-blue-400 font-semibold mb-1">Total Pendapatan</p>
+              <p class="text-lg font-bold text-blue-900 dark:text-blue-300 font-mono">Rp {{ formatRupiah(wallet.total_earned || 0) }}</p>
             </div>
-            <div class="bg-orange-50 rounded-xl p-4 text-center">
-              <p class="text-xs text-orange-600 font-semibold mb-1">Total Ditarik</p>
-              <p class="text-lg font-black text-orange-700">Rp {{ formatRupiah(wallet.total_withdrawn || 0) }}</p>
+            <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 rounded-xl p-4 text-center">
+              <p class="text-[11px] text-amber-700 dark:text-amber-400 font-semibold mb-1">Total Ditarik</p>
+              <p class="text-lg font-bold text-amber-900 dark:text-amber-300 font-mono">Rp {{ formatRupiah(wallet.total_withdrawn || 0) }}</p>
             </div>
           </div>
 
           <!-- Recent Transactions -->
-          <div v-if="wallet.transactions && wallet.transactions.length > 0">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Transaksi Terakhir</h4>
-            <div class="space-y-2 max-h-40 overflow-y-auto">
-              <div v-for="(txn, i) in wallet.transactions" :key="i" class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full flex items-center justify-center" :class="txn.type === 'CREDIT' ? 'bg-emerald-100' : 'bg-red-100'">
-                    <Icon :name="txn.type === 'CREDIT' ? 'heroicons:arrow-down' : 'heroicons:arrow-up'" class="w-3.5 h-3.5" :class="txn.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-600'" />
+          <div v-if="wallet.transactions && wallet.transactions.length > 0" class="pt-2">
+            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Transaksi Terakhir</h4>
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+              <div v-for="(txn, i) in wallet.transactions" :key="i" class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0" :class="txn.type === 'CREDIT' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400'">
+                    <Icon :name="txn.type === 'CREDIT' ? 'lucide:arrow-down-left' : 'lucide:arrow-up-right'" class="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <p class="text-xs font-semibold text-slate-700">{{ txn.description || txn.type }}</p>
-                    <p class="text-[10px] text-slate-400">{{ new Date(txn.created_at).toLocaleDateString() }}</p>
+                    <p class="text-xs font-semibold text-slate-900 dark:text-slate-100">{{ txn.description || txn.type }}</p>
+                    <p class="text-[10px] text-slate-400 font-mono">{{ new Date(txn.created_at).toLocaleDateString('id-ID') }}</p>
                   </div>
                 </div>
-                <span class="text-xs font-bold" :class="txn.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-600'">
+                <span class="text-xs font-bold font-mono" :class="txn.type === 'CREDIT' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
                   {{ txn.type === 'CREDIT' ? '+' : '-' }}Rp {{ formatRupiah(txn.amount) }}
                 </span>
               </div>
             </div>
           </div>
-          <div v-else class="text-center py-4 text-sm text-slate-400">
-            Belum ada transaksi wallet.
+          <div v-else class="text-center py-4 text-xs text-slate-400">
+            Belum ada transaksi pada dompet ini.
           </div>
         </div>
 
         <!-- Address & Map -->
-        <div class="bg-white border rounded-2xl p-6 shadow-sm flex flex-col h-[450px]">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-6 shadow-xs flex flex-col h-[450px]">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h3 class="text-base font-bold mb-1">Lokasi Toko</h3>
-              <p class="text-sm text-slate-500">{{ merchant.address || 'Tidak ada alamat' }}</p>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-0.5">Lokasi Toko Fisik</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ merchant.address || 'Alamat fisik belum disetel' }}</p>
             </div>
             <div class="flex items-center gap-2">
-              <button v-if="merchant.latitude && merchant.longitude" @click="deleteLocation" :disabled="deletingLocation" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1 disabled:opacity-50">
-                <Icon name="heroicons:trash" class="w-3.5 h-3.5" />
-                Hapus Lokasi
-              </button>
-              <button @click="showLocationEdit = true" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1">
-                <Icon name="heroicons:pencil-square" class="w-3.5 h-3.5" />
-                Edit Lokasi
-              </button>
+              <Button v-if="merchant.latitude && merchant.longitude" variant="destructive" size="sm" @click="deleteLocation" :disabled="deletingLocation" class="text-xs h-8 gap-1">
+                <Icon name="lucide:trash-2" class="w-3.5 h-3.5" />
+                <span>Hapus Titik</span>
+              </Button>
+              <Button variant="outline" size="sm" @click="showLocationEdit = true" class="text-xs h-8 gap-1">
+                <Icon name="lucide:map-pin" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Edit Koordinat</span>
+              </Button>
             </div>
           </div>
 
-          <div class="flex-1 rounded-xl overflow-hidden border bg-slate-50 relative">
+          <div class="flex-1 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 relative">
              <div v-if="merchant.latitude && merchant.longitude" ref="mapContainer" class="w-full h-full"></div>
-             <div v-else class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-               <Icon name="heroicons:map-pin" class="w-8 h-8 mb-2 opacity-50" />
-               <p class="text-sm">Lokasi belum disematkan</p>
-               <button @click="showLocationEdit = true" class="mt-2 text-xs text-blue-600 hover:underline font-semibold">
-                 Tambah Lokasi
-               </button>
+             <div v-else class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 space-y-2">
+               <Icon name="lucide:map-pin-off" class="w-8 h-8 opacity-50" />
+               <p class="text-xs">Titik GPS lokasi belum disematkan</p>
+               <Button variant="outline" size="sm" @click="showLocationEdit = true" class="text-xs rounded-lg">
+                 + Tambahkan Titik GPS
+               </Button>
              </div>
           </div>
         </div>
@@ -243,13 +250,28 @@
   </div>
 
   <div v-else-if="loading" class="flex justify-center items-center h-[50vh]">
-    <Icon name="heroicons:arrow-path" class="w-8 h-8 animate-spin text-slate-400" />
+    <div class="text-center space-y-3">
+      <Icon name="lucide:loader-2" class="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400 mx-auto" />
+      <p class="text-xs font-medium text-slate-500">Memuat profil pedagang...</p>
+    </div>
   </div>
 
-  <div v-else class="text-center py-20">
-    <Icon name="heroicons:exclamation-circle" class="w-12 h-12 text-slate-300 mx-auto mb-4" />
-    <h2 class="text-xl font-bold text-slate-700">Pedagang tidak ditemukan</h2>
-    <NuxtLink to="/merchants" class="mt-4 inline-block text-blue-600 hover:underline">Kembali ke Daftar Pedagang</NuxtLink>
+  <!-- Not Found / Error State -->
+  <div v-else class="flex items-center justify-center py-20">
+    <Card class="max-w-sm border-slate-200 dark:border-slate-700/60 text-center p-6 space-y-4">
+      <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+        <Icon name="lucide:store" class="w-6 h-6" />
+      </div>
+      <div>
+        <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Pedagang Tidak Ditemukan</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Data pedagang tidak tersedia atau telah dihapus dari sistem.</p>
+      </div>
+      <NuxtLink to="/merchants">
+        <Button size="sm" class="bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs">
+          Kembali ke Daftar Pedagang
+        </Button>
+      </NuxtLink>
+    </Card>
   </div>
 </template>
 
@@ -290,7 +312,7 @@ const editForm = ref({
   description: '',
 })
 
-// Store category options (matches backend StoreCategory enum)
+// Store category options
 const STORE_CATEGORIES = [
   'Makanan & Minuman',
   'Toko Retail',
@@ -318,7 +340,7 @@ const STORE_CATEGORIES = [
   'Lainnya',
 ]
 
-// Store type options (matches backend StoreType enum)
+// Store type options
 const STORE_TYPES = [
   'Warung Kecil',
   'Toko Kelontong',
@@ -377,7 +399,6 @@ const deleteMerchant = async () => {
   try {
     await api.delete(`/admin/merchants/${merchantId}`)
     showDeleteConfirm.value = false
-    alert('Merchant berhasil dinonaktifkan.')
     router.push('/merchants')
   } catch (err) {
     console.error("Failed to delete merchant", err)
@@ -394,7 +415,6 @@ const onLocationSaved = (updated: any) => {
     merchant.value.longitude = updated.longitude
     merchant.value.address = updated.address
   }
-  // Re-init map if location added
   if (merchant.value?.latitude && merchant.value?.longitude) {
     nextTick(() => {
       initMap(merchant.value.latitude, merchant.value.longitude)
@@ -402,7 +422,6 @@ const onLocationSaved = (updated: any) => {
   }
 }
 
-// --- Merchant edit ---
 const startEdit = () => {
   if (!merchant.value) return
   editForm.value = {
@@ -426,10 +445,8 @@ const saveEdit = async () => {
   try {
     const res = await api.patch(`/admin/merchants/${merchantId}`, editForm.value)
     if (res) {
-      // Refresh merchant data from server
       await fetchMerchant()
       editing.value = false
-      alert('Data pedagang diperbarui.')
     }
   } catch (err) {
     console.error("Failed to update merchant", err)
@@ -439,7 +456,6 @@ const saveEdit = async () => {
   }
 }
 
-// --- Delete location ---
 const deleteLocation = async () => {
   if (!confirm('Hapus lokasi merchant? Latitude dan longitude akan direset.')) return
   deletingLocation.value = true
@@ -449,7 +465,6 @@ const deleteLocation = async () => {
       merchant.value.latitude = null
       merchant.value.longitude = null
     }
-    alert('Lokasi berhasil dihapus.')
   } catch (err) {
     console.error("Failed to delete location", err)
     alert('Gagal menghapus lokasi.')
@@ -497,13 +512,12 @@ const initMap = (lat: number, lng: number) => {
   map.addControl(new maplibregl.NavigationControl(), 'top-right')
 
   const el = document.createElement('div')
-  el.className = 'w-5 h-5 bg-blue-500 rounded-full border-2 border-white shadow-md'
+  el.className = 'w-5 h-5 bg-emerald-500 rounded-full border-2 border-white shadow-md'
 
   new maplibregl.Marker({ element: el })
     .setLngLat([lng, lat])
     .addTo(map)
 
-  // Fix blank/gray map: container may not have final size at init time
   map.on('load', () => {
     map!.resize()
   })
